@@ -56,31 +56,21 @@
               placeholder="Email"
               type="email"
               required />
+            <p class="text-rose-500 text-left hidden">Error</p>
           </div>
           <div class="space-x-4 relative flex items-center justify-between">
             <div class="flex items-center flex-col w-full">
               <label
-                for="first-name"
+                for="username"
                 class="font-bold text-white text-left w-full block">
-                First name
+                Username
               </label>
               <input
-                id="first-name"
+                id="username"
                 class="p-4 rounded-xl bg-white w-full h-12"
-                placeholder="First Name"
+                placeholder="Username"
                 required />
-            </div>
-            <div class="flex items-center flex-col w-full">
-              <label
-                for="last-name"
-                class="font-bold text-white text-left w-full block">
-                Last Name
-              </label>
-              <input
-                id="last-name"
-                class="p-4 rounded-xl bg-white w-full h-12"
-                placeholder="Last Name"
-                required />
+              <p class="text-rose-500 text-left hidden">Error</p>
             </div>
           </div>
 
@@ -97,6 +87,7 @@
               type="password"
               minlength="6"
               required />
+            <p class="text-rose-500 text-left hidden">Error</p>
           </div>
 
           <div class="text-right my-4">
@@ -111,7 +102,7 @@
             id="submit"
             type="submit"
             class="p-3 bg-blue-500 hover:bg-blue-600 transition text-white rounded-full w-full h-12">
-            Login
+            Register
           </button>
         </form>
       </div>
