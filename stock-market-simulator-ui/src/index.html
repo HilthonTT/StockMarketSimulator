@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
+    <script src="index.js" type="module"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+      };
+    </script>
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet" />
+  </head>
+  <body class="bg-[#1a1b23] text-white min-h-screen overflow-y-auto">
+    <div class="bg-[#343a40] w-full h-20 flex items-center justify-center">
+      <!-- HTML -->
+      <div class="search-container relative">
+        <div
+          class="rounded-md w-[400px] bg-[#101114] flex items-center px-4 py-2">
+          <svg
+            width="24px"
+            height="24px"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M15.7955 15.8111L21 21M18 10.5C18 14.6421 14.6421 18 10.5 18C6.35786 18 3 14.6421 3 10.5C3 6.35786 6.35786 3 10.5 3C14.6421 3 18 6.35786 18 10.5Z"
+              stroke="#9CA3AF"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+
+          <input
+            id="search-input"
+            placeholder="Search"
+            class="bg-transparent text-gray-300 placeholder-gray-500 focus:outline-none w-full ml-2" />
+        </div>
+        <!-- Results dropdown -->
+        <div
+          id="search-results"
+          class="absolute bg-[#1a1b1f] mt-2 rounded-md shadow-lg hidden"
+          style="width: 400px"></div>
+      </div>
+
+      <!-- Modal -->
+      <div
+        id="modal"
+        class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center w-full">
+        <form
+          class="p-6 rounded-xl shadow-lg w-[450px] bg-[#23242f] text-white"
+          id="transaction-form">
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-4">
+            <h2 id="modal-title" class="text-lg font-bold">Place Order</h2>
+            <button
+              type="button"
+              id="close-modal"
+              class="bg-[#2c2d39] hover:bg-[#1a1b26] opacity-75 transition text-white px-4 py-2 rounded-xl">
+              X
+            </button>
+          </div>
+
+          <!-- Buy/Sell Toggle -->
+          <div
+            class="flex items-center justify-center mb-6 space-x-1 p-1.5 rounded-xl bg-[#2c2d39]">
+            <button
+              type="button"
+              id="buy-button"
+              class="rounded-xl bg-emerald-500 hover:bg-emerald-500 w-full py-2 font-bold transition">
+              Buy
+            </button>
+            <button
+              type="button"
+              id="sell-button"
+              class="rounded-xl bg-[#2c2d39] hover:bg-rose-500 w-full py-2 font-bold transition">
+              Sell
+            </button>
+          </div>
+
+          <!-- Stock Name -->
+          <div class="bg-[#2c2d39] rounded-xl p-4 mb-4">
+            <p class="font-bold text-lg"></p>
+          </div>
+
+          <!-- Price Per Stock -->
+          <div class="mb-4">
+            <p class="text-[#8B8CA7] text-sm">Price Per Stock</p>
+            <input
+              type="number"
+              value=""
+              readonly
+              class="bg-[#2c2d39] text-white rounded-xl p-3 mt-2 w-full" />
+          </div>
+
+          <!-- Quantity -->
+          <div class="mb-4">
+            <p class="text-[#8B8CA7] text-sm">Quantity</p>
+            <input
+              required
+              type="number"
+              placeholder="Enter quantity"
+              class="bg-[#2c2d39] text-white rounded-xl p-3 mt-2 w-full" />
+          </div>
+
+          <!-- Buying Power and MAX Button -->
+          <div class="flex items-center justify-between mb-6">
+            <p id="buying-power-form" class="text-white font-bold text-sm">
+              Buying Power: $892.17
+            </p>
+            <button
+              type="button"
+              class="bg-[#3b3c4e] hover:bg-[#4a4b5e] text-white px-4 py-2 rounded-xl font-bold text-xs"
+              id="max-button">
+              MAX
+            </button>
+          </div>
+
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            class="bg-emerald-500 hover:bg-emerald-600 transition rounded-2xl w-full py-4 font-bold text-lg">
+            Buy
+          </button>
+        </form>
+      </div>
+    </div>
+    <div class="py-8 max-w-screen-xl mx-auto">
+      <h1 class="text-3xl font-bold">Stock Market Simulator</h1>
+
+      <div class="block mt-4 mb-2">
+        <p class="text-gray-400 font-semibold text-sm">Current Balance</p>
+      </div>
+
+      <div class="block space-y-2">
+        <p class="text-4xl font-bold text-white">$100,645.87</p>
+        <p class="text-emerald-500">+$645.78 (6.46%)</p>
+      </div>
+
+      <div class="w-full h-96">
+        <canvas class="chart"></canvas>
+      </div>
+
+      <!-- <div class="bg-gray-700 w-full h-96 mt-4 rounded-xl"></div> -->
+
+      <div class="mt-6">
+        <div class="border-t border-gray-800 w-full"></div>
+        <!-- Top Separator -->
+        <div class="flex items-center justify-between py-4">
+          <p class="text-lg font-semibold">Buying Power</p>
+          <p id="buying-power" class="text-lg font-semibold text-white">
+            <!-- Budget price here -->
+          </p>
+        </div>
+        <div class="border-t border-gray-800 w-full"></div>
+        <!-- Bottom Separator -->
+      </div>
+
+      <div class="py-8 max-w-screen-xl mx-auto text-white">
+        <h2 class="text-3xl font-bold mb-4">Trading History</h2>
+
+        <!-- Date Pickers -->
+        <div class="flex space-x-4 mb-4">
+          <!-- Date Picker 1 -->
+          <button
+            id="datePicker1"
+            class="flex items-center space-x-2 bg-[#292B36] px-4 py-2 rounded-md text-gray-300 hover:bg-[#2C2E39] transition">
+            <svg
+              width="24px"
+              height="24px"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M3 9H21M7 3V5M17 3V5M6 12H8M11 12H13M16 12H18M6 15H8M11 15H13M16 15H18M6 18H8M11 18H13M16 18H18M6.2 21H17.8C18.9201 21 19.4802 21 19.908 20.782C20.2843 20.5903 20.5903 20.2843 20.782 19.908C21 19.4802 21 18.9201 21 17.8V8.2C21 7.07989 21 6.51984 20.782 6.09202C20.5903 5.71569 20.2843 5.40973 19.908 5.21799C19.4802 5 18.9201 5 17.8 5H6.2C5.0799 5 4.51984 5 4.09202 5.21799C3.71569 5.40973 3.40973 5.71569 3.21799 6.09202C3 6.51984 3 7.07989 3 8.2V17.8C3 18.9201 3 19.4802 3.21799 19.908C3.40973 20.2843 3.71569 20.5903 4.09202 20.782C4.51984 21 5.07989 21 6.2 21Z"
+                stroke="#9CA3AF"
+                stroke-width="2"
+                stroke-linecap="round" />
+            </svg>
+            <span id="selectedDate1">Dec 22, 2024</span>
+          </button>
+          <input type="date" id="inputDate1" class="hidden" />
+
+          <!-- Date Picker 2 -->
+          <button
+            id="datePicker2"
+            class="flex items-center space-x-2 bg-[#292B36] px-4 py-2 rounded-md text-gray-300 hover:bg-[#2C2E39] transition">
+            <svg
+              width="24px"
+              height="24px"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M3 9H21M7 3V5M17 3V5M6 12H8M11 12H13M16 12H18M6 15H8M11 15H13M16 15H18M6 18H8M11 18H13M16 18H18M6.2 21H17.8C18.9201 21 19.4802 21 19.908 20.782C20.2843 20.5903 20.5903 20.2843 20.782 19.908C21 19.4802 21 18.9201 21 17.8V8.2C21 7.07989 21 6.51984 20.782 6.09202C20.5903 5.71569 20.2843 5.40973 19.908 5.21799C19.4802 5 18.9201 5 17.8 5H6.2C5.0799 5 4.51984 5 4.09202 5.21799C3.71569 5.40973 3.40973 5.71569 3.21799 6.09202C3 6.51984 3 7.07989 3 8.2V17.8C3 18.9201 3 19.4802 3.21799 19.908C3.40973 20.2843 3.71569 20.5903 4.09202 20.782C4.51984 21 5.07989 21 6.2 21Z"
+                stroke="#9CA3AF"
+                stroke-width="2"
+                stroke-linecap="round" />
+            </svg>
+            <span id="selectedDate2">Jan 22, 2025</span>
+          </button>
+          <input type="date" id="inputDate2" class="hidden" />
+        </div>
+
+        <!-- Trading History Table -->
+        <div class="overflow-x-auto bg-[#1a1b23] rounded-lg">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-[#292B36] text-gray-400">
+                <th class="py-3 px-4">Date</th>
+                <th class="py-3 px-4">Symbol</th>
+                <th class="py-3 px-4">Type</th>
+                <th class="py-3 px-4">Price</th>
+                <th class="py-3 px-4">Amount</th>
+                <th class="py-3 px-4">Total</th>
+              </tr>
+            </thead>
+            <tbody id="trading-history-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
