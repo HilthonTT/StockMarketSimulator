@@ -20,7 +20,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Modules\" />
+    <Folder Include="Modules\Budgets\" />
+    <Folder Include="Modules\Stocks\Infrastructure\" />
+    <Folder Include="Modules\Stocks\Application\" />
+    <Folder Include="Modules\Transactions\" />
+    <Folder Include="Modules\Users\Application\" />
+    <Folder Include="Modules\Users\Infrastructure\" />
   </ItemGroup>
 
 </Project>

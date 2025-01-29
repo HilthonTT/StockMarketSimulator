@@ -36,3 +36,5 @@ app.UseExceptionHandler();
 app.UseStatusCodePages();
 
 await app.RunAsync();
+
+public partial class Program;
