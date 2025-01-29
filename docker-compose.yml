@@ -1,0 +1,17 @@
+services:
+  stockmarketsimulator-api:
+    image: ${DOCKER_REGISTRY-}stockmarketsimulatorapi
+    build:
+      context: .
+      dockerfile: StockMarketSimulator.Api/Dockerfile
+    ports:
+     - 5000:8080
+     - 5001:8081
+  
+  stockmarketsimulator-seq:
+    image: datalust/seq:latest
+    container_name: seq
+    environment:
+      - ACCEPT_EULA=Y
+    ports:
+      - 8081:80

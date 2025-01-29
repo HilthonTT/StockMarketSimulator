@@ -1,0 +1,42 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35707.178 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0629A2D7-9056-4BD4-AC56-4D87E08F216B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{7B1C7E13-1007-4A2E-B520-EEC97C976A73}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "compose", "compose", "{BD8BBDCE-8E34-42EC-B4DB-5D078398BDCC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockMarketSimulator.Api", "StockMarketSimulator.Api\StockMarketSimulator.Api.csproj", "{EA554705-DA14-4994-A878-274A3DA71FB6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CBE755E7-D7DE-48C3-96E5-CAD9E31853B2}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{1DF0A854-7AAD-4432-BD1B-B19A3D4220A3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EA554705-DA14-4994-A878-274A3DA71FB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA554705-DA14-4994-A878-274A3DA71FB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA554705-DA14-4994-A878-274A3DA71FB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA554705-DA14-4994-A878-274A3DA71FB6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DF0A854-7AAD-4432-BD1B-B19A3D4220A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DF0A854-7AAD-4432-BD1B-B19A3D4220A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DF0A854-7AAD-4432-BD1B-B19A3D4220A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DF0A854-7AAD-4432-BD1B-B19A3D4220A3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{EA554705-DA14-4994-A878-274A3DA71FB6} = {0629A2D7-9056-4BD4-AC56-4D87E08F216B}
+	EndGlobalSection
+EndGlobal
