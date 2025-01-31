@@ -3,7 +3,6 @@ using ArchUnitNET.Fluent.Syntax.Elements.Types;
 using ArchUnitNET.Loader;
 using ArchUnitNET.xUnit;
 using System.Diagnostics;
-using Xunit.Abstractions;
 using static ArchUnitNET.Fluent.ArchRuleDefinition;
 
 namespace Architecture.Tests;

@@ -1,16 +1,31 @@
 ﻿using Microsoft.AspNetCore.Http.Features;
+using Npgsql;
+using SharedKernel;
 using StockMarketSimulator.Api.Infrastructure;
+using StockMarketSimulator.Api.Infrastructure.Database;
 using System.Diagnostics;
 
 namespace StockMarketSimulator.Api;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddPresentation(this IServiceCollection services)
+    public static IServiceCollection AddPresentation(this IServiceCollection services, IConfiguration configuration)
+    {
+        services
+            .AddServices()
+            .AddDatabase(configuration)
+            .AddHealthChecks(configuration);
+
+        return services;
+    }
+
+    private static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.AddOpenApi();
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
+        services.AddCors();
+        services.AddSignalR();
 
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails(options =>
@@ -27,7 +42,28 @@ public static class DependencyInjection
             };
         });
 
-        services.AddHealthChecks();
+        return services;
+    }
+
+    private static IServiceCollection AddHealthChecks(this IServiceCollection services, IConfiguration configuration)
+    {
+        string? connectionString = configuration.GetConnectionString("Database");
+        Ensure.NotNullOrEmpty(connectionString, nameof(connectionString));
+
+        services
+            .AddHealthChecks()
+            .AddNpgSql(connectionString);
+
+        return services;
+    }
+
+    private static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
+    {
+        string? connectionString = configuration.GetConnectionString("Database");
+        Ensure.NotNullOrEmpty(connectionString, nameof(connectionString));
+
+        services.AddSingleton<IDbConnectionFactory>(_ =>
+            new DbConnectionFactory(new NpgsqlDataSourceBuilder(connectionString).Build()));
 
         return services;
     }

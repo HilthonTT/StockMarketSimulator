@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
 using StockMarketSimulator.Api;
 using StockMarketSimulator.Api.Extensions;
+using StockMarketSimulator.Api.Modules.Users;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +11,9 @@ builder.Host.UseSerilog((context, loggerConfig) => loggerConfig.ReadFrom.Configu
 
 builder.Services.AddSwaggerGenWithAuth();
 
-builder.Services.AddPresentation();
+builder.Services
+    .AddUserModule(builder.Configuration)
+    .AddPresentation(builder.Configuration);
 
 WebApplication app = builder.Build();
 
@@ -30,6 +33,10 @@ app.UseHttpsRedirection();
 app.UseRequestContextLogging();
 
 app.UseSerilogRequestLogging();
+
+app.UseAuthentication();
+
+app.UseAuthorization();
 
 app.UseExceptionHandler();
 
