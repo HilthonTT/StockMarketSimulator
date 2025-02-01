@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using StockMarketSimulator.Api.Modules.Users.Domain;
 using StockMarketSimulator.Api.Modules.Users.Infrastructure;
+using StockMarketSimulator.Api.Modules.Users.Persistence;
 using System.Text;
 
 namespace StockMarketSimulator.Api.Modules.Users;
@@ -14,7 +16,15 @@ public static class UserDependencyInjection
     {
         services
             .AddAuthenticationInternal(configuration)
-            .AddAuthorizationInternal();
+            .AddAuthorizationInternal()
+            .AddPersistence();
+
+        return services;
+    }
+
+    private static IServiceCollection AddPersistence(this IServiceCollection services)
+    {
+        services.AddScoped<IUserRepository, UserRepository>();
 
         return services;
     }

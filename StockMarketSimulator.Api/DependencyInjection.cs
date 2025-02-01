@@ -65,6 +65,10 @@ public static class DependencyInjection
         services.AddSingleton<IDbConnectionFactory>(_ =>
             new DbConnectionFactory(new NpgsqlDataSourceBuilder(connectionString).Build()));
 
+        services.AddSingleton<DatabaseInitializationCompletionSignal>();
+
+        services.AddHostedService<DatabaseInitializer>();
+
         return services;
     }
 }

@@ -2,4 +2,9 @@
 
 internal sealed class Stock
 {
+    public required Guid Id { get; set; }
+
+    public required string Ticker { get; set; }
+
+    public required decimal Price { get; set; }
 }

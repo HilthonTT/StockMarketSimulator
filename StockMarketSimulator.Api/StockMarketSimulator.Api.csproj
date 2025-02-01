@@ -12,6 +12,7 @@
   <ItemGroup>
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
     <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
+    <PackageReference Include="Dapper" Version="2.1.35" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.1" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
@@ -24,7 +25,6 @@
   <ItemGroup>
     <Folder Include="Infrastructure\Caching\" />
     <Folder Include="Modules\Budgets\" />
-    <Folder Include="Modules\Stocks\Infrastructure\" />
     <Folder Include="Modules\Stocks\Application\" />
     <Folder Include="Modules\Transactions\" />
     <Folder Include="Modules\Users\Application\" />

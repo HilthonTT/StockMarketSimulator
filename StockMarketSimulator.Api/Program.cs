@@ -44,4 +44,5 @@ app.UseStatusCodePages();
 
 await app.RunAsync();
 
+// REMARK: Required for functional and integration tests to work.
 public partial class Program;
