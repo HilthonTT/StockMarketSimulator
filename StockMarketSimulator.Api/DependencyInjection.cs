@@ -2,6 +2,7 @@
 using Npgsql;
 using SharedKernel;
 using StockMarketSimulator.Api.Infrastructure;
+using StockMarketSimulator.Api.Infrastructure.Caching;
 using StockMarketSimulator.Api.Infrastructure.Database;
 using System.Diagnostics;
 
@@ -14,7 +15,8 @@ public static class DependencyInjection
         services
             .AddServices()
             .AddDatabase(configuration)
-            .AddHealthChecks(configuration);
+            .AddHealthChecks(configuration)
+            .AddCaching(configuration);
 
         return services;
     }
@@ -50,8 +52,12 @@ public static class DependencyInjection
         string? connectionString = configuration.GetConnectionString("Database");
         Ensure.NotNullOrEmpty(connectionString, nameof(connectionString));
 
+        string? redisConnectionString = configuration.GetConnectionString("Cache");
+        Ensure.NotNullOrEmpty(redisConnectionString, nameof(redisConnectionString));
+
         services
             .AddHealthChecks()
+            .AddRedis(redisConnectionString)
             .AddNpgSql(connectionString);
 
         return services;
@@ -68,6 +74,19 @@ public static class DependencyInjection
         services.AddSingleton<DatabaseInitializationCompletionSignal>();
 
         services.AddHostedService<DatabaseInitializer>();
+
+        return services;
+    }
+
+
+    private static IServiceCollection AddCaching(this IServiceCollection services, IConfiguration configuration)
+    {
+        string? redisConnectionString = configuration.GetConnectionString("Cache");
+        Ensure.NotNullOrEmpty(redisConnectionString, nameof(redisConnectionString));
+
+        services.AddStackExchangeRedisCache(options => options.Configuration = redisConnectionString);
+
+        services.AddSingleton<ICacheService, CacheService>();
 
         return services;
     }
