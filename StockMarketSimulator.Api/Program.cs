@@ -1,11 +1,12 @@
+using Asp.Versioning.Builder;
+using Asp.Versioning;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
 using StockMarketSimulator.Api;
 using StockMarketSimulator.Api.Extensions;
-using StockMarketSimulator.Api.Infrastructure.Events;
 using StockMarketSimulator.Api.Modules.Users;
-using StockMarketSimulator.Api.Modules.Users.Application.Register;
+using System.Reflection;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -17,23 +18,20 @@ builder.Services
     .AddUserModule(builder.Configuration)
     .AddPresentation(builder.Configuration);
 
+builder.Services.AddEndpoints(Assembly.GetExecutingAssembly());
+
 WebApplication app = builder.Build();
 
-app.MapPost("/users", async (RegisterUserRequest request, IEventBus eventBus, CancellationToken cancellationToken) =>
-{
-    var result = await eventBus.SendAsync<RegisterUserCommand, RegisterUserResponse>(
-        new RegisterUserCommand(request.Email, request.Username, request.Password),
-        cancellationToken
-    );
+ApiVersionSet apiVersionSet = app.NewApiVersionSet()
+    .HasApiVersion(new ApiVersion(1))
+    .ReportApiVersions()
+    .Build();
 
-    if (result.IsSuccess)
-    {
-        return Results.Ok(new { UserId = result.Value.UserId });
-    }
+RouteGroupBuilder versionedGroup = app
+    .MapGroup("api/v{version:apiVersion}")
+    .WithApiVersionSet(apiVersionSet);
 
-    return Results.BadRequest();
-})
-.WithTags("Users");
+app.MapEndpoints(versionedGroup);
 
 if (app.Environment.IsDevelopment())
 {

@@ -1,4 +1,5 @@
-﻿using MassTransit;
+﻿using Asp.Versioning;
+using MassTransit;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Options;
 using Npgsql;
@@ -8,6 +9,7 @@ using StockMarketSimulator.Api.Infrastructure.Caching;
 using StockMarketSimulator.Api.Infrastructure.Database;
 using StockMarketSimulator.Api.Infrastructure.Events;
 using StockMarketSimulator.Api.Modules.Users.Application.Register;
+using StockMarketSimulator.Api.OpenApi;
 using System.Diagnostics;
 
 namespace StockMarketSimulator.Api;
@@ -21,7 +23,8 @@ public static class DependencyInjection
             .AddDatabase(configuration)
             .AddHealthChecks(configuration)
             .AddCaching(configuration)
-            .AddEvents(configuration);
+            .AddEvents(configuration)
+            .AddApiVersioningInternal();
 
         return services;
     }
@@ -68,6 +71,23 @@ public static class DependencyInjection
         return services;
     }
 
+    private static IServiceCollection AddApiVersioningInternal(this IServiceCollection services)
+    {
+        services.AddApiVersioning(options =>
+        {
+            options.DefaultApiVersion = new ApiVersion(1);
+            options.ApiVersionReader = new UrlSegmentApiVersionReader();
+        }).AddApiExplorer(options =>
+        {
+            options.GroupNameFormat = "'v'V";
+            options.SubstituteApiVersionInUrl = true;
+        });
+
+        services.ConfigureOptions<ConfigureSwaggerGenOptions>();
+
+        return services;
+    }
+
     private static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
     {
         string? connectionString = configuration.GetConnectionString("Database");
@@ -82,7 +102,6 @@ public static class DependencyInjection
 
         return services;
     }
-
 
     private static IServiceCollection AddCaching(this IServiceCollection services, IConfiguration configuration)
     {

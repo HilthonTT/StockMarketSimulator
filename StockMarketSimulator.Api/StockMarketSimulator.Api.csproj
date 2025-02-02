@@ -10,6 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Asp.Versioning.Http" Version="8.1.0" />
+    <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
     <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="9.0.0" />
     <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
@@ -29,7 +31,6 @@
     <Folder Include="Modules\Budgets\" />
     <Folder Include="Modules\Stocks\Application\" />
     <Folder Include="Modules\Transactions\" />
-    <Folder Include="Modules\Users\Presentation\" />
   </ItemGroup>
 
   <ItemGroup>
