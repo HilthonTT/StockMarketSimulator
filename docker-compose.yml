@@ -34,3 +34,17 @@ services:
     restart: always
     ports:
      - 6379:6379  
+
+  stockmarketsimulator-queue:
+    image: rabbitmq:management-alpine
+    container_name: rabbitmq
+    hostname: stockmarketsimulator-queue
+    volumes:
+        - ./.containers/queue/data/:/var/lib/rabbitmq
+        - ./.containers/queue/log/:/var/log/rabbitmq
+    environment:
+        RABBITMQ_DEFAULT_USER: guest
+        RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - 5672:5672
+      - 15672:15672

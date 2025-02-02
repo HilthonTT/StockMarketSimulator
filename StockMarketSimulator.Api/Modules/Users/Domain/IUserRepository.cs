@@ -27,4 +27,10 @@ public interface IUserRepository
         string email, 
         CancellationToken cancellationToken = default,
         NpgsqlTransaction? transaction = null);
+
+    Task<bool> ExistsByEmailAsync(
+        NpgsqlConnection connection, 
+        string email, 
+        CancellationToken cancellationToken = default,
+        NpgsqlTransaction? transaction = null);
 }

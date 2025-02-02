@@ -1,9 +1,13 @@
-﻿using Microsoft.AspNetCore.Http.Features;
+﻿using MassTransit;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Options;
 using Npgsql;
 using SharedKernel;
 using StockMarketSimulator.Api.Infrastructure;
 using StockMarketSimulator.Api.Infrastructure.Caching;
 using StockMarketSimulator.Api.Infrastructure.Database;
+using StockMarketSimulator.Api.Infrastructure.Events;
+using StockMarketSimulator.Api.Modules.Users.Application.Register;
 using System.Diagnostics;
 
 namespace StockMarketSimulator.Api;
@@ -16,7 +20,8 @@ public static class DependencyInjection
             .AddServices()
             .AddDatabase(configuration)
             .AddHealthChecks(configuration)
-            .AddCaching(configuration);
+            .AddCaching(configuration)
+            .AddEvents(configuration);
 
         return services;
     }
@@ -87,6 +92,36 @@ public static class DependencyInjection
         services.AddStackExchangeRedisCache(options => options.Configuration = redisConnectionString);
 
         services.AddSingleton<ICacheService, CacheService>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddEvents(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<RabbitMqOptions>(configuration.GetSection("RabbitMq"));
+
+        services.AddMassTransit(configure =>
+        {
+            configure.SetKebabCaseEndpointNameFormatter();
+
+            configure.AddConsumer<RegisterUserCommandConsumer>();
+
+            configure.UsingRabbitMq((context, cfg) =>
+            {
+                using IServiceScope scope = services.BuildServiceProvider().CreateScope();
+                var rabbitMqOptions = scope.ServiceProvider.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+
+                cfg.Host(new Uri(rabbitMqOptions.Host), h =>
+                {
+                    h.Username(rabbitMqOptions.Username);
+                    h.Password(rabbitMqOptions.Password);
+                });
+
+                cfg.ConfigureEndpoints(context);
+            });
+        });
+
+        services.AddScoped<IEventBus, EventBus>();
 
         return services;
     }

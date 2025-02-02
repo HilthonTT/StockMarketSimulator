@@ -106,4 +106,23 @@ internal sealed class UserRepository : IUserRepository
             },
             transaction: transaction);
     }
+
+    public async Task<bool> ExistsByEmailAsync(
+        NpgsqlConnection connection,
+        string email,
+        CancellationToken cancellationToken = default,
+        NpgsqlTransaction? transaction = null)
+    {
+        const string sql =
+            """
+            SELECT EXISTS(
+                SELECT 1 FROM public.users WHERE email = @Email
+            );
+            """;
+
+        return await connection.ExecuteScalarAsync<bool>(
+            sql,
+            new { Email = email },
+            transaction: transaction);
+    }
 }
