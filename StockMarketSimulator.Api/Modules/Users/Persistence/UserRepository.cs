@@ -42,8 +42,7 @@ internal sealed class UserRepository : IUserRepository
                 id AS Id,
                 email AS Email,
                 user_name AS Username,
-                password_hash AS PasswordHash,
-                email_verified AS EmailVerified
+                password_hash AS PasswordHash
             FROM public.users
             WHERE email = @Email;
             """;
@@ -66,8 +65,7 @@ internal sealed class UserRepository : IUserRepository
                 id AS Id,
                 email AS Email,
                 user_name AS Username,
-                password_hash AS PasswordHash,
-                email_verified AS EmailVerified
+                password_hash AS PasswordHash
             FROM public.users
             WHERE id = @Id;
             """;
@@ -89,8 +87,7 @@ internal sealed class UserRepository : IUserRepository
             UPDATE public.users
             SET email = @Email,
                 user_name = @Username,
-                password_hash = @PasswordHash,
-                email_verified = @EmailVerified
+                password_hash = @PasswordHash
             WHERE id = @Id;
             """;
 
@@ -102,7 +99,6 @@ internal sealed class UserRepository : IUserRepository
                 Email = user.Email,
                 Username = user.Username,
                 PasswordHash = user.PasswordHash,
-                EmailVerified = user.EmailVerified
             },
             transaction: transaction);
     }

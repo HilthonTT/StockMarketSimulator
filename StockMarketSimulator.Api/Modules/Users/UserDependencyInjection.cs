@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using StockMarketSimulator.Api.Modules.Users.Application.Login;
+using StockMarketSimulator.Api.Modules.Users.Application.Register;
 using StockMarketSimulator.Api.Modules.Users.Domain;
 using StockMarketSimulator.Api.Modules.Users.Infrastructure;
 using StockMarketSimulator.Api.Modules.Users.Persistence;
@@ -17,7 +20,18 @@ public static class UserDependencyInjection
         services
             .AddAuthenticationInternal(configuration)
             .AddAuthorizationInternal()
-            .AddPersistence();
+            .AddPersistence()
+            .AddUseCases();
+
+        services.AddValidatorsFromAssembly(typeof(UserDependencyInjection).Assembly, includeInternalTypes: true);
+
+        return services;
+    }
+
+    private static IServiceCollection AddUseCases(this IServiceCollection services)
+    {
+        services.AddScoped<RegisterUserCommandHandler>();
+        services.AddScoped<LoginUserCommandHandler>();
 
         return services;
     }
