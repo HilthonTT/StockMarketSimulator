@@ -1,3 +1,3 @@
 ﻿namespace StockMarketSimulator.Api.Modules.Users.Presentation.Contracts;
 
-internal sealed record LoginUserRequest(string Email, string Password);
+internal sealed record LoginWithRefreshTokenRequest(string RefreshToken);

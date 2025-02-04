@@ -2,7 +2,7 @@
 
 namespace StockMarketSimulator.Api.Modules.Users.Domain;
 
-public static class UserErrors
+internal static class UserErrors
 {
     public static Error NotFound(Guid userId) => Error.NotFound(
         "Users.NotFound",

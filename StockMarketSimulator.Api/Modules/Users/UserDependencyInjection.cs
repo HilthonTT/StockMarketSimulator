@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using StockMarketSimulator.Api.Modules.Users.Application.Login;
+using StockMarketSimulator.Api.Modules.Users.Application.LoginWithRefreshToken;
 using StockMarketSimulator.Api.Modules.Users.Application.Register;
+using StockMarketSimulator.Api.Modules.Users.Application.RevokeRefreshTokens;
 using StockMarketSimulator.Api.Modules.Users.Domain;
 using StockMarketSimulator.Api.Modules.Users.Infrastructure;
 using StockMarketSimulator.Api.Modules.Users.Persistence;
@@ -32,6 +34,8 @@ public static class UserDependencyInjection
     {
         services.AddScoped<RegisterUserCommandHandler>();
         services.AddScoped<LoginUserCommandHandler>();
+        services.AddScoped<LoginUserWithRefreshTokenCommandHandler>();
+        services.AddScoped<RevokeRefreshTokensCommandHandler>();
 
         return services;
     }
@@ -39,7 +43,8 @@ public static class UserDependencyInjection
     private static IServiceCollection AddPersistence(this IServiceCollection services)
     {
         services.AddScoped<IUserRepository, UserRepository>();
-
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+       
         return services;
     }
 
@@ -67,6 +72,8 @@ public static class UserDependencyInjection
         services.AddScoped<IUserContext, UserContext>();
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
         services.AddSingleton<ITokenProvider, TokenProvider>();
+
+        services.AddHostedService<RevokeExpiredRefreshTokenBackgroundJob>();
 
         return services;
     }

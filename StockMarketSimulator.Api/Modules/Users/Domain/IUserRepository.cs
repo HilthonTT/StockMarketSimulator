@@ -2,7 +2,7 @@
 
 namespace StockMarketSimulator.Api.Modules.Users.Domain;
 
-public interface IUserRepository
+internal interface IUserRepository
 {
     Task CreateAsync(
         NpgsqlConnection connection,

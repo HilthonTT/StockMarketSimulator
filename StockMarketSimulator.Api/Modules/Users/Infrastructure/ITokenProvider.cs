@@ -2,7 +2,9 @@
 
 namespace StockMarketSimulator.Api.Modules.Users.Infrastructure;
 
-public interface ITokenProvider
+internal interface ITokenProvider
 {
     string Create(User user);
+
+    string GenerateRefreshToken();
 }

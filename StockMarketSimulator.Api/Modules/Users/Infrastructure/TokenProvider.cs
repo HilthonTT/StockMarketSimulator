@@ -3,6 +3,7 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using StockMarketSimulator.Api.Modules.Users.Domain;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace StockMarketSimulator.Api.Modules.Users.Infrastructure;
@@ -41,5 +42,10 @@ internal sealed class TokenProvider : ITokenProvider
         string token = handler.CreateToken(tokenDescriptor);
 
         return token;
+    }
+
+    public string GenerateRefreshToken()
+    {
+        return Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
     }
 }

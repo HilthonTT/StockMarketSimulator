@@ -113,6 +113,17 @@ internal sealed class DatabaseInitializer : BackgroundService
                 user_name VARCHAR(256) NOT NULL,
                 password_hash TEXT NOT NULL
             );
+
+            -- Check if refresh tokens table exists, if not, create it.
+            CREATE TABLE IF NOT EXISTS public.refresh_tokens (
+                id UUID PRIMARY KEY,
+                token VARCHAR(200) NOT NULL UNIQUE,
+                user_id UUID NOT NULL,
+                expires_on_utc TIMESTAMP WITHOUT TIME ZONE DEFAULT (NOW() AT TIME ZONE 'UTC'),
+
+                CONSTRAINT fk_refresh_tokens_users FOREIGN KEY (user_id) 
+                REFERENCES public.users (id) ON DELETE CASCADE
+            );
             """;
 
         await connection.ExecuteAsync(sql);

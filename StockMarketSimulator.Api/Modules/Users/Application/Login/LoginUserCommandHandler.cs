@@ -12,6 +12,7 @@ namespace StockMarketSimulator.Api.Modules.Users.Application.Login;
 internal sealed class LoginUserCommandHandler : ICommandHandler<LoginUserCommand, TokenResponse>
 {
     private readonly IUserRepository _userRepository;
+    private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IDbConnectionFactory _dbConnectionFactory;
     private readonly IValidator<LoginUserCommand> _validator;
@@ -19,12 +20,14 @@ internal sealed class LoginUserCommandHandler : ICommandHandler<LoginUserCommand
 
     public LoginUserCommandHandler(
         IUserRepository userRepository, 
+        IRefreshTokenRepository refreshTokenRepository,
         IPasswordHasher passwordHasher,
         IDbConnectionFactory dbConnectionFactory,
         IValidator<LoginUserCommand> validator,
         ITokenProvider tokenProvider)
     {
         _userRepository = userRepository;
+        _refreshTokenRepository = refreshTokenRepository;
         _passwordHasher = passwordHasher;
         _dbConnectionFactory = dbConnectionFactory;
         _validator = validator;
@@ -56,6 +59,16 @@ internal sealed class LoginUserCommandHandler : ICommandHandler<LoginUserCommand
 
         string token = _tokenProvider.Create(user);
 
-        return new TokenResponse(token, string.Empty);
+        var refreshToken = new RefreshToken
+        {
+            Id = Guid.NewGuid(),
+            UserId = user.Id,
+            Token = _tokenProvider.GenerateRefreshToken(),
+            ExpiresOnUtc = DateTime.UtcNow.AddDays(7),
+        };
+
+        await _refreshTokenRepository.CreateAsync(connection, refreshToken, cancellationToken: cancellationToken);
+
+        return new TokenResponse(token, refreshToken.Token);
     }
 }

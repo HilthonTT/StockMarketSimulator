@@ -1,6 +1,6 @@
 ﻿namespace StockMarketSimulator.Api.Modules.Users.Domain;
 
-public sealed class User
+internal sealed class User
 {
     public required Guid Id { get; set; }
 
