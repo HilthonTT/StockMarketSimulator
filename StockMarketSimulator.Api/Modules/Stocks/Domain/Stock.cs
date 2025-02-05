@@ -7,4 +7,6 @@ internal sealed class Stock
     public required string Ticker { get; set; }
 
     public required decimal Price { get; set; }
+
+    public required DateTime Timestamp { get; set; }
 }

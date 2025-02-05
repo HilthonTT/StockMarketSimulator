@@ -3,7 +3,7 @@ using Serilog.Context;
 
 namespace StockMarketSimulator.Api.Middleware;
 
-public sealed class RequestContextLoggingMiddleware
+internal sealed class RequestContextLoggingMiddleware
 {
     private const string CorrelationIdHeaderName = "Correlation-Id";
 

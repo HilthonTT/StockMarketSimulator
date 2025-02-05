@@ -124,6 +124,20 @@ internal sealed class DatabaseInitializer : BackgroundService
                 CONSTRAINT fk_refresh_tokens_users FOREIGN KEY (user_id) 
                 REFERENCES public.users (id) ON DELETE CASCADE
             );
+
+            -- Check if the table exists, if not, create it.
+            CREATE TABLE IF NOT EXISTS public.stock_prices (
+                id UUID PRIMARY KEY,
+                ticker VARCHAR(10) NOT NULL,
+                price NUMERIC(12, 6) NOT NULL,
+                timestamp TIMESTAMP WITHOUT TIME ZONE DEFAULT (NOW() AT TIME ZONE 'UTC')
+            );
+
+            -- Create an index on the ticker column for faster lookups
+            CREATE INDEX IF NOT EXISTS idx_stock_prices_ticker ON public.stock_prices(ticker);
+            
+            -- Create an index on the timestamp column for faster time-based queries
+            CREATE INDEX IF NOT EXISTS idx_stock_prices_timestamp ON public.stock_prices(timestamp);
             """;
 
         await connection.ExecuteAsync(sql);

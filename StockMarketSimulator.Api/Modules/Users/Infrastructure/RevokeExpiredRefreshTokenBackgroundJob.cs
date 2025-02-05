@@ -9,17 +9,22 @@ internal sealed class RevokeExpiredRefreshTokenBackgroundJob : BackgroundService
 {
     private readonly IDbConnectionFactory _dbConnectionFactory;
     private readonly ILogger<RevokeExpiredRefreshTokenBackgroundJob> _logger;
+    private readonly DatabaseInitializationCompletionSignal _signal;
 
     public RevokeExpiredRefreshTokenBackgroundJob(
         IDbConnectionFactory dbConnectionFactory,
-        ILogger<RevokeExpiredRefreshTokenBackgroundJob> logger)
+        ILogger<RevokeExpiredRefreshTokenBackgroundJob> logger,
+        DatabaseInitializationCompletionSignal signal)
     {
         _dbConnectionFactory = dbConnectionFactory;
         _logger = logger;
+        _signal = signal;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        await _signal.WaitForInitializationAsync();
+
         while (!stoppingToken.IsCancellationRequested)
         {
             await RevokeRefreshTokensAsync(stoppingToken);

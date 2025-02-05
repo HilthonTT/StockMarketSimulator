@@ -7,6 +7,8 @@ using StockMarketSimulator.Api;
 using StockMarketSimulator.Api.Extensions;
 using StockMarketSimulator.Api.Modules.Users;
 using System.Reflection;
+using StockMarketSimulator.Api.Modules.Stocks;
+using StockMarketSimulator.Api.Modules.Stocks.Infrastructure;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +18,7 @@ builder.Services.AddSwaggerGenWithAuth();
 
 builder.Services
     .AddUserModule(builder.Configuration)
+    .AddStocksModule(builder.Configuration)
     .AddPresentation(builder.Configuration);
 
 builder.Services.AddEndpoints(Assembly.GetExecutingAssembly());
@@ -37,12 +40,20 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.UseSwaggerWithUi();
+
+    app.UseCors(policy => policy
+        .WithOrigins(builder.Configuration["Cors:AllowedOrigin"]!)
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials());
 }
 
 app.MapHealthChecks("health", new HealthCheckOptions
 {
     ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
 });
+
+app.MapHub<StocksFeedHub>("/stocks-feed");
 
 app.UseHttpsRedirection();
 

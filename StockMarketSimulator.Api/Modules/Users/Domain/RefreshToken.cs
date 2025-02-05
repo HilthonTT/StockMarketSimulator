@@ -2,7 +2,7 @@
 
 internal sealed class RefreshToken
 {
-    public Guid Id { get; set; }
+    public required Guid Id { get; set; }
 
     public required string Token { get; set; }
 

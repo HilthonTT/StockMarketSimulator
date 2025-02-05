@@ -26,6 +26,7 @@ internal sealed class UserEndpoints : IEndpoint
 
             return result.Match(Results.NoContent, CustomResults.Problem);
         })
+        .WithOpenApi()
         .WithTags(Tags.Users);
 
         app.MapPost("/users/login", async (
@@ -39,6 +40,7 @@ internal sealed class UserEndpoints : IEndpoint
 
             return result.Match(Results.Ok, CustomResults.Problem);
         })
+        .WithOpenApi()
         .WithTags(Tags.Users);
 
         app.MapPost("/users/refresh-token", async (
@@ -52,6 +54,7 @@ internal sealed class UserEndpoints : IEndpoint
 
             return result.Match(Results.Ok, CustomResults.Problem);
         })
+        .WithOpenApi()
         .WithTags(Tags.Users);
 
         app.MapDelete("/users/{userId:guid}/refresh-tokens", async (
@@ -65,6 +68,7 @@ internal sealed class UserEndpoints : IEndpoint
 
             return result.Match(Results.NoContent, CustomResults.Problem);
         })
+        .WithOpenApi()
         .RequireAuthorization()
         .WithTags(Tags.Users);
     }
