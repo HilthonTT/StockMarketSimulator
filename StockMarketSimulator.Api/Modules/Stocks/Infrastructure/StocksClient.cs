@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using SharedKernel;
 using StockMarketSimulator.Api.Infrastructure.Caching;
 using StockMarketSimulator.Api.Modules.Stocks.Contracts;
 using StockMarketSimulator.Api.Modules.Stocks.Domain;
@@ -54,10 +55,42 @@ internal sealed class StocksClient
         return stockPriceResponse;
     }
 
+    public async Task<List<Match>> SearchTickerAsync(string searchTerm, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Starting stock search for '{SearchTerm}'", searchTerm);
+
+        string cacheKey = $"stocks-search-{searchTerm}";
+
+        AlphaVantageSearchData? alphaVantageSearchData = await _cacheService.GetAsync<AlphaVantageSearchData>(
+            cacheKey,
+            cancellationToken);
+
+        if (alphaVantageSearchData is null)
+        {
+            alphaVantageSearchData = await SearchStocksAsync(searchTerm, cancellationToken);
+
+            await _cacheService.SetAsync(cacheKey, alphaVantageSearchData, TimeSpan.FromMinutes(30), cancellationToken);
+        }
+
+        if (alphaVantageSearchData is null)
+        {
+            _logger.LogWarning("Failed to search stock information for {SearchTerm}", searchTerm);
+        }
+        else
+        {
+            _logger.LogInformation("Completed searching stock information for '{SearchTerm}'", searchTerm);
+        }
+
+        return alphaVantageSearchData?.BestMatches ?? [];
+    }
+
     private async Task<StockPriceResponse?> GetStockPriceAsync(string ticker, CancellationToken cancellationToken = default)
     {
+        string? apiKey = _configuration["Stocks:ApiKey"];
+        Ensure.NotNullOrEmpty(apiKey, nameof(apiKey));
+
         string queryString =
-            $"?function=TIME_SERIES_INTRADAY&symbol={ticker}&interval=15min&apikey={_configuration["Stocks:ApiKey"]}";
+            $"?function=TIME_SERIES_INTRADAY&symbol={ticker}&interval=15min&apikey={apiKey}";
 
         string tickerDataString = await _httpClient.GetStringAsync(queryString, cancellationToken);
 
@@ -70,5 +103,22 @@ internal sealed class StocksClient
         }
 
         return new StockPriceResponse(ticker, decimal.Parse(lastPrice.High, CultureInfo.InvariantCulture));
+    }
+
+    private async Task<AlphaVantageSearchData?> SearchStocksAsync(
+        string searchTerm, 
+        CancellationToken cancellationToken = default)
+    {
+        string? apiKey = _configuration["Stocks:ApiKey"];
+        Ensure.NotNullOrEmpty(apiKey, nameof(apiKey));
+
+        string queryString =
+            $"?function=SYMBOL_SEARCH&keywords={searchTerm}&apikey={apiKey}";
+
+        string matchesDataString = await _httpClient.GetStringAsync(queryString, cancellationToken);
+
+        AlphaVantageSearchData? searchData = JsonConvert.DeserializeObject<AlphaVantageSearchData>(matchesDataString);
+
+        return searchData;
     }
 }

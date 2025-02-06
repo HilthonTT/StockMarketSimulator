@@ -1,5 +1,6 @@
 ﻿using SharedKernel;
 using StockMarketSimulator.Api.Modules.Stocks.Application.GetByTicker;
+using StockMarketSimulator.Api.Modules.Stocks.Application.Search;
 using StockMarketSimulator.Api.Modules.Stocks.Domain;
 using StockMarketSimulator.Api.Modules.Stocks.Infrastructure;
 using StockMarketSimulator.Api.Modules.Stocks.Persistence;
@@ -28,6 +29,7 @@ public static class StocksDependencyInjection
     private static IServiceCollection AddUseCases(this IServiceCollection services)
     {
         services.AddScoped<GetStockTickerQueryHandler>();
+        services.AddScoped<SearchStocksQueryHandler>();
 
         return services;
     }
@@ -47,7 +49,8 @@ public static class StocksDependencyInjection
             Ensure.NotNullOrEmpty(apiUrl, nameof(apiUrl));
 
             httpClient.BaseAddress = new Uri(apiUrl);
-        });
+        })
+        .AddStandardResilienceHandler();
 
         return services;
     }
