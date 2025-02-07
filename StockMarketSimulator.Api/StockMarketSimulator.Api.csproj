@@ -21,17 +21,18 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.1" />
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.1" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="9.1.0" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Npgsql" Version="9.0.2" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.0.12" />
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
     <PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="7.2.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Modules\Budgets\" />
-    <Folder Include="Modules\Transactions\" />
   </ItemGroup>
 
   <ItemGroup>

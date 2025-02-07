@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning.ApiExplorer;
+using Scalar.AspNetCore;
 
 namespace StockMarketSimulator.Api.Extensions;
 
@@ -19,6 +20,13 @@ public static class ApplicationBuilderExtensions
                 options.SwaggerEndpoint(url, name);
             }
         });
+
+        app.UseReDoc(options =>
+        {
+            options.SpecUrl("/openapi/v1.json");
+        });
+
+        app.MapScalarApiReference();
 
         return app;
     }

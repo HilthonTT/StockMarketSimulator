@@ -2,12 +2,12 @@
 using StockMarketSimulator.Api.Endpoints;
 using StockMarketSimulator.Api.Extensions;
 using StockMarketSimulator.Api.Infrastructure;
-using StockMarketSimulator.Api.Modules.Users.Application;
+using StockMarketSimulator.Api.Modules.Users.Application.GetCurrent;
 using StockMarketSimulator.Api.Modules.Users.Application.Login;
 using StockMarketSimulator.Api.Modules.Users.Application.LoginWithRefreshToken;
 using StockMarketSimulator.Api.Modules.Users.Application.Register;
 using StockMarketSimulator.Api.Modules.Users.Application.RevokeRefreshTokens;
-using StockMarketSimulator.Api.Modules.Users.Presentation.Contracts;
+using StockMarketSimulator.Api.Modules.Users.Contracts;
 
 namespace StockMarketSimulator.Api.Modules.Users.Presentation;
 
@@ -15,6 +15,20 @@ internal sealed class UserEndpoints : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
+        app.MapGet("/users/me", async (
+            GetCurrentUserQueryHandler useCase,
+            CancellationToken cancellationToken) =>
+        {
+            var query = new GetCurrentUserQuery();
+
+            Result<UserResponse> result = await useCase.Handle(query, cancellationToken);
+
+            return result.Match(Results.Ok, CustomResults.Problem);
+        })
+        .WithOpenApi()
+        .RequireAuthorization()
+        .WithTags(Tags.Users);
+
         app.MapPost("/users/register", async (
             RegisterUserRequest request,
             RegisterUserCommandHandler useCase,

@@ -4,6 +4,7 @@ using SharedKernel;
 using StockMarketSimulator.Api.Infrastructure.Database;
 using StockMarketSimulator.Api.Infrastructure.Helpers;
 using StockMarketSimulator.Api.Infrastructure.Messaging;
+using StockMarketSimulator.Api.Modules.Users.Contracts;
 using StockMarketSimulator.Api.Modules.Users.Domain;
 using StockMarketSimulator.Api.Modules.Users.Infrastructure;
 

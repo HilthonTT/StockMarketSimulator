@@ -1,3 +1,3 @@
-﻿namespace StockMarketSimulator.Api.Modules.Users.Application;
+﻿namespace StockMarketSimulator.Api.Modules.Users.Contracts;
 
 internal sealed record TokenResponse(string AccessToken, string RefreshToken);

@@ -9,6 +9,7 @@ using StockMarketSimulator.Api.Modules.Users;
 using System.Reflection;
 using StockMarketSimulator.Api.Modules.Stocks;
 using StockMarketSimulator.Api.Modules.Stocks.Infrastructure;
+using StockMarketSimulator.Api.Modules.Transactions;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +20,8 @@ builder.Services.AddSwaggerGenWithAuth();
 builder.Services
     .AddUserModule(builder.Configuration)
     .AddStocksModule(builder.Configuration)
-    .AddPresentation(builder.Configuration);
+    .AddPresentation(builder.Configuration)
+    .AddTransactionsModule();
 
 builder.Services.AddEndpoints(Assembly.GetExecutingAssembly());
 
