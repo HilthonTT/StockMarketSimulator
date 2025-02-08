@@ -1,10 +1,10 @@
 ﻿using FluentValidation;
 
-namespace StockMarketSimulator.Api.Modules.Transactions.Application.Create;
+namespace StockMarketSimulator.Api.Modules.Transactions.Application.Buy;
 
-internal sealed class CreateTransactionCommandValidator : AbstractValidator<CreateTransactionCommand>
+internal sealed class BuyTransactionCommandValidator : AbstractValidator<BuyTransactionCommand>
 {
-    public CreateTransactionCommandValidator()
+    public BuyTransactionCommandValidator()
     {
         RuleFor(x => x.Ticker)
             .NotEmpty().WithMessage("Ticker is required.")
@@ -15,8 +15,5 @@ internal sealed class CreateTransactionCommandValidator : AbstractValidator<Crea
 
         RuleFor(x => x.Quantity)
             .GreaterThan(0).WithMessage("Quantity must be greater than zero");
-
-        RuleFor(x => x.Type)
-            .IsInEnum().WithMessage("Invalid transaction type");
     }
 }

@@ -8,22 +8,22 @@ using StockMarketSimulator.Api.Modules.Stocks.Api;
 using StockMarketSimulator.Api.Modules.Transactions.Domain;
 using StockMarketSimulator.Api.Modules.Users.Infrastructure;
 
-namespace StockMarketSimulator.Api.Modules.Transactions.Application.Create;
+namespace StockMarketSimulator.Api.Modules.Transactions.Application.Sell;
 
-internal sealed class CreateTransactionCommandHandler : ICommandHandler<CreateTransactionCommand, Guid>
+internal sealed class SellTransactionCommandHandler : ICommandHandler<SellTransactionCommand, Guid>
 {
     private readonly IDbConnectionFactory _dbConnectionFactory;
     private readonly ITransactionRepository _transactionRepository;
     private readonly IUserContext _userContext;
     private readonly IStocksApi _stocksApi;
-    private readonly IValidator<CreateTransactionCommand> _validator;
+    private readonly IValidator<SellTransactionCommand> _validator;
 
-    public CreateTransactionCommandHandler(
-        IDbConnectionFactory dbConnectionFactory, 
+    public SellTransactionCommandHandler(
+        IDbConnectionFactory dbConnectionFactory,
         ITransactionRepository transactionRepository,
         IUserContext userContext,
         IStocksApi stocksApi,
-        IValidator<CreateTransactionCommand> validator)
+        IValidator<SellTransactionCommand> validator)
     {
         _dbConnectionFactory = dbConnectionFactory;
         _transactionRepository = transactionRepository;
@@ -32,9 +32,7 @@ internal sealed class CreateTransactionCommandHandler : ICommandHandler<CreateTr
         _validator = validator;
     }
 
-    public async Task<Result<Guid>> Handle(
-    CreateTransactionCommand command,
-    CancellationToken cancellationToken = default)
+    public async Task<Result<Guid>> Handle(SellTransactionCommand command, CancellationToken cancellationToken = default)
     {
         ValidationResult validationResult = await _validator.ValidateAsync(command, cancellationToken);
         if (!validationResult.IsValid)
@@ -50,24 +48,16 @@ internal sealed class CreateTransactionCommandHandler : ICommandHandler<CreateTr
             return Result.Failure<Guid>(StockErrors.NotFound(command.Ticker));
         }
 
-        if (command.LimitPrice > stockPriceInfo.Price)
+        List<Transaction> userTransactions = await _transactionRepository.GetByUserIdAsync(
+            connection, _userContext.UserId, cancellationToken: cancellationToken);
+
+        int totalOwned = userTransactions
+            .Where(t => t.Ticker == command.Ticker)
+            .Sum(t => t.Type == TransactionType.Buy ? t.Quantity : -t.Quantity); // Deduct sold stocks
+
+        if (totalOwned < command.Quantity)
         {
-            return Result.Failure<Guid>(TransactionErrors.LimitPriceExceedsMarketPrice);
-        }
-
-        if (command.Type == TransactionType.Sell)
-        {
-            List<Transaction> userTransactions = await _transactionRepository.GetByUserIdAsync(
-                connection, _userContext.UserId, cancellationToken: cancellationToken);
-
-            int totalOwned = userTransactions
-                .Where(t => t.Ticker == command.Ticker)
-                .Sum(t => t.Type == TransactionType.Buy ? t.Quantity : -t.Quantity); // Deduct sold stocks
-
-            if (totalOwned < command.Quantity)
-            {
-                return Result.Failure<Guid>(TransactionErrors.InsufficientStock);
-            }
+            return Result.Failure<Guid>(TransactionErrors.InsufficientStock);
         }
 
         var transaction = new Transaction
@@ -75,9 +65,9 @@ internal sealed class CreateTransactionCommandHandler : ICommandHandler<CreateTr
             Id = Guid.NewGuid(),
             UserId = _userContext.UserId,
             Ticker = command.Ticker,
-            LimitPrice = command.LimitPrice,
+            LimitPrice = stockPriceInfo.Price,
             Quantity = command.Quantity,
-            Type = command.Type,
+            Type = TransactionType.Buy,
             CreatedOnUtc = DateTime.UtcNow,
         };
 

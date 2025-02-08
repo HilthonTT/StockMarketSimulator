@@ -2,9 +2,10 @@
 using StockMarketSimulator.Api.Endpoints;
 using StockMarketSimulator.Api.Extensions;
 using StockMarketSimulator.Api.Infrastructure;
-using StockMarketSimulator.Api.Modules.Transactions.Application.Create;
+using StockMarketSimulator.Api.Modules.Transactions.Application.Buy;
 using StockMarketSimulator.Api.Modules.Transactions.Application.GetById;
 using StockMarketSimulator.Api.Modules.Transactions.Application.GetByUserId;
+using StockMarketSimulator.Api.Modules.Transactions.Application.Sell;
 using StockMarketSimulator.Api.Modules.Transactions.Contracts;
 
 namespace StockMarketSimulator.Api.Modules.Transactions.Presentation;
@@ -43,12 +44,27 @@ internal sealed class TransactionEndpoints : IEndpoint
         .WithTags(Tags.Transactions)
         .RequireAuthorization();
 
-        app.MapPost("transactions", async (
-            CreateTransactionRequest request,
-            CreateTransactionCommandHandler useCase,
+        app.MapPost("transactions/buy", async (
+            BuyTransactionRequest request,
+            BuyTransactionCommandHandler useCase,
             CancellationToken cancellationToken) =>
         {
-            var command = new CreateTransactionCommand(request.Ticker, request.LimitPrice, request.Type, request.Quantity);
+            var command = new BuyTransactionCommand(request.Ticker, request.LimitPrice, request.Quantity);
+
+            Result<Guid> result = await useCase.Handle(command, cancellationToken);
+
+            return result.Match(Results.Ok, CustomResults.Problem);
+        })
+        .WithOpenApi()
+        .WithTags(Tags.Transactions)
+        .RequireAuthorization();
+
+        app.MapPost("transactions/sell", async (
+            SellTransactionRequest request,
+            SellTransactionCommandHandler useCase,
+            CancellationToken cancellationToken) =>
+        {
+            var command = new SellTransactionCommand(request.Ticker, request.Quantity);
 
             Result<Guid> result = await useCase.Handle(command, cancellationToken);
 

@@ -1,6 +1,7 @@
-﻿using StockMarketSimulator.Api.Modules.Transactions.Application.Create;
+﻿using StockMarketSimulator.Api.Modules.Transactions.Application.Buy;
 using StockMarketSimulator.Api.Modules.Transactions.Application.GetById;
 using StockMarketSimulator.Api.Modules.Transactions.Application.GetByUserId;
+using StockMarketSimulator.Api.Modules.Transactions.Application.Sell;
 using StockMarketSimulator.Api.Modules.Transactions.Domain;
 using StockMarketSimulator.Api.Modules.Transactions.Persistence;
 
@@ -19,7 +20,9 @@ public static class TransactionDependencyInjection
 
     private static IServiceCollection AddUseCases(this IServiceCollection services)
     {
-        services.AddScoped<CreateTransactionCommandHandler>();
+        services.AddScoped<BuyTransactionCommandHandler>();
+        services.AddScoped<SellTransactionCommandHandler>();
+
         services.AddScoped<GetTransactionByIdQueryHandler>();
         services.AddScoped<GetTransactionByUserIdQueryHandler>();
 
