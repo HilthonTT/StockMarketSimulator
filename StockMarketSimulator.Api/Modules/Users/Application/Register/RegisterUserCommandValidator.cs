@@ -15,6 +15,9 @@ internal sealed class RegisterUserCommandValidator : AbstractValidator<RegisterU
             .NotEmpty().WithMessage("Password is required")
             .MinimumLength(6).WithMessage("Password must be at least 6 characters long");
 
+        RuleFor(x => x.ConfirmPassword)
+            .Matches(x => x.Password).WithMessage("The passwords do not match");
+
         RuleFor(x => x.Username)
             .NotEmpty().WithMessage("Username is required")
              .MaximumLength(256).WithMessage("Username is at most 256 characters long");

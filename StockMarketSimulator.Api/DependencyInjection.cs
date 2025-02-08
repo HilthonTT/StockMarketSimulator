@@ -5,6 +5,7 @@ using SharedKernel;
 using StockMarketSimulator.Api.Infrastructure;
 using StockMarketSimulator.Api.Infrastructure.Caching;
 using StockMarketSimulator.Api.Infrastructure.Database;
+using StockMarketSimulator.Api.Infrastructure.Email;
 using StockMarketSimulator.Api.OpenApi;
 using System.Diagnostics;
 
@@ -19,6 +20,7 @@ public static class DependencyInjection
             .AddDatabase(configuration)
             .AddHealthChecks(configuration)
             .AddCaching(configuration)
+            .AddEmailServices(configuration)
             .AddApiVersioningInternal();
 
         return services;
@@ -106,6 +108,17 @@ public static class DependencyInjection
         services.AddStackExchangeRedisCache(options => options.Configuration = redisConnectionString);
 
         services.AddSingleton<ICacheService, CacheService>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddEmailServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        services
+            .AddFluentEmail(configuration["Email:SenderEmail"], configuration["Email:Sender"])
+            .AddSmtpSender(configuration["Email:Host"], configuration.GetValue<int>("Email:Port"));
+
+        services.AddScoped<IEmailService, EmailService>();
 
         return services;
     }

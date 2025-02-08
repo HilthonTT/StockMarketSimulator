@@ -48,3 +48,10 @@ services:
     ports:
       - 5672:5672
       - 15672:15672
+
+  stockmarketsimulator-papercut:
+    image: changemakerstudiosus/papercut-smtp:latest
+    container_name: papercut
+    ports:
+      - 8080:80
+      - 25:25

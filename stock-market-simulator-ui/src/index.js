@@ -1,6 +1,7 @@
 import { debounce } from "./utils/utils.js";
+import { ensureAuthenticated } from "./utils/auth.js";
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   // Date filters
   let dateRange1 = new Date("2024-12-22");
   let dateRange2 = new Date("2025-01-22");
@@ -342,6 +343,10 @@ document.addEventListener("DOMContentLoaded", () => {
       },
     });
   }
+
+  const user = await ensureAuthenticated();
+
+  console.log({ user });
 
   createChart();
   loadBudget();

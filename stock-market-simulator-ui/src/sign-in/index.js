@@ -4,6 +4,8 @@ import {
   checkThemePreference,
 } from "../utils/theme.js";
 import { isValidEmail } from "../utils/validation.js";
+import { config } from "../utils/config.js";
+import { saveTokensToLocalStorage } from "../utils/auth.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.querySelector("form");
@@ -20,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   form.addEventListener("submit", handleSubmit);
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
 
     const emailInput = document.getElementById("email");
@@ -54,7 +56,39 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (!hasError) {
-      window.location.href = "/index.html";
+      const body = {
+        email,
+        password,
+      };
+
+      const response = await fetch(
+        new URL(`${config.baseApiUrl}/api/v1/users/login`),
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        }
+      );
+
+      if (!response.ok) {
+        alert("Something went wrong!");
+        return;
+      }
+
+      const tokenResponse = await response.json();
+
+      const accessToken = tokenResponse.accessToken;
+      const refreshToken = tokenResponse.refreshToken;
+
+      if (accessToken && refreshToken) {
+        saveTokensToLocalStorage(accessToken, refreshToken);
+
+        window.location.href = "/index.html";
+      } else {
+        alert("Something went wrong!");
+      }
     }
   }
 

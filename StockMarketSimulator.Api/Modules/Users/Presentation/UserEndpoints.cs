@@ -2,6 +2,7 @@
 using StockMarketSimulator.Api.Endpoints;
 using StockMarketSimulator.Api.Extensions;
 using StockMarketSimulator.Api.Infrastructure;
+using StockMarketSimulator.Api.Modules.Users.Application.ChangePassword;
 using StockMarketSimulator.Api.Modules.Users.Application.GetCurrent;
 using StockMarketSimulator.Api.Modules.Users.Application.Login;
 using StockMarketSimulator.Api.Modules.Users.Application.LoginWithRefreshToken;
@@ -34,7 +35,7 @@ internal sealed class UserEndpoints : IEndpoint
             RegisterUserCommandHandler useCase,
             CancellationToken cancellationToken) =>
         {
-            var command = new RegisterUserCommand(request.Email, request.Username, request.Password);
+            var command = new RegisterUserCommand(request.Email, request.Username, request.Password, request.ConfirmPassword);
 
             Result result = await useCase.Handle(command, cancellationToken);
 
@@ -67,6 +68,21 @@ internal sealed class UserEndpoints : IEndpoint
             Result<TokenResponse> result = await useCase.Handle(command, cancellationToken);
 
             return result.Match(Results.Ok, CustomResults.Problem);
+        })
+        .WithOpenApi()
+        .WithTags(Tags.Users);
+
+        app.MapPatch("/users/{userId:guid}/change-password", async (
+            Guid userId,
+            ChangePasswordRequest request,
+            ChangeUserPasswordCommandHandler useCase,
+            CancellationToken cancellationToken) =>
+        {
+            var command = new ChangeUserPasswordCommand(userId, request.CurrentPassword, request.NewPassword);
+
+            Result result = await useCase.Handle(command, cancellationToken);
+
+            return result.Match(Results.NoContent, CustomResults.Problem);
         })
         .WithOpenApi()
         .WithTags(Tags.Users);
