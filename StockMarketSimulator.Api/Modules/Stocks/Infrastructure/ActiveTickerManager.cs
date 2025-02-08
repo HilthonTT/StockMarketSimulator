@@ -8,7 +8,7 @@ internal sealed class ActiveTickerManager
 
     public void AddTicker(string ticker)
     {
-        if (_activeTickers.Contains(ticker))
+        if (!_activeTickers.Contains(ticker))
         {
             _activeTickers.Add(ticker);
         }

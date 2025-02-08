@@ -1,4 +1,5 @@
 ﻿using SharedKernel;
+using StockMarketSimulator.Api.Modules.Stocks.Api;
 using StockMarketSimulator.Api.Modules.Stocks.Application.GetByTicker;
 using StockMarketSimulator.Api.Modules.Stocks.Application.Search;
 using StockMarketSimulator.Api.Modules.Stocks.Domain;
@@ -14,7 +15,15 @@ public static class StocksDependencyInjection
         services
             .AddUseCases()
             .AddPersistence()
-            .AddRealtimeStock(configuration);
+            .AddRealtimeStock(configuration)
+            .AddPublicApis();
+
+        return services;
+    }
+
+    private static IServiceCollection AddPublicApis(this IServiceCollection services)
+    {
+        services.AddScoped<IStocksApi, StocksApi>();
 
         return services;
     }
