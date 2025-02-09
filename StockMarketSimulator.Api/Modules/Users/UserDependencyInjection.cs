@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using StockMarketSimulator.Api.Modules.Users.Api;
 using StockMarketSimulator.Api.Modules.Users.Application.ChangePassword;
 using StockMarketSimulator.Api.Modules.Users.Application.GetCurrent;
 using StockMarketSimulator.Api.Modules.Users.Application.Login;
@@ -25,9 +26,17 @@ public static class UserDependencyInjection
             .AddAuthenticationInternal(configuration)
             .AddAuthorizationInternal()
             .AddPersistence()
-            .AddUseCases();
+            .AddUseCases()
+            .AddPublicApis();
 
         services.AddValidatorsFromAssembly(typeof(UserDependencyInjection).Assembly, includeInternalTypes: true);
+
+        return services;
+    }
+
+    private static IServiceCollection AddPublicApis(this IServiceCollection services)
+    {
+        services.AddScoped<IUsersApi, UsersApi>();
 
         return services;
     }

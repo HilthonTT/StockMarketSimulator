@@ -155,6 +155,16 @@ internal sealed class DatabaseInitializer : BackgroundService
 
             -- Create an index on the ticker column for faster lookups
             CREATE INDEX IF NOT EXISTS idx_transactions_ticker ON public.transactions(ticker);
+
+            -- Check if budgets table exists, if not, create it.
+            CREATE TABLE IF NOT EXISTS public.budgets (
+                id UUID PRIMARY KEY,
+                user_id UUID NOT NULL,
+                buying_power DECIMAL(18, 2) NOT NULL,
+
+                CONSTRAINT fk_transactions_users FOREIGN KEY (user_id)
+                REFERENCES public.users (id) ON DELETE CASCADE
+            );
             """;
 
         await connection.ExecuteAsync(sql);

@@ -3,24 +3,24 @@ using StockMarketSimulator.Api.Infrastructure.Database;
 using StockMarketSimulator.Api.Infrastructure.Messaging;
 using StockMarketSimulator.Api.Modules.Transactions.Contracts;
 using StockMarketSimulator.Api.Modules.Transactions.Domain;
+using StockMarketSimulator.Api.Modules.Users.Api;
 using StockMarketSimulator.Api.Modules.Users.Domain;
-using StockMarketSimulator.Api.Modules.Users.Infrastructure;
 
 namespace StockMarketSimulator.Api.Modules.Transactions.Application.GetById;
 
 internal sealed class GetTransactionByIdQueryHandler : IQueryHandler<GetTransactionByIdQuery, TransactionResponse>
 {
     private readonly IDbConnectionFactory _dbConnectionFactory;
-    private readonly IUserContext _userContext;
+    private readonly IUsersApi _usersApi;
     private readonly ITransactionRepository _transactionRepository;
 
     public GetTransactionByIdQueryHandler(
         IDbConnectionFactory dbConnectionFactory,
-        IUserContext userContext,
+        IUsersApi usersApi,
         ITransactionRepository transactionRepository)
     {
         _dbConnectionFactory = dbConnectionFactory;
-        _userContext = userContext;
+        _usersApi = usersApi;
         _transactionRepository = transactionRepository;
     }
 
@@ -40,7 +40,7 @@ internal sealed class GetTransactionByIdQueryHandler : IQueryHandler<GetTransact
             return Result.Failure<TransactionResponse>(TransactionErrors.NotFound(query.TransactionId));
         }
 
-        if (transaction.UserId != _userContext.UserId)
+        if (transaction.UserId != _usersApi.UserId)
         {
             return Result.Failure<TransactionResponse>(UserErrors.Unauthorized);
         }
