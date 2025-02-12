@@ -72,7 +72,9 @@ export async function getCurrentUser() {
   }
 
   // Using the jwt-decode library
-  return decodeJwt(accessToken); // Return the user data
+  const user = decodeJwt(accessToken);
+
+  return { ...user, accessToken };
 }
 
 export async function ensureAuthenticated() {
@@ -84,4 +86,9 @@ export async function ensureAuthenticated() {
   }
 
   return user;
+}
+
+export function clearTokens() {
+  localStorage.removeItem(ACCESS_TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
 }

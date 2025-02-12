@@ -4,6 +4,8 @@ using SharedKernel;
 using StockMarketSimulator.Api.Infrastructure.Database;
 using StockMarketSimulator.Api.Infrastructure.Helpers;
 using StockMarketSimulator.Api.Infrastructure.Messaging;
+using StockMarketSimulator.Api.Modules.Budgets.Api;
+using StockMarketSimulator.Api.Modules.Budgets.Domain;
 using StockMarketSimulator.Api.Modules.Stocks.Api;
 using StockMarketSimulator.Api.Modules.Transactions.Domain;
 using StockMarketSimulator.Api.Modules.Users.Infrastructure;
@@ -17,24 +19,27 @@ internal sealed class BuyTransactionCommandHandler : ICommandHandler<BuyTransact
     private readonly IUserContext _userContext;
     private readonly IStocksApi _stocksApi;
     private readonly IValidator<BuyTransactionCommand> _validator;
+    private readonly IBudgetsApi _budgetsApi;
 
     public BuyTransactionCommandHandler(
         IDbConnectionFactory dbConnectionFactory, 
         ITransactionRepository transactionRepository,
         IUserContext userContext,
         IStocksApi stocksApi,
-        IValidator<BuyTransactionCommand> validator)
+        IValidator<BuyTransactionCommand> validator,
+        IBudgetsApi budgetsApi)
     {
         _dbConnectionFactory = dbConnectionFactory;
         _transactionRepository = transactionRepository;
         _userContext = userContext;
         _stocksApi = stocksApi;
         _validator = validator;
+        _budgetsApi = budgetsApi;
     }
 
     public async Task<Result<Guid>> Handle(
-    BuyTransactionCommand command,
-    CancellationToken cancellationToken = default)
+        BuyTransactionCommand command,
+        CancellationToken cancellationToken = default)
     {
         ValidationResult validationResult = await _validator.ValidateAsync(command, cancellationToken);
         if (!validationResult.IsValid)
@@ -43,31 +48,70 @@ internal sealed class BuyTransactionCommandHandler : ICommandHandler<BuyTransact
         }
 
         await using var connection = await _dbConnectionFactory.GetOpenConnectionAsync(cancellationToken);
+        await using var dbTransaction = await connection.BeginTransactionAsync(cancellationToken);
 
-        StockPriceInfo? stockPriceInfo = await _stocksApi.GetLatestPriceAsync(command.Ticker, cancellationToken);
-        if (stockPriceInfo is null)
+        try
         {
-            return Result.Failure<Guid>(StockErrors.NotFound(command.Ticker));
+            BudgetApiResponse? budget = await _budgetsApi.GetByUserIdAsync(
+           connection,
+           _userContext.UserId,
+           dbTransaction,
+           cancellationToken);
+
+            if (budget is null)
+            {
+                return Result.Failure<Guid>(BudgetErrors.NotFoundByUserId(_userContext.UserId));
+            }
+
+            StockPriceInfo? stockPriceInfo = await _stocksApi.GetLatestPriceAsync(command.Ticker, cancellationToken);
+            if (stockPriceInfo is null)
+            {
+                return Result.Failure<Guid>(StockErrors.NotFound(command.Ticker));
+            }
+
+            if (command.LimitPrice > stockPriceInfo.Price)
+            {
+                return Result.Failure<Guid>(TransactionErrors.LimitPriceExceedsMarketPrice);
+            }
+
+            decimal totalCost = command.Quantity * command.LimitPrice;
+
+            if (budget.BuyingPower < totalCost)
+            {
+                return Result.Failure<Guid>(TransactionErrors.InsufficientFunds);
+            }
+
+            decimal updatedBuyingPower = budget.BuyingPower - totalCost;
+
+            BudgetApiResponse budgetToUpdate = budget with
+            {
+                BuyingPower = updatedBuyingPower,
+            };
+
+            await _budgetsApi.UpdateAsync(connection, budgetToUpdate, dbTransaction, cancellationToken);
+
+
+            var transaction = new Transaction
+            {
+                Id = Guid.NewGuid(),
+                UserId = _userContext.UserId,
+                Ticker = command.Ticker,
+                LimitPrice = command.LimitPrice,
+                Quantity = command.Quantity,
+                Type = TransactionType.Buy,
+                CreatedOnUtc = DateTime.UtcNow,
+            };
+
+            await _transactionRepository.CreateAsync(connection, transaction, dbTransaction, cancellationToken);
+
+            await dbTransaction.CommitAsync(cancellationToken);
+
+            return transaction.Id;
         }
-
-        if (command.LimitPrice > stockPriceInfo.Price)
+        catch (Exception)
         {
-            return Result.Failure<Guid>(TransactionErrors.LimitPriceExceedsMarketPrice);
+            await dbTransaction.RollbackAsync(cancellationToken);
+            throw;
         }
-
-        var transaction = new Transaction
-        {
-            Id = Guid.NewGuid(),
-            UserId = _userContext.UserId,
-            Ticker = command.Ticker,
-            LimitPrice = command.LimitPrice,
-            Quantity = command.Quantity,
-            Type = TransactionType.Buy,
-            CreatedOnUtc = DateTime.UtcNow,
-        };
-
-        await _transactionRepository.CreateAsync(connection, transaction, cancellationToken: cancellationToken);
-
-        return transaction.Id;
     }
 }

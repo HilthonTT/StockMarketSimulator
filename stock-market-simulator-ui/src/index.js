@@ -1,10 +1,21 @@
 import { debounce } from "./utils/utils.js";
-import { ensureAuthenticated } from "./utils/auth.js";
+import { clearTokens, ensureAuthenticated } from "./utils/auth.js";
+import { fetchBudget } from "./services/budget-service.js";
+import { searchStocks } from "./services/stocks-service.js";
+import { fetchTransactions } from "./services/transaction-service.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
+  const logoutButton = document.getElementById("logout-button");
+
+  logoutButton.addEventListener("click", () => {
+    clearTokens();
+
+    window.location.reload();
+  });
+
   // Date filters
   let dateRange1 = new Date("2024-12-22");
-  let dateRange2 = new Date("2025-01-22");
+  let dateRange2 = new Date();
 
   const datePicker1 = document.getElementById("datePicker1");
   const datePicker2 = document.getElementById("datePicker2");
@@ -12,6 +23,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const inputDate2 = document.getElementById("inputDate2");
   const selectedDate1 = document.getElementById("selectedDate1");
   const selectedDate2 = document.getElementById("selectedDate2");
+
+  selectedDate1.textContent = dateRange1.toDateString();
+  selectedDate2.textContent = dateRange2.toDateString();
 
   datePicker1.addEventListener("click", () => inputDate1.showPicker());
   datePicker2.addEventListener("click", () => inputDate2.showPicker());
@@ -67,7 +81,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const query = event.target.value.trim();
 
       if (query.length > 0) {
-        const stockData = fetchStockData(query);
+        const stockData = await fetchStockData(query);
 
         displayResults(stockData);
       } else {
@@ -90,49 +104,36 @@ document.addEventListener("DOMContentLoaded", async () => {
     }, 100);
   });
 
-  function loadBudget() {
-    const budget = {
-      price: 1092.17,
-    };
+  async function loadBudget() {
+    const budget = await fetchBudget();
 
     const budgetElement = document.getElementById("buying-power");
     const transactionFormBudgetElement =
       document.getElementById("buying-power-form");
     if (budgetElement) {
-      budgetElement.textContent = `$${budget.price.toFixed(2)}`;
+      budgetElement.textContent = `$${budget.buyingPower.toFixed(2)}`;
     }
 
     if (transactionFormBudgetElement) {
-      transactionFormBudgetElement.textContent = `$${budget.price.toFixed(2)}`;
+      transactionFormBudgetElement.textContent = `$${budget.buyingPower.toFixed(
+        2
+      )}`;
     }
   }
 
-  function filterTransactions() {
+  async function filterTransactions() {
     // 0: Buy
     // 1: Sell
 
-    const transactions = [
-      {
-        date: new Date("Jan 08, 2025 17:00"),
-        symbol: "TSLA",
-        type: 0, // Buy
-        price: 396.23,
-        amount: 5,
-        total: 1981.15,
-      },
-      {
-        date: new Date("Jan 08, 2025 17:00"),
-        symbol: "TSLA",
-        type: 1, // Sell
-        price: 396.09,
-        amount: 1,
-        total: 398.09,
-      },
-    ];
+    const transactions = await fetchTransactions();
 
-    const filteredTransactions = transactions.filter(
-      (t) => t.date >= dateRange1 && t.date <= dateRange2
-    );
+    const filteredTransactions = transactions.filter((t) => {
+      const createdDate = new Date(t.createdOnUtc);
+
+      return createdDate >= dateRange1 && createdDate <= dateRange2;
+    });
+
+    console.log({ filteredTransactions });
 
     const tbody = document.getElementById("trading-history-body");
     if (!tbody) {
@@ -144,13 +145,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     filteredTransactions.forEach((transaction, index) => {
       const row = document.createElement("tr");
 
+      const ticker = transaction.ticker;
+      const date = new Date(transaction.createdOnUtc);
+      const type = transaction.type;
+      const quantity = transaction.quantity;
+      const limitPrice = transaction.limitPrice;
+      const totalAmount = transaction.totalAmount;
+
       row.className =
         index % 2 === 0
           ? "bg-[#1a1b23] hover:bg-[#2C2E39] transition"
           : "bg-[#292B36] hover:bg-[#2C2E39] transition";
 
       row.innerHTML = `
-          <td class="py-3 px-4">${transaction.date.toLocaleString("en-US", {
+          <td class="py-3 px-4">${date.toLocaleString("en-US", {
             month: "short",
             day: "2-digit",
             year: "numeric",
@@ -158,31 +166,26 @@ document.addEventListener("DOMContentLoaded", async () => {
             minute: "2-digit",
           })}
           </td>
-          <td class="py-3 px-4">${transaction.symbol}</td>
+          <td class="py-3 px-4">${ticker}</td>
           <td class="py-3 px-4 ${
-            transaction.type === 0 ? "text-emerald-500" : "text-red-500"
+            type === 1 ? "text-emerald-500" : "text-red-500"
           } font-semibold">
-            <button>${transaction.type === 0 ? "Buy" : "Sell"}</button>
+            <button>${type === 0 ? "Sell" : "Buy"}</button>
           </td>
-          <td class="py-3 px-4">$${transaction.price.toFixed(2)}</td>
-          <td class="py-3 px-4">${transaction.amount}</td>
-          <td class="py-3 px-4">$${transaction.total.toFixed(2)}</td>
+          <td class="py-3 px-4">$${limitPrice.toFixed(2)}</td>
+          <td class="py-3 px-4">${quantity}</td>
+          <td class="py-3 px-4">$${totalAmount.toFixed(2)}</td>
         `;
 
       tbody.appendChild(row);
     });
   }
 
-  function fetchStockData(query) {
-    const stocks = [
-      { ticker: "AMD", price: "500" },
-      { ticker: "AAPL", price: "190" },
-      { ticker: "TSLA", price: "250" },
-      { ticker: "NVDA", price: "700" },
-    ];
+  async function fetchStockData(query) {
+    const matchResults = await searchStocks(query);
 
-    return stocks.filter((stock) =>
-      stock.ticker.toLowerCase().includes(query.toLowerCase())
+    return matchResults.filter((stock) =>
+      stock.symbol.toLowerCase().includes(query.toLowerCase())
     );
   }
 
@@ -200,9 +203,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         (result) =>
           `<div 
             class="p-2 text-gray-300 hover:bg-gray-700 cursor-pointer" 
-            data-ticker="${result.ticker}" 
-            data-price="${result.price}">
-            ${result.ticker}
+            data-ticker="${result.symbol}" 
+            data-price="${390}">
+            ${result.symbol}
           </div>`
       )
       .join("");
@@ -349,6 +352,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   console.log({ user });
 
   createChart();
-  loadBudget();
+  await loadBudget();
   filterTransactions();
 });

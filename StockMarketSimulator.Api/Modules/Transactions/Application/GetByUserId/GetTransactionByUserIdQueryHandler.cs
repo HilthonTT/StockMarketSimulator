@@ -45,6 +45,7 @@ internal sealed class GetTransactionByUserIdQueryHandler : IQueryHandler<GetTran
             {
                 Id = transaction.Id,
                 UserId = transaction.UserId,
+                Ticker = transaction.Ticker,
                 LimitPrice = transaction.LimitPrice,
                 Type = transaction.Type,
                 Quantity = transaction.Quantity,

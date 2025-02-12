@@ -15,4 +15,8 @@ internal static class TransactionErrors
     public static readonly Error InsufficientStock = Error.Problem(
         "Transactions.InsufficientStock",
         "You do not have enough stock to complete this sale transaction");
+
+    public static readonly Error InsufficientFunds = Error.Problem(
+        "Transactions.InsufficientFunds",
+        "You do not have enough funds to complete this sale transaction");
 }

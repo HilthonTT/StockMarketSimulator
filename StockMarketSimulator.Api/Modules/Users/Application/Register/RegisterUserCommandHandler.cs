@@ -4,6 +4,7 @@ using SharedKernel;
 using StockMarketSimulator.Api.Infrastructure.Database;
 using StockMarketSimulator.Api.Infrastructure.Helpers;
 using StockMarketSimulator.Api.Infrastructure.Messaging;
+using StockMarketSimulator.Api.Modules.Budgets.Api;
 using StockMarketSimulator.Api.Modules.Users.Domain;
 using StockMarketSimulator.Api.Modules.Users.Infrastructure;
 
@@ -11,21 +12,26 @@ namespace StockMarketSimulator.Api.Modules.Users.Application.Register;
 
 internal sealed class RegisterUserCommandHandler : ICommandHandler<RegisterUserCommand>
 {
+    private const decimal DefaultBuyingPower = 5000;
+
     private readonly IUserRepository _userRepository;
     private readonly IDbConnectionFactory _dbConnectionFactory;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IValidator<RegisterUserCommand> _validator;
+    private readonly IBudgetsApi _budgetsApi;
 
     public RegisterUserCommandHandler(
         IUserRepository userRepository,
         IDbConnectionFactory dbConnectionFactory,
         IPasswordHasher passwordHasher,
-        IValidator<RegisterUserCommand> validator)
+        IValidator<RegisterUserCommand> validator,
+        IBudgetsApi budgetsApi)
     {
         _userRepository = userRepository;
         _dbConnectionFactory = dbConnectionFactory;
         _passwordHasher = passwordHasher;
         _validator = validator;
+        _budgetsApi = budgetsApi;
     }
 
     public async Task<Result> Handle(RegisterUserCommand command, CancellationToken cancellationToken = default)
@@ -57,6 +63,10 @@ internal sealed class RegisterUserCommandHandler : ICommandHandler<RegisterUserC
             };
 
             await _userRepository.CreateAsync(connection, user, cancellationToken, transaction);
+
+            var budget = new BudgetApiResponse(Guid.NewGuid(), user.Id, DefaultBuyingPower);
+
+            await _budgetsApi.CreateAsync(connection, budget, transaction, cancellationToken);
 
             await transaction.CommitAsync(cancellationToken);
 
