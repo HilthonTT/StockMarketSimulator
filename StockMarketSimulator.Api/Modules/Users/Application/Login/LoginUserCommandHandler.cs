@@ -60,13 +60,9 @@ internal sealed class LoginUserCommandHandler : ICommandHandler<LoginUserCommand
 
         string token = _tokenProvider.Create(user);
 
-        var refreshToken = new RefreshToken
-        {
-            Id = Guid.NewGuid(),
-            UserId = user.Id,
-            Token = _tokenProvider.GenerateRefreshToken(),
-            ExpiresOnUtc = DateTime.UtcNow.AddDays(7),
-        };
+        var refreshToken = RefreshToken.Create(
+            _tokenProvider.GenerateRefreshToken(),
+            user.Id);
 
         await _refreshTokenRepository.CreateAsync(connection, refreshToken, cancellationToken: cancellationToken);
 

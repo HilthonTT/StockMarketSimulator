@@ -63,8 +63,7 @@ internal sealed class LoginUserWithRefreshTokenCommandHandler : ICommandHandler<
 
         string accessToken = _tokenProvider.Create(user);
 
-        refreshToken.Token = _tokenProvider.GenerateRefreshToken();
-        refreshToken.ExpiresOnUtc = DateTime.UtcNow.AddDays(7);
+        refreshToken.Update(_tokenProvider.GenerateRefreshToken());
 
         await _refreshTokenRepository.UpdateAsync(connection, refreshToken, cancellationToken: cancellationToken);
 

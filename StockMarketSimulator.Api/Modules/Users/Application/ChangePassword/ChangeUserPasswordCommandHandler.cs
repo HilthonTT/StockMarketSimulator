@@ -63,7 +63,9 @@ internal sealed class ChangeUserPasswordCommandHandler : ICommandHandler<ChangeU
             return Result.Failure<TokenResponse>(UserErrors.Unauthorized);
         }
 
-        user.PasswordHash = _passwordHasher.Hash(command.NewPassword);
+        string newPasswordHash = _passwordHasher.Hash(command.NewPassword);
+
+        user.ChangePassword(newPasswordHash);
 
         await _userRepository.UpdateAsync(connection, user, cancellationToken);
 

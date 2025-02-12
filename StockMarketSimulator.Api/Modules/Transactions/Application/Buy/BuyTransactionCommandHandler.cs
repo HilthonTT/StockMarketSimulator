@@ -90,17 +90,12 @@ internal sealed class BuyTransactionCommandHandler : ICommandHandler<BuyTransact
 
             await _budgetsApi.UpdateAsync(connection, budgetToUpdate, dbTransaction, cancellationToken);
 
-
-            var transaction = new Transaction
-            {
-                Id = Guid.NewGuid(),
-                UserId = _userContext.UserId,
-                Ticker = command.Ticker,
-                LimitPrice = command.LimitPrice,
-                Quantity = command.Quantity,
-                Type = TransactionType.Buy,
-                CreatedOnUtc = DateTime.UtcNow,
-            };
+            var transaction = Transaction.Create(
+                _userContext.UserId,
+                command.Ticker,
+                command.LimitPrice,
+                TransactionType.Buy,
+                command.Quantity);
 
             await _transactionRepository.CreateAsync(connection, transaction, dbTransaction, cancellationToken);
 

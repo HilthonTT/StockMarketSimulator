@@ -54,13 +54,7 @@ internal sealed class RegisterUserCommandHandler : ICommandHandler<RegisterUserC
 
             string passwordHash = _passwordHasher.Hash(command.Password);
 
-            var user = new User
-            {
-                Id = Guid.NewGuid(),
-                Email = command.Email,
-                Username = command.Username,
-                PasswordHash = passwordHash,
-            };
+            var user = User.Create(command.Email, command.Username, passwordHash);
 
             await _userRepository.CreateAsync(connection, user, cancellationToken, transaction);
 

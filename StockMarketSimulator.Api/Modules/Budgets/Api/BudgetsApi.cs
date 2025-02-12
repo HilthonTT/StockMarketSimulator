@@ -18,12 +18,7 @@ internal sealed class BudgetsApi : IBudgetsApi
         NpgsqlTransaction? transaction = null, 
         CancellationToken cancellationToken = default)
     {
-        var budget = new Budget
-        {
-            Id = budgetApi.Id,
-            UserId = budgetApi.UserId,
-            BuyingPower = budgetApi.BuyingPower,
-        };
+        var budget = Budget.Create(budgetApi.UserId, budgetApi.BuyingPower);
 
         return _budgetRepository.CreateAsync(connection, budget, transaction, cancellationToken);
     }
@@ -64,12 +59,7 @@ internal sealed class BudgetsApi : IBudgetsApi
         NpgsqlTransaction? transaction = null, 
         CancellationToken cancellationToken = default)
     {
-        var budget = new Budget
-        {
-            Id = budgetApi.Id,
-            UserId = budgetApi.UserId,
-            BuyingPower = budgetApi.BuyingPower,
-        };
+        var budget = Budget.Create(budgetApi.Id, budgetApi.UserId, budgetApi.BuyingPower);
 
         return _budgetRepository.UpdateAsync(connection, budget, transaction, cancellationToken);
     }
