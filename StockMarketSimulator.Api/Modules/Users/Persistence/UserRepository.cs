@@ -103,7 +103,7 @@ internal sealed class UserRepository : IUserRepository
             transaction: transaction);
     }
 
-    public async Task<bool> ExistsByEmailAsync(
+    public Task<bool> ExistsByEmailAsync(
         NpgsqlConnection connection,
         string email,
         CancellationToken cancellationToken = default,
@@ -116,9 +116,23 @@ internal sealed class UserRepository : IUserRepository
             );
             """;
 
-        return await connection.ExecuteScalarAsync<bool>(
+        return connection.ExecuteScalarAsync<bool>(
             sql,
             new { Email = email },
             transaction: transaction);
+    }
+
+    public Task DeleteAllAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction? transaction = null,
+        CancellationToken cancellationToken = default)
+    {
+        const string sql =
+            """
+            DELETE 
+            FROM public.users
+            """;
+
+        return connection.ExecuteAsync(sql, transaction: transaction);
     }
 }

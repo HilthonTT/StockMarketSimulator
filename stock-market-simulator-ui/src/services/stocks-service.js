@@ -17,7 +17,5 @@ export async function searchStocks(searchTerm) {
 
   const stockMatchResults = await response.json();
 
-  console.log({ stockMatchResults });
-
   return stockMatchResults;
 }

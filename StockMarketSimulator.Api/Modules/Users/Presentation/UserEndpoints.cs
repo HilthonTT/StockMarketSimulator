@@ -3,6 +3,7 @@ using StockMarketSimulator.Api.Endpoints;
 using StockMarketSimulator.Api.Extensions;
 using StockMarketSimulator.Api.Infrastructure;
 using StockMarketSimulator.Api.Modules.Users.Application.ChangePassword;
+using StockMarketSimulator.Api.Modules.Users.Application.DeleteAll;
 using StockMarketSimulator.Api.Modules.Users.Application.GetCurrent;
 using StockMarketSimulator.Api.Modules.Users.Application.Login;
 using StockMarketSimulator.Api.Modules.Users.Application.LoginWithRefreshToken;
@@ -100,6 +101,19 @@ internal sealed class UserEndpoints : IEndpoint
         })
         .WithOpenApi()
         .RequireAuthorization()
+        .WithTags(Tags.Users);
+
+        app.MapDelete("/users", async (
+            DeleteAllUsersCommandHandler useCase,
+            CancellationToken cancellationToken) =>
+        {
+            var command = new DeleteAllUsersCommand();
+
+            Result result = await useCase.Handle(command, cancellationToken);
+
+            return result.Match(Results.NoContent, CustomResults.Problem);
+        })
+        .WithOpenApi()
         .WithTags(Tags.Users);
     }
 }

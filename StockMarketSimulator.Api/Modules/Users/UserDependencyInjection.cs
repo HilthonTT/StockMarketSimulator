@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using StockMarketSimulator.Api.Modules.Users.Api;
 using StockMarketSimulator.Api.Modules.Users.Application.ChangePassword;
+using StockMarketSimulator.Api.Modules.Users.Application.DeleteAll;
 using StockMarketSimulator.Api.Modules.Users.Application.GetCurrent;
 using StockMarketSimulator.Api.Modules.Users.Application.Login;
 using StockMarketSimulator.Api.Modules.Users.Application.LoginWithRefreshToken;
@@ -48,6 +49,7 @@ public static class UserDependencyInjection
         services.AddScoped<LoginUserWithRefreshTokenCommandHandler>();
         services.AddScoped<RevokeRefreshTokensCommandHandler>();
         services.AddScoped<ChangeUserPasswordCommandHandler>();
+        services.AddScoped<DeleteAllUsersCommandHandler>();
 
         services.AddScoped<GetCurrentUserQueryHandler>();
 

@@ -3,8 +3,52 @@ import { clearTokens, ensureAuthenticated } from "./utils/auth.js";
 import { fetchBudget } from "./services/budget-service.js";
 import { searchStocks } from "./services/stocks-service.js";
 import { fetchTransactions } from "./services/transaction-service.js";
+import { TransactionWidget } from "./models/transaction-widget.js";
+import { config } from "./utils/config.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
+  const transactionWidgets = [];
+
+  const connection = new signalR.HubConnectionBuilder()
+    .withUrl(`${config.baseApiUrl}/stocks-feed`)
+    .configureLogging(signalR.LogLevel.Information)
+    .build();
+
+  async function startSignalRConnection() {
+    try {
+      await connection.start();
+      console.log("SignalR connected.");
+    } catch (error) {
+      console.error(
+        "SignalR connection failed. Retrying in 5 seconds...",
+        error
+      );
+      setTimeout(startSignalRConnection, FIVE_SECONDS_IN_MS);
+    }
+  }
+
+  connection.onclose(async () => {
+    console.warn("SignalR connection closed. Attempting to reconnect...");
+    await startSignalRConnection();
+  });
+
+  // Start the SignalR connection
+  await startSignalRConnection();
+
+  connection.on("ReceiveStockPriceUpdate", (stockUpdate) => {
+    const transactions = transactionWidgets.filter(
+      (transaction) => transaction.ticker === stockUpdate.ticker
+    );
+
+    transactions.forEach((transactionWidget) => {
+      transactionWidget.updatePrice(stockUpdate.price);
+    });
+  });
+
+  window.addEventListener("beforeunload", () => {
+    connection.stop().then(() => console.log("SignalR Connection Stopped"));
+  });
+
   const logoutButton = document.getElementById("logout-button");
 
   logoutButton.addEventListener("click", () => {
@@ -133,8 +177,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       return createdDate >= dateRange1 && createdDate <= dateRange2;
     });
 
-    console.log({ filteredTransactions });
-
     const tbody = document.getElementById("trading-history-body");
     if (!tbody) {
       return;
@@ -143,41 +185,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     tbody.innerHTML = "";
 
     filteredTransactions.forEach((transaction, index) => {
-      const row = document.createElement("tr");
+      const transactionWidget = new TransactionWidget(
+        transaction.id,
+        transaction.userId,
+        transaction.ticker,
+        transaction.limitPrice,
+        transaction.type,
+        transaction.quantity,
+        transaction.totalAmount,
+        transaction.createdOnUtc,
+        connection,
+        index
+      );
 
-      const ticker = transaction.ticker;
-      const date = new Date(transaction.createdOnUtc);
-      const type = transaction.type;
-      const quantity = transaction.quantity;
-      const limitPrice = transaction.limitPrice;
-      const totalAmount = transaction.totalAmount;
+      transactionWidgets.push(transactionWidget);
 
-      row.className =
-        index % 2 === 0
-          ? "bg-[#1a1b23] hover:bg-[#2C2E39] transition"
-          : "bg-[#292B36] hover:bg-[#2C2E39] transition";
-
-      row.innerHTML = `
-          <td class="py-3 px-4">${date.toLocaleString("en-US", {
-            month: "short",
-            day: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-          </td>
-          <td class="py-3 px-4">${ticker}</td>
-          <td class="py-3 px-4 ${
-            type === 1 ? "text-emerald-500" : "text-red-500"
-          } font-semibold">
-            <button>${type === 0 ? "Sell" : "Buy"}</button>
-          </td>
-          <td class="py-3 px-4">$${limitPrice.toFixed(2)}</td>
-          <td class="py-3 px-4">${quantity}</td>
-          <td class="py-3 px-4">$${totalAmount.toFixed(2)}</td>
-        `;
-
-      tbody.appendChild(row);
+      tbody.appendChild(transactionWidget.element);
     });
   }
 

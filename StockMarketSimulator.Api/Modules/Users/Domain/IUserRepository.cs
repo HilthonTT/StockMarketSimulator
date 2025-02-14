@@ -33,4 +33,9 @@ internal interface IUserRepository
         string email, 
         CancellationToken cancellationToken = default,
         NpgsqlTransaction? transaction = null);
+
+    Task DeleteAllAsync(
+        NpgsqlConnection connection, 
+        NpgsqlTransaction? transaction = null,
+        CancellationToken cancellationToken = default);
 }
