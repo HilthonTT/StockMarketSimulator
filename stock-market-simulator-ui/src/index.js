@@ -5,8 +5,26 @@ import { searchStocks } from "./services/stocks-service.js";
 import { fetchTransactions } from "./services/transaction-service.js";
 import { TransactionWidget } from "./models/transaction-widget.js";
 import { config } from "./utils/config.js";
+import {
+  buyTransaction,
+  sellTransaction,
+} from "./services/transaction-service.js";
+
+function getRandomColor() {
+  // Generate a random color (hex format)
+  const letters = "0123456789ABCDEF";
+  let color = "#";
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
 
 document.addEventListener("DOMContentLoaded", async () => {
+  let chart;
+  const priceHistory = [];
+  const tickersData = {};
+
   const transactionWidgets = [];
 
   const connection = new signalR.HubConnectionBuilder()
@@ -41,8 +59,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
 
     transactions.forEach((transactionWidget) => {
+      // Update the price for each transaction widget
       transactionWidget.updatePrice(stockUpdate.price);
     });
+
+    updateChart(stockUpdate.price, stockUpdate.ticker);
   });
 
   window.addEventListener("beforeunload", () => {
@@ -255,7 +276,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const modalTitle = document.getElementById("modal-title");
 
     const stockName = modal.querySelector("p.font-bold.text-lg");
-    const priceInput = modal.querySelector("input[readonly]");
 
     if (modalTitle) {
       modalTitle.textContent = `Place Order for ${ticker}`;
@@ -269,23 +289,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.error("Stock name element not found!");
     }
 
-    if (priceInput) {
-      priceInput.value = price;
-    } else {
-      console.error("Price input element not found!");
-    }
-
     modal.classList.remove("hidden");
 
     const transactionForm = document.getElementById("transaction-form");
     if (transactionForm) {
-      transactionForm.onsubmit = (e) => handleSubmit(e, ticker, price);
+      transactionForm.onsubmit = async (e) => await handleSubmit(e, ticker);
     } else {
       console.error("Transaction form not found!");
     }
   }
 
-  function handleSubmit(event, ticker, price) {
+  async function handleSubmit(event, ticker) {
     event.preventDefault();
 
     const quantityInput = document.querySelector(
@@ -304,9 +318,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     if (isBuying) {
-      console.log({ ticker, price, quantity });
+      await buyTransaction(ticker, quantity)
+        .then(() => {
+          window.location.reload();
+        })
+        .catch((e) => {
+          alert("Something went wrong!");
+          console.error(e);
+        });
     } else {
-      console.log({ ticker, price, quantity });
+      await sellTransaction(ticker, quantity)
+        .then(() => {
+          window.location.reload();
+        })
+        .catch((e) => {
+          alert("Something went wrong!");
+          console.error(e);
+        });
     }
   }
 
@@ -320,7 +348,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"];
     const data = [100, 200, 150, 300, 250, 400, 350];
 
-    const _ = new Chart(chartElement, {
+    chart = new Chart(chartElement, {
       type: "line",
       data: {
         labels: labels, // X-axis labels
@@ -370,11 +398,49 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  function updateChart(price, ticker) {
+    if (ticker !== "TSLA") {
+      return;
+    }
+
+    // Ensure the chart is initialized
+    if (!chart) {
+      console.error("Chart is not initialized");
+      return;
+    }
+
+    priceHistory.push(price);
+
+    if (priceHistory.length > 30) {
+      priceHistory.shift();
+    }
+
+    // Calculate min and max prices
+    const minPrice = Math.min(...priceHistory);
+    const maxPrice = Math.max(...priceHistory);
+
+    // Update labels and dataset
+    chart.data.labels = priceHistory.map((_, index) => index + 1); // Update labels with 1-based index
+    chart.data.datasets[0].data = priceHistory; // Update data points
+
+    // Set the ticker name as the label
+    chart.data.datasets[0].label = ticker; // Dynamically set the label to the ticker name
+
+    // Update y-axis min and max with a little paddling
+    const range = maxPrice - minPrice;
+    const padding = range * 0.1; // 10% padding
+    chart.options.scales.y.min = minPrice - padding;
+    chart.options.scales.y.max = maxPrice + padding;
+
+    // Trigger chart update
+    chart.update();
+  }
+
   const user = await ensureAuthenticated();
 
   console.log({ user });
 
   createChart();
   await loadBudget();
-  filterTransactions();
+  await filterTransactions();
 });

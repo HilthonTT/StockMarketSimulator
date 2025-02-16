@@ -12,6 +12,7 @@ function decodeJwt(token) {
       id: decodedJwt.sub,
       email: decodedJwt.email,
       username: decodedJwt.preferred_username,
+      exp: decodedJwt.exp,
     };
   } catch (error) {
     return null;
@@ -55,7 +56,10 @@ export async function getCurrentUser() {
   }
 
   const decodedToken = decodeJwt(accessToken);
+
   if (!decodedToken || decodedToken.exp * 1000 < Date.now()) {
+    console.log("IS EXPIRED");
+
     // Token is expired
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
@@ -65,6 +69,7 @@ export async function getCurrentUser() {
     }
 
     accessToken = await renewAccessToken(refreshToken);
+
     if (!accessToken) {
       localStorage.removeItem(REFRESH_TOKEN_KEY);
       return null;

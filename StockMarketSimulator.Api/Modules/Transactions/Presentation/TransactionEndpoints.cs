@@ -49,7 +49,7 @@ internal sealed class TransactionEndpoints : IEndpoint
             BuyTransactionCommandHandler useCase,
             CancellationToken cancellationToken) =>
         {
-            var command = new BuyTransactionCommand(request.Ticker, request.LimitPrice, request.Quantity);
+            var command = new BuyTransactionCommand(request.Ticker, request.Quantity);
 
             Result<Guid> result = await useCase.Handle(command, cancellationToken);
 

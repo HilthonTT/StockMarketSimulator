@@ -69,12 +69,7 @@ internal sealed class BuyTransactionCommandHandler : ICommandHandler<BuyTransact
                 return Result.Failure<Guid>(StockErrors.NotFound(command.Ticker));
             }
 
-            if (command.LimitPrice > stockPriceInfo.Price)
-            {
-                return Result.Failure<Guid>(TransactionErrors.LimitPriceExceedsMarketPrice);
-            }
-
-            decimal totalCost = command.Quantity * command.LimitPrice;
+            decimal totalCost = command.Quantity * stockPriceInfo.Price;
 
             if (budget.BuyingPower < totalCost)
             {
@@ -93,7 +88,7 @@ internal sealed class BuyTransactionCommandHandler : ICommandHandler<BuyTransact
             var transaction = Transaction.Create(
                 _userContext.UserId,
                 command.Ticker,
-                command.LimitPrice,
+                stockPriceInfo.Price,
                 TransactionType.Buy,
                 command.Quantity);
 

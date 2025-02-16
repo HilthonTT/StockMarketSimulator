@@ -2,7 +2,4 @@
 
 namespace StockMarketSimulator.Api.Modules.Transactions.Application.Buy;
 
-internal sealed record BuyTransactionCommand(
-    string Ticker,
-    decimal LimitPrice,
-    int Quantity) : ICommand<Guid>;
+internal sealed record BuyTransactionCommand(string Ticker, int Quantity) : ICommand<Guid>;
