@@ -136,6 +136,7 @@
             <input
               type="number"
               value=""
+              id="price"
               readonly
               class="bg-[#2c2d39] text-white rounded-xl p-3 mt-2 w-full"
             />
@@ -166,6 +167,11 @@
             </button>
           </div>
 
+          <div class="hidden">
+            <input type="radio" id="buy-radio" name="action" value="buy" />
+            <input type="radio" id="sell-radio" name="action" value="sell" />
+          </div>
+
           <!-- Submit Button -->
           <button
             type="submit"
@@ -184,8 +190,10 @@
       </div>
 
       <div class="block space-y-2">
-        <p class="text-4xl font-bold text-white">$100,645.87</p>
-        <p class="text-emerald-500">+$645.78 (6.46%)</p>
+        <p class="text-4xl font-bold text-white" id="current-balance">
+          $100,645.87
+        </p>
+        <p class="text-emerald-500" id="balance-change">+$645.78 (6.46%)</p>
       </div>
 
       <div class="w-full h-96">

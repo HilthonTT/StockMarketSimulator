@@ -22,6 +22,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Architecture.Tests", "Archi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedKernel", "SharedKernel\SharedKernel.csproj", "{0E2557B9-D862-4F68-B5B0-6057C1F1205D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.IntegrationTests", "..\Application.IntegrationTests\Application.IntegrationTests.csproj", "{D9A7224F-69F5-4B3C-B068-6BF72B6627E5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,6 +46,10 @@ Global
 		{0E2557B9-D862-4F68-B5B0-6057C1F1205D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E2557B9-D862-4F68-B5B0-6057C1F1205D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0E2557B9-D862-4F68-B5B0-6057C1F1205D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9A7224F-69F5-4B3C-B068-6BF72B6627E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9A7224F-69F5-4B3C-B068-6BF72B6627E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9A7224F-69F5-4B3C-B068-6BF72B6627E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9A7224F-69F5-4B3C-B068-6BF72B6627E5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -53,5 +59,6 @@ Global
 		{1DF0A854-7AAD-4432-BD1B-B19A3D4220A3} = {BD8BBDCE-8E34-42EC-B4DB-5D078398BDCC}
 		{60B136D2-5BFA-43E1-ADED-50ACDD8B74D0} = {7B1C7E13-1007-4A2E-B520-EEC97C976A73}
 		{0E2557B9-D862-4F68-B5B0-6057C1F1205D} = {0629A2D7-9056-4BD4-AC56-4D87E08F216B}
+		{D9A7224F-69F5-4B3C-B068-6BF72B6627E5} = {7B1C7E13-1007-4A2E-B520-EEC97C976A73}
 	EndGlobalSection
 EndGlobal

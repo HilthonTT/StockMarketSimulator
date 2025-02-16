@@ -10,27 +10,84 @@ import {
   sellTransaction,
 } from "./services/transaction-service.js";
 
-function getRandomColor() {
-  // Generate a random color (hex format)
-  const letters = "0123456789ABCDEF";
-  let color = "#";
-  for (let i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
-}
+const FIVE_SECONDS_IN_MS = 5000;
 
 document.addEventListener("DOMContentLoaded", async () => {
   let chart;
-  const priceHistory = [];
-  const tickersData = {};
+  let initialBalance = 0;
+  let previousBalance = initialBalance;
 
-  const transactionWidgets = [];
+  const priceHistory = [];
+
+  const currentBalance = document.getElementById("current-balance");
+  const changeBalance = document.getElementById("balance-change");
+  const logoutButton = document.getElementById("logout-button");
 
   const connection = new signalR.HubConnectionBuilder()
     .withUrl(`${config.baseApiUrl}/stocks-feed`)
     .configureLogging(signalR.LogLevel.Information)
     .build();
+
+  const datePicker1 = document.getElementById("datePicker1");
+  const datePicker2 = document.getElementById("datePicker2");
+  const inputDate1 = document.getElementById("inputDate1");
+  const inputDate2 = document.getElementById("inputDate2");
+  const selectedDate1 = document.getElementById("selectedDate1");
+  const selectedDate2 = document.getElementById("selectedDate2");
+
+  let isBuying = true;
+  const modal = document.getElementById("modal");
+  const closeModal = document.getElementById("close-modal");
+  const buyButton = document.getElementById("buy-button");
+  const sellButton = document.getElementById("sell-button");
+
+  const searchResults = document.getElementById("search-results");
+  const searchInput = document.getElementById("search-input");
+
+  let dateRange1 = new Date("2024-12-22");
+  let dateRange2 = new Date();
+
+  selectedDate1.textContent = dateRange1.toDateString();
+  selectedDate2.textContent = dateRange2.toDateString();
+
+  const transactionWidgets = [];
+
+  // Initialize SignalR connection
+  await startSignalRConnection();
+
+  connection.on("ReceiveStockPriceUpdate", (stockUpdate) => {
+    handleStockPriceUpdate(stockUpdate);
+  });
+
+  window.addEventListener("beforeunload", () => connection.stop());
+
+  logoutButton.addEventListener("click", () => {
+    clearTokens();
+    window.location.reload();
+  });
+
+  datePicker1.addEventListener("click", () => inputDate1.showPicker());
+  datePicker2.addEventListener("click", () => inputDate2.showPicker());
+
+  inputDate1.addEventListener(
+    "change",
+    async (e) => await handleDateChange(e, selectedDate1, 1)
+  );
+  inputDate2.addEventListener(
+    "change",
+    async (e) => await handleDateChange(e, selectedDate2, 2)
+  );
+
+  buyButton.addEventListener("click", () => toggleBuySell(true));
+  sellButton.addEventListener("click", () => toggleBuySell(false));
+
+  searchInput.addEventListener("input", debounce(handleSearchInput, 500));
+  searchInput.addEventListener("focus", () =>
+    searchResults.classList.remove("hidden")
+  );
+  searchInput.addEventListener("blur", () =>
+    setTimeout(() => hideSearchResults(), 100)
+  );
 
   async function startSignalRConnection() {
     try {
@@ -50,243 +107,184 @@ document.addEventListener("DOMContentLoaded", async () => {
     await startSignalRConnection();
   });
 
-  // Start the SignalR connection
-  await startSignalRConnection();
-
-  connection.on("ReceiveStockPriceUpdate", (stockUpdate) => {
+  async function handleStockPriceUpdate(stockUpdate) {
     const transactions = transactionWidgets.filter(
-      (transaction) => transaction.ticker === stockUpdate.ticker
+      (widget) => widget.ticker === stockUpdate.ticker
     );
+    let totalGainOrLoss = 0;
 
-    transactions.forEach((transactionWidget) => {
-      // Update the price for each transaction widget
-      transactionWidget.updatePrice(stockUpdate.price);
+    transactions.forEach((widget) => {
+      const change = calculateTransactionChange(widget, stockUpdate.price);
+      totalGainOrLoss += change;
+      widget.updatePrice(stockUpdate.price);
     });
 
+    updateBalance(totalGainOrLoss);
     updateChart(stockUpdate.price, stockUpdate.ticker);
-  });
+  }
 
-  window.addEventListener("beforeunload", () => {
-    connection.stop().then(() => console.log("SignalR Connection Stopped"));
-  });
+  function calculateTransactionChange(transactionWidget, newPrice) {
+    const oldPrice = transactionWidget.limitPrice;
+    const quantity = transactionWidget.quantity;
+    return (newPrice - oldPrice) * quantity;
+  }
 
-  const logoutButton = document.getElementById("logout-button");
+  function updateBalance(totalGainOrLoss) {
+    const newBalance = previousBalance + totalGainOrLoss;
 
-  logoutButton.addEventListener("click", () => {
-    clearTokens();
+    currentBalance.textContent = `$${newBalance.toFixed(2)}`;
 
-    window.location.reload();
-  });
+    const balanceChange = newBalance - initialBalance;
 
-  // Date filters
-  let dateRange1 = new Date("2024-12-22");
-  let dateRange2 = new Date();
+    const percentageChange = (balanceChange / initialBalance) * 100;
 
-  const datePicker1 = document.getElementById("datePicker1");
-  const datePicker2 = document.getElementById("datePicker2");
-  const inputDate1 = document.getElementById("inputDate1");
-  const inputDate2 = document.getElementById("inputDate2");
-  const selectedDate1 = document.getElementById("selectedDate1");
-  const selectedDate2 = document.getElementById("selectedDate2");
+    changeBalance.textContent = `${
+      balanceChange >= 0 ? "+" : ""
+    }$${balanceChange.toFixed(2)} (${percentageChange.toFixed(2)}%)`;
 
-  selectedDate1.textContent = dateRange1.toDateString();
-  selectedDate2.textContent = dateRange2.toDateString();
+    changeBalance.className =
+      balanceChange >= 0 ? "text-emerald-500" : "text-rose-500";
 
-  datePicker1.addEventListener("click", () => inputDate1.showPicker());
-  datePicker2.addEventListener("click", () => inputDate2.showPicker());
+    previousBalance = newBalance;
+  }
 
-  inputDate1.addEventListener("change", (e) => {
-    dateRange1 = new Date(e.target.value);
-    selectedDate1.textContent = dateRange1.toDateString();
-    filterTransactions();
-  });
+  async function handleDateChange(event, selectedDateElement, dateIndex) {
+    const dateRange = new Date(event.target.value);
 
-  inputDate2.addEventListener("change", (e) => {
-    dateRange2 = new Date(e.target.value);
-    selectedDate2.textContent = dateRange2.toDateString();
-    filterTransactions();
-  });
+    selectedDateElement.textContent = dateRange.toDateString();
 
-  // Transaction form modal
-  let isBuying = true;
-
-  const modal = document.getElementById("modal");
-  const closeModal = document.getElementById("close-modal");
-  const buyButton = document.getElementById("buy-button");
-  const sellButton = document.getElementById("sell-button");
-
-  buyButton.addEventListener("click", () => {
-    buyButton.classList.add("bg-emerald-500");
-    buyButton.classList.remove("bg-[#2c2d39]");
-
-    sellButton.classList.remove("bg-rose-500");
-    sellButton.classList.add("bg-[#2c2d39]");
-
-    isBuying = true;
-    console.log({ isBuying });
-  });
-
-  sellButton.addEventListener("click", () => {
-    sellButton.classList.add("bg-rose-500");
-    sellButton.classList.remove("bg-[#2c2d39]");
-    buyButton.classList.remove("bg-emerald-500");
-    buyButton.classList.add("bg-[#2c2d39]");
-
-    isBuying = false;
-    console.log({ isBuying });
-  });
-
-  // Search filter
-  const searchResults = document.getElementById("search-results");
-  const searchInput = document.getElementById("search-input");
-
-  searchInput.addEventListener(
-    "input",
-    debounce(async (event) => {
-      const query = event.target.value.trim();
-
-      if (query.length > 0) {
-        const stockData = await fetchStockData(query);
-
-        displayResults(stockData);
-      } else {
-        searchResults.classList.add("hidden");
-      }
-    }, 500)
-  );
-
-  searchInput.addEventListener("focus", () => {
-    if (searchResults.innerHTML.trim() !== "") {
-      searchResults.classList.remove("hidden");
-    }
-  });
-
-  searchInput.addEventListener("blur", () => {
-    setTimeout(() => {
-      if (!searchResults.contains(document.activeElement)) {
-        searchResults.classList.add("hidden");
-      }
-    }, 100);
-  });
-
-  async function loadBudget() {
-    const budget = await fetchBudget();
-
-    const budgetElement = document.getElementById("buying-power");
-    const transactionFormBudgetElement =
-      document.getElementById("buying-power-form");
-    if (budgetElement) {
-      budgetElement.textContent = `$${budget.buyingPower.toFixed(2)}`;
+    if (dateIndex === 1) {
+      dateRange1 = dateRange;
+    } else {
+      dateRange2 = dateRange;
     }
 
-    if (transactionFormBudgetElement) {
-      transactionFormBudgetElement.textContent = `$${budget.buyingPower.toFixed(
-        2
-      )}`;
-    }
+    await filterTransactions();
   }
 
   async function filterTransactions() {
-    // 0: Buy
-    // 1: Sell
-
     const transactions = await fetchTransactions();
-
-    const filteredTransactions = transactions.filter((t) => {
-      const createdDate = new Date(t.createdOnUtc);
-
-      return createdDate >= dateRange1 && createdDate <= dateRange2;
-    });
+    initialBalance = calculateInitialBalance(transactions);
+    const filteredTransactions = filterByDate(transactions);
 
     const tbody = document.getElementById("trading-history-body");
-    if (!tbody) {
-      return;
-    }
+    if (!tbody) return;
 
     tbody.innerHTML = "";
-
     filteredTransactions.forEach((transaction, index) => {
-      const transactionWidget = new TransactionWidget(
-        transaction.id,
-        transaction.userId,
-        transaction.ticker,
-        transaction.limitPrice,
-        transaction.type,
-        transaction.quantity,
-        transaction.totalAmount,
-        transaction.createdOnUtc,
-        connection,
-        index
-      );
-
-      transactionWidgets.push(transactionWidget);
-
-      tbody.appendChild(transactionWidget.element);
+      const widget = createTransactionWidget(transaction, index);
+      transactionWidgets.push(widget);
+      tbody.appendChild(widget.element);
     });
+
+    updateBalanceUI();
+  }
+
+  function calculateInitialBalance(transactions) {
+    return transactions.reduce((balance, transaction) => {
+      const amount = transaction.limitPrice * transaction.quantity;
+      return transaction.type === 1 ? balance + amount : balance - amount;
+    }, 0);
+  }
+
+  function filterByDate(transactions) {
+    return transactions.filter((transaction) => {
+      const createdDate = new Date(transaction.createdOnUtc);
+      return createdDate >= dateRange1 && createdDate <= dateRange2;
+    });
+  }
+
+  function createTransactionWidget(transaction, index) {
+    return new TransactionWidget(
+      transaction.id,
+      transaction.userId,
+      transaction.ticker,
+      transaction.limitPrice,
+      transaction.type,
+      transaction.quantity,
+      transaction.totalAmount,
+      transaction.createdOnUtc,
+      connection,
+      index
+    );
+  }
+
+  function updateBalanceUI() {
+    currentBalance.textContent = `$${initialBalance.toFixed(2)}`;
+    changeBalance.textContent = "+$0.00 (0.00%)";
+    changeBalance.className = "text-emerald-500";
+  }
+
+  async function handleSearchInput(event) {
+    const query = event.target.value.trim();
+    if (query.length > 0) {
+      const stockData = await fetchStockData(query);
+      displayResults(stockData);
+    } else {
+      searchResults.classList.add("hidden");
+    }
+  }
+
+  function hideSearchResults() {
+    if (!searchResults.contains(document.activeElement)) {
+      searchResults.classList.add("hidden");
+    }
   }
 
   async function fetchStockData(query) {
     const matchResults = await searchStocks(query);
-
     return matchResults.filter((stock) =>
       stock.symbol.toLowerCase().includes(query.toLowerCase())
     );
   }
 
   function displayResults(results) {
-    searchResults.innerHTML = "";
-
-    if (results.length === 0) {
-      searchResults.innerHTML =
-        "<div class='p-2 text-gray-400'>No results found.</div>";
-      return;
-    }
-
-    searchResults.innerHTML = results
-      .map(
-        (result) =>
-          `<div 
-            class="p-2 text-gray-300 hover:bg-gray-700 cursor-pointer" 
-            data-ticker="${result.symbol}" 
-            data-price="${390}">
-            ${result.symbol}
-          </div>`
-      )
-      .join("");
+    searchResults.innerHTML =
+      results.length === 0
+        ? "<div class='p-2 text-gray-400'>No results found.</div>"
+        : results
+            .map(
+              (result) =>
+                `<div class="p-2 text-gray-300 hover:bg-gray-700 cursor-pointer" data-ticker="${
+                  result.symbol
+                }" data-price="${390}">${result.symbol}</div>`
+            )
+            .join("");
 
     searchResults.classList.remove("hidden");
 
     const resultItems = searchResults.querySelectorAll("div[data-ticker]");
-
     resultItems.forEach((item) => {
       item.addEventListener("click", () => {
         const ticker = item.getAttribute("data-ticker");
         const price = item.getAttribute("data-price");
 
+        console.log({ price });
+
         openModal(ticker, price);
       });
     });
 
-    closeModal.addEventListener("click", () => {
-      modal.classList.add("hidden");
-    });
+    closeModal.addEventListener("click", () => modal.classList.add("hidden"));
   }
 
   function openModal(ticker, price) {
     const modalTitle = document.getElementById("modal-title");
-
     const stockName = modal.querySelector("p.font-bold.text-lg");
+    const priceInput = document.querySelector(
+      "#transaction-form input[readonly]"
+    );
 
     if (modalTitle) {
       modalTitle.textContent = `Place Order for ${ticker}`;
-    } else {
-      console.error("Modal title element not found!");
     }
 
     if (stockName) {
       stockName.textContent = ticker;
-    } else {
-      console.error("Stock name element not found!");
+    }
+
+    if (priceInput) {
+      priceInput.value = price; // Set the price in the input field
     }
 
     modal.classList.remove("hidden");
@@ -310,31 +308,63 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    const quantity = parseInt(quantityInput.value, 10);
-
-    if (isNaN(quantity) || quantity <= 0) {
-      console.error("Invalid quantity entered!");
+    const quantity = parseInt(quantityInput.value);
+    if (!quantity) {
+      alert("Please enter a valid quantity.");
       return;
     }
 
     if (isBuying) {
-      await buyTransaction(ticker, quantity)
-        .then(() => {
-          window.location.reload();
-        })
-        .catch((e) => {
-          alert("Something went wrong!");
-          console.error(e);
-        });
+      await buyTransaction(ticker, quantity);
     } else {
-      await sellTransaction(ticker, quantity)
-        .then(() => {
-          window.location.reload();
-        })
-        .catch((e) => {
-          alert("Something went wrong!");
-          console.error(e);
-        });
+      await sellTransaction(ticker, quantity);
+    }
+
+    modal.classList.add("hidden");
+    await filterTransactions();
+  }
+
+  function toggleBuySell(isBuy) {
+    const form = document.getElementById("transaction-form");
+    const buyRadioButton = form.querySelector("input[value='buy']");
+    const sellRadioButton = form.querySelector("input[value='sell']");
+
+    if (isBuy) {
+      isBuying = true;
+      buyRadioButton.checked = true;
+      sellRadioButton.checked = false;
+
+      buyButton.classList.add("bg-emerald-500");
+      buyButton.classList.remove("bg-[#2c2d39]");
+
+      sellButton.classList.remove("bg-rose-500");
+      sellButton.classList.add("bg-[#2c2d39]");
+    } else {
+      isBuying = false;
+      buyRadioButton.checked = false;
+      sellRadioButton.checked = true;
+
+      sellButton.classList.add("bg-rose-500");
+      sellButton.classList.remove("bg-[#2c2d39]");
+      buyButton.classList.remove("bg-emerald-500");
+      buyButton.classList.add("bg-[#2c2d39]");
+    }
+  }
+
+  async function loadBudget() {
+    const budget = await fetchBudget();
+
+    const budgetElement = document.getElementById("buying-power");
+    const transactionFormBudgetElement =
+      document.getElementById("buying-power-form");
+    if (budgetElement) {
+      budgetElement.textContent = `$${budget.buyingPower.toFixed(2)}`;
+    }
+
+    if (transactionFormBudgetElement) {
+      transactionFormBudgetElement.textContent = `$${budget.buyingPower.toFixed(
+        2
+      )}`;
     }
   }
 
@@ -399,6 +429,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function updateChart(price, ticker) {
+    // TODO Fix this later
     if (ticker !== "TSLA") {
       return;
     }
@@ -436,11 +467,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     chart.update();
   }
 
-  const user = await ensureAuthenticated();
-
-  console.log({ user });
-
   createChart();
+  await ensureAuthenticated();
   await loadBudget();
   await filterTransactions();
 });
