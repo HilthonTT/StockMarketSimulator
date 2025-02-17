@@ -1,10 +1,11 @@
-﻿using StockMarketSimulator.Api.Modules.Users.Domain;
+﻿using Npgsql;
+using StockMarketSimulator.Api.Modules.Users.Domain;
 
 namespace StockMarketSimulator.Api.Modules.Users.Infrastructure;
 
 internal interface ITokenProvider
 {
-    string Create(User user);
+    Task<string> Create(NpgsqlConnection connection, User user);
 
     string GenerateRefreshToken();
 }

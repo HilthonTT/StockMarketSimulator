@@ -61,7 +61,7 @@ internal sealed class LoginUserWithRefreshTokenCommandHandler : ICommandHandler<
             return Result.Failure<TokenResponse>(RefreshTokenErrors.Expired);
         }
 
-        string accessToken = _tokenProvider.Create(user);
+        string accessToken = await _tokenProvider.Create(connection, user);
 
         refreshToken.Update(_tokenProvider.GenerateRefreshToken());
 

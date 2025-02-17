@@ -165,6 +165,29 @@ internal sealed class DatabaseInitializer : BackgroundService
                 CONSTRAINT fk_transactions_users FOREIGN KEY (user_id)
                 REFERENCES public.users (id) ON DELETE CASCADE
             );
+
+            -- Check if roles table exists, if not, create it.
+            CREATE TABLE IF NOT EXISTS public.roles (
+                id SERIAL PRIMARY KEY,
+                name TEXT NOT NULL UNIQUE
+            );
+
+            -- Insert Admin and Member roles if they do not already exist.
+            INSERT INTO public.roles (id, name)
+            VALUES 
+                (1, 'Admin'),
+                (2, 'Member')
+            ON CONFLICT (id) DO NOTHING;
+
+            -- Create the user_roles table if it doesn't exist
+            CREATE TABLE IF NOT EXISTS public.user_roles (
+                user_id UUID NOT NULL,
+                role_id INT NOT NULL,
+
+                PRIMARY KEY (user_id, role_id),
+                FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE,
+                FOREIGN KEY (role_id) REFERENCES public.roles(id) ON DELETE CASCADE
+            );
             """;
 
         await connection.ExecuteAsync(sql);

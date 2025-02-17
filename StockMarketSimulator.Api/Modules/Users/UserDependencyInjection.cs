@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using StockMarketSimulator.Api.Modules.Users.Api;
 using StockMarketSimulator.Api.Modules.Users.Application.ChangePassword;
 using StockMarketSimulator.Api.Modules.Users.Application.DeleteAll;
+using StockMarketSimulator.Api.Modules.Users.Application.GetById;
 using StockMarketSimulator.Api.Modules.Users.Application.GetCurrent;
 using StockMarketSimulator.Api.Modules.Users.Application.Login;
 using StockMarketSimulator.Api.Modules.Users.Application.LoginWithRefreshToken;
@@ -25,7 +26,6 @@ public static class UserDependencyInjection
     {
         services
             .AddAuthenticationInternal(configuration)
-            .AddAuthorizationInternal()
             .AddPersistence()
             .AddUseCases()
             .AddPublicApis();
@@ -52,6 +52,7 @@ public static class UserDependencyInjection
         services.AddScoped<DeleteAllUsersCommandHandler>();
 
         services.AddScoped<GetCurrentUserQueryHandler>();
+        services.AddScoped<GetUserByIdQueryHandler>();
 
         return services;
     }
@@ -86,17 +87,11 @@ public static class UserDependencyInjection
 
         services.AddHttpContextAccessor();
         services.AddScoped<IUserContext, UserContext>();
+        services.AddScoped<ITokenProvider, TokenProvider>();
+
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
-        services.AddSingleton<ITokenProvider, TokenProvider>();
 
         services.AddHostedService<RevokeExpiredRefreshTokenBackgroundJob>();
-
-        return services;
-    }
-
-    private static IServiceCollection AddAuthorizationInternal(this IServiceCollection services)
-    {
-        services.AddAuthorization();
 
         return services;
     }

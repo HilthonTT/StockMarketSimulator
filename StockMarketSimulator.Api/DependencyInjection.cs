@@ -1,8 +1,10 @@
 ﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Features;
 using Npgsql;
 using SharedKernel;
 using StockMarketSimulator.Api.Infrastructure;
+using StockMarketSimulator.Api.Infrastructure.Authorization;
 using StockMarketSimulator.Api.Infrastructure.Caching;
 using StockMarketSimulator.Api.Infrastructure.Database;
 using StockMarketSimulator.Api.Infrastructure.Email;
@@ -21,7 +23,8 @@ public static class DependencyInjection
             .AddHealthChecks(configuration)
             .AddCaching(configuration)
             .AddEmailServices(configuration)
-            .AddApiVersioningInternal();
+            .AddApiVersioningInternal()
+            .AddAuthorizationInternal();
 
         return services;
     }
@@ -119,6 +122,19 @@ public static class DependencyInjection
             .AddSmtpSender(configuration["Email:Host"], configuration.GetValue<int>("Email:Port"));
 
         services.AddScoped<IEmailService, EmailService>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddAuthorizationInternal(this IServiceCollection services)
+    {
+        services.AddAuthorization();
+
+        services.AddScoped<IPermissionProvider, PermissionProvider>();
+
+        services.AddTransient<IAuthorizationHandler, PermissionAuthorizationHandler>();
+
+        services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
 
         return services;
     }

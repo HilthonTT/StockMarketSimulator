@@ -37,7 +37,7 @@
   </ItemGroup>
 
    <ItemGroup>
-    <InternalsVisibleTo Include="Application.IntegrationTests"/>
+    <InternalsVisibleTo Include="Application.IntegrationTests" />
    </ItemGroup>
 
 </Project>

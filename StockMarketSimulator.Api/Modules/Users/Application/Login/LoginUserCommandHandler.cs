@@ -58,7 +58,7 @@ internal sealed class LoginUserCommandHandler : ICommandHandler<LoginUserCommand
             return Result.Failure<TokenResponse>(UserErrors.NotFoundByEmail);
         }
 
-        string token = _tokenProvider.Create(user);
+        string token = await _tokenProvider.Create(connection, user);
 
         var refreshToken = RefreshToken.Create(
             _tokenProvider.GenerateRefreshToken(),

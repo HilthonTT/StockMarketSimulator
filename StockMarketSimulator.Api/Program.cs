@@ -11,6 +11,7 @@ using StockMarketSimulator.Api.Modules.Stocks;
 using StockMarketSimulator.Api.Modules.Stocks.Infrastructure;
 using StockMarketSimulator.Api.Modules.Transactions;
 using StockMarketSimulator.Api.Modules.Budgets;
+using StockMarketSimulator.Api.Modules.Roles;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +24,8 @@ builder.Services
     .AddStocksModule(builder.Configuration)
     .AddPresentation(builder.Configuration)
     .AddTransactionsModule()
-    .AddBudgetModule();
+    .AddBudgetModule()
+    .AddRolesModule();
 
 builder.Services.AddEndpoints(Assembly.GetExecutingAssembly());
 

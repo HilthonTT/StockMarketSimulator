@@ -2,8 +2,10 @@
 using StockMarketSimulator.Api.Endpoints;
 using StockMarketSimulator.Api.Extensions;
 using StockMarketSimulator.Api.Infrastructure;
+using StockMarketSimulator.Api.Modules.Roles.Domain;
 using StockMarketSimulator.Api.Modules.Users.Application.ChangePassword;
 using StockMarketSimulator.Api.Modules.Users.Application.DeleteAll;
+using StockMarketSimulator.Api.Modules.Users.Application.GetById;
 using StockMarketSimulator.Api.Modules.Users.Application.GetCurrent;
 using StockMarketSimulator.Api.Modules.Users.Application.Login;
 using StockMarketSimulator.Api.Modules.Users.Application.LoginWithRefreshToken;
@@ -29,6 +31,21 @@ internal sealed class UserEndpoints : IEndpoint
         })
         .WithOpenApi()
         .RequireAuthorization()
+        .WithTags(Tags.Users);
+
+        app.MapGet("/users/{userId:guid}", async (
+            Guid userId,
+            GetUserByIdQueryHandler useCase,
+            CancellationToken cancellationToken) =>
+        {
+            var query = new GetUserByIdQuery(userId);
+
+            Result<UserResponse> result = await useCase.Handle(query, cancellationToken);
+
+            return result.Match(Results.Ok, CustomResults.Problem);
+        })
+        .WithOpenApi()
+        .RequireAuthorization(policy => policy.RequireRole(Role.Admin))
         .WithTags(Tags.Users);
 
         app.MapPost("/users/register", async (
