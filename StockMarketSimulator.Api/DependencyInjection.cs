@@ -1,13 +1,17 @@
 ﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Options;
 using Npgsql;
+using Quartz;
 using SharedKernel;
 using StockMarketSimulator.Api.Infrastructure;
 using StockMarketSimulator.Api.Infrastructure.Authorization;
 using StockMarketSimulator.Api.Infrastructure.Caching;
 using StockMarketSimulator.Api.Infrastructure.Database;
 using StockMarketSimulator.Api.Infrastructure.Email;
+using StockMarketSimulator.Api.Modules.Stocks.Infrastructure;
+using StockMarketSimulator.Api.Modules.Users.Infrastructure;
 using StockMarketSimulator.Api.OpenApi;
 using System.Diagnostics;
 
@@ -24,7 +28,8 @@ public static class DependencyInjection
             .AddCaching(configuration)
             .AddEmailServices(configuration)
             .AddApiVersioningInternal()
-            .AddAuthorizationInternal();
+            .AddAuthorizationInternal()
+            .AddBackgroundJobs(configuration);
 
         return services;
     }
@@ -98,8 +103,6 @@ public static class DependencyInjection
 
         services.AddSingleton<DatabaseInitializationCompletionSignal>();
 
-        services.AddHostedService<DatabaseInitializer>();
-
         return services;
     }
 
@@ -138,4 +141,81 @@ public static class DependencyInjection
 
         return services;
     }
+
+    private static IServiceCollection AddBackgroundJobs(this IServiceCollection services, IConfiguration configuration)
+    {
+        string? connectionString = configuration.GetConnectionString("Database");
+        Ensure.NotNullOrEmpty(connectionString, nameof(connectionString));
+
+        services.Configure<StockUpdateOptions>(configuration.GetSection("StockUpdateOptions"));
+
+        services.AddQuartz(options =>
+        {
+            AddDatabaseInitializerJob(options);
+            AddRevokeExpiredRefreshTokenJob(options);
+            AddStocksFeedUpdaterJob(options, services);
+
+            options.UsePersistentStore(persistenceOptions =>
+            {
+                persistenceOptions.UsePostgres(cfg =>
+                {
+                    cfg.ConnectionString = connectionString;
+                    cfg.TablePrefix = "scheduler.qrtz_";
+                },
+                dataSourceName: "stock-market-simulator");
+
+                persistenceOptions.UseNewtonsoftJsonSerializer();
+                persistenceOptions.UseProperties = true;
+                persistenceOptions.PerformSchemaValidation = true;
+            });
+        });
+
+        services.AddQuartzHostedService(options =>
+        {
+            options.WaitForJobsToComplete = true;
+        });
+
+        return services;
+    }
+
+    private static void AddRevokeExpiredRefreshTokenJob(IServiceCollectionQuartzConfigurator options)
+    {
+        var jobKey = JobKey.Create(RevokeExpiredRefreshTokenBackgroundJob.Name);
+
+        options.AddJob<RevokeExpiredRefreshTokenBackgroundJob>(jobKey)
+               .AddTrigger(trigger =>
+                    trigger.ForJob(jobKey)
+                           .WithSimpleSchedule(schedule =>
+                                schedule.WithIntervalInSeconds(5).RepeatForever()));
+    }
+
+    private static void AddStocksFeedUpdaterJob(IServiceCollectionQuartzConfigurator options, IServiceCollection services)
+    {
+        using var scope = services.BuildServiceProvider().CreateScope();
+        var stockUpdateOptions = scope.ServiceProvider.GetRequiredService<IOptions<StockUpdateOptions>>().Value;
+
+        var jobKey = JobKey.Create(StocksFeedUpdater.Name);
+
+        options.AddJob<StocksFeedUpdater>(jobKey)
+               .AddTrigger((trigger) =>
+               {
+                   trigger.ForJob(jobKey)
+                          .WithSimpleSchedule(schedule =>
+                              schedule.WithInterval(stockUpdateOptions.UpdateInterval).RepeatForever());
+               });
+    }
+
+    private static void AddDatabaseInitializerJob(IServiceCollectionQuartzConfigurator options)
+    {
+        var jobKey = JobKey.Create(DatabaseInitializer.Name);
+
+        options.AddJob<DatabaseInitializer>(jobKey)
+               .AddTrigger(trigger => trigger
+                    .ForJob(jobKey)
+                    .StartNow() // Execute immediately
+                    .WithSimpleSchedule(schedule =>
+                        schedule.WithRepeatCount(0) // No repeats
+                                .WithInterval(TimeSpan.FromMilliseconds(1))));
+    }
+
 }

@@ -91,8 +91,6 @@ public static class UserDependencyInjection
 
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
 
-        services.AddHostedService<RevokeExpiredRefreshTokenBackgroundJob>();
-
         return services;
     }
 }

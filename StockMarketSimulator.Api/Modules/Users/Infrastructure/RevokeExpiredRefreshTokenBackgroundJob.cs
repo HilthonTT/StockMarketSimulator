@@ -1,12 +1,15 @@
 ﻿using Dapper;
+using Quartz;
 using StockMarketSimulator.Api.Infrastructure.Database;
 using System.Data;
 using System.Diagnostics;
 
 namespace StockMarketSimulator.Api.Modules.Users.Infrastructure;
 
-internal sealed class RevokeExpiredRefreshTokenBackgroundJob : BackgroundService
+internal sealed class RevokeExpiredRefreshTokenBackgroundJob : IJob
 {
+    public const string Name = nameof(RevokeExpiredRefreshTokenBackgroundJob);
+
     private readonly IDbConnectionFactory _dbConnectionFactory;
     private readonly ILogger<RevokeExpiredRefreshTokenBackgroundJob> _logger;
     private readonly DatabaseInitializationCompletionSignal _signal;
@@ -21,19 +24,14 @@ internal sealed class RevokeExpiredRefreshTokenBackgroundJob : BackgroundService
         _signal = signal;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    public async Task Execute(IJobExecutionContext context)
     {
         await _signal.WaitForInitializationAsync();
 
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            await RevokeRefreshTokensAsync(stoppingToken);
-
-            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
-        }
+        await RevokeRefreshTokensAsync(context.CancellationToken);
     }
 
-    private async Task RevokeRefreshTokensAsync(CancellationToken cancellationToken)
+    private async Task RevokeRefreshTokensAsync(CancellationToken cancellationToken = default)
     {
         Stopwatch stopwatch = Stopwatch.StartNew();
 

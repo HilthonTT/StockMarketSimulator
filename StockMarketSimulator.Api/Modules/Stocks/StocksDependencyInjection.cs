@@ -48,10 +48,6 @@ public static class StocksDependencyInjection
         services.AddScoped<IStockService, StockService>();
         services.AddSingleton<ActiveTickerManager>();
 
-        services.AddHostedService<StocksFeedUpdater>();
-
-        services.Configure<StockUpdateOptions>(configuration.GetSection("StockUpdateOptions"));
-
         services.AddHttpClient<StocksClient>(httpClient =>
         {
             string? apiUrl = configuration["Stocks:ApiUrl"];
