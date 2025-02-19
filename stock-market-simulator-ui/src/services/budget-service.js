@@ -1,25 +1,14 @@
 import { ensureAuthenticated } from "../utils/auth.js";
-import { config } from "../utils/config.js";
+import { apiFetch } from "../utils/api-fetch.js";
 
 export async function fetchBudget() {
   const user = await ensureAuthenticated();
 
-  const response = await fetch(
-    new URL(`${config.baseApiUrl}/api/v1/users/${user.id}/budgets`),
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${user.accessToken}`,
-      },
-    }
-  );
-
-  if (!response.ok) {
-    alert("Cannot fetch budget");
+  if (!user) {
     return null;
   }
 
-  const budget = await response.json();
-
-  return budget;
+  return await apiFetch(`/api/v1/users/${user?.id}/budgets`, {
+    requiresAuth: true,
+  });
 }

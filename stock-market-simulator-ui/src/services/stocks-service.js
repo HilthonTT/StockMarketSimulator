@@ -1,21 +1,9 @@
-import { config } from "../utils/config.js";
+import { apiFetch } from "../utils/api-fetch.js";
 
 export async function searchStocks(searchTerm) {
-  const response = await fetch(
-    new URL(`${config.baseApiUrl}/api/v1/stocks/search/${searchTerm}`),
-    {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
-
-  if (!response.ok) {
-    alert("Failed to search stocks");
-    return;
+  if (!searchTerm) {
+    return [];
   }
 
-  const stockMatchResults = await response.json();
-
-  return stockMatchResults;
+  return await apiFetch(`/api/v1/stocks/search/${searchTerm}`);
 }
