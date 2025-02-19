@@ -17,7 +17,25 @@ document.addEventListener("DOMContentLoaded", async () => {
   let initialBalance = 0;
   let previousBalance = initialBalance;
 
-  const priceHistory = [];
+  const maxTickers = 3; // Maximum allowed tickers
+  const tickers = {}; // Store price histories for each ticker
+  const colors = [
+    {
+      borderColor: "rgb(75, 192, 192)",
+      backgroundColor: "rgba(75, 192, 192, 0.2)",
+    }, // Teal
+    {
+      borderColor: "rgb(255, 99, 132)",
+      backgroundColor: "rgba(255, 99, 132, 0.2)",
+    }, // Red
+    {
+      borderColor: "rgb(54, 162, 235)",
+      backgroundColor: "rgba(54, 162, 235, 0.2)",
+    }, // Blue
+  ];
+
+  // TODO: Make this changeable in the UI
+  let selectedTicker = "AMD";
 
   const currentBalance = document.getElementById("current-balance");
   const changeBalance = document.getElementById("balance-change");
@@ -403,7 +421,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         },
         scales: {
           x: {
-            display: true,
+            display: false,
             grid: { display: false },
             ticks: {
               color: "rgb(156, 163, 175)", // Gray-400 in Tailwind
@@ -417,53 +435,59 @@ document.addEventListener("DOMContentLoaded", async () => {
             ticks: {
               color: "rgb(156, 163, 175)", // Gray-400 in Tailwind
               font: { size: 10 },
-              callback: function (value) {
-                return "$" + value.toFixed(2); // Format Y-axis values as currency
+              callback: function (value, index, values) {
+                if (index === 0 || index === values.length - 1) {
+                  return "$" + value.toFixed(2);
+                }
+
+                return "";
               },
             },
           },
         },
-        animation: true,
+        animation: false,
       },
     });
   }
 
   function updateChart(price, ticker) {
-    // TODO Fix this later
-    if (ticker !== "TSLA") {
-      return;
-    }
-
-    // Ensure the chart is initialized
     if (!chart) {
       console.error("Chart is not initialized");
       return;
     }
 
-    priceHistory.push(price);
-
-    if (priceHistory.length > 30) {
-      priceHistory.shift();
+    // Add or update ticker price history
+    if (!tickers[ticker]) {
+      if (Object.keys(tickers).length >= maxTickers) {
+        // Remove the oldest ticker when limit is reached
+        delete tickers[Object.keys(tickers)[0]];
+      }
+      tickers[ticker] = [];
     }
 
-    // Calculate min and max prices
-    const minPrice = Math.min(...priceHistory);
-    const maxPrice = Math.max(...priceHistory);
+    tickers[ticker].push(price);
+    if (tickers[ticker].length > 30) {
+      tickers[ticker].shift(); // Keep last 30 prices
+    }
 
-    // Update labels and dataset
-    chart.data.labels = priceHistory.map((_, index) => index + 1); // Update labels with 1-based index
-    chart.data.datasets[0].data = priceHistory; // Update data points
+    // Update chart data only for selectedTicker
+    chart.data.labels = Array.from({ length: 30 }, (_, i) => i + 1); // Keep x-axis consistent
 
-    // Set the ticker name as the label
-    chart.data.datasets[0].label = ticker; // Dynamically set the label to the ticker name
+    chart.data.datasets = Object.entries(tickers)
+      .filter(([name]) => name === selectedTicker) // Keep only selected ticker
+      .map(([name, prices], index) => {
+        const color = colors[index % colors.length]; // Cycle colors if needed
+        return {
+          label: name,
+          data: prices,
+          borderColor: color.borderColor,
+          backgroundColor: color.backgroundColor,
+          tension: 0.1,
+          pointRadius: 3,
+          fill: true,
+        };
+      });
 
-    // Update y-axis min and max with a little paddling
-    const range = maxPrice - minPrice;
-    const padding = range * 0.1; // 10% padding
-    chart.options.scales.y.min = minPrice - padding;
-    chart.options.scales.y.max = maxPrice + padding;
-
-    // Trigger chart update
     chart.update();
   }
 

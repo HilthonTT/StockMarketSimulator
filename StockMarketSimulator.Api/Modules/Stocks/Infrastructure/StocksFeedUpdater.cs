@@ -6,6 +6,7 @@ using StockMarketSimulator.Api.Modules.Stocks.Contracts;
 
 namespace StockMarketSimulator.Api.Modules.Stocks.Infrastructure;
 
+[DisallowConcurrentExecution]
 internal sealed class StocksFeedUpdater : IJob
 {
     public const string Name = nameof(StocksFeedUpdater);

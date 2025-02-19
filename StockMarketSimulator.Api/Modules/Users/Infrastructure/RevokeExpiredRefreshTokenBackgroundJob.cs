@@ -6,6 +6,7 @@ using System.Diagnostics;
 
 namespace StockMarketSimulator.Api.Modules.Users.Infrastructure;
 
+[DisallowConcurrentExecution]
 internal sealed class RevokeExpiredRefreshTokenBackgroundJob : IJob
 {
     public const string Name = nameof(RevokeExpiredRefreshTokenBackgroundJob);

@@ -151,23 +151,9 @@ public static class DependencyInjection
 
         services.AddQuartz(options =>
         {
-            AddDatabaseInitializerJob(options);
-            AddRevokeExpiredRefreshTokenJob(options);
-            AddStocksFeedUpdaterJob(options, services);
-
-            options.UsePersistentStore(persistenceOptions =>
-            {
-                persistenceOptions.UsePostgres(cfg =>
-                {
-                    cfg.ConnectionString = connectionString;
-                    cfg.TablePrefix = "scheduler.qrtz_";
-                },
-                dataSourceName: "stock-market-simulator");
-
-                persistenceOptions.UseNewtonsoftJsonSerializer();
-                persistenceOptions.UseProperties = true;
-                persistenceOptions.PerformSchemaValidation = true;
-            });
+            options.AddDatabaseInitializerJob();
+            options.AddRevokeExpiredRefreshTokenJob();
+            options.AddStocksFeedUpdaterJob(services);
         });
 
         services.AddQuartzHostedService(options =>
@@ -178,7 +164,8 @@ public static class DependencyInjection
         return services;
     }
 
-    private static void AddRevokeExpiredRefreshTokenJob(IServiceCollectionQuartzConfigurator options)
+    private static IServiceCollectionQuartzConfigurator AddRevokeExpiredRefreshTokenJob(
+        this IServiceCollectionQuartzConfigurator options)
     {
         var jobKey = JobKey.Create(RevokeExpiredRefreshTokenBackgroundJob.Name);
 
@@ -187,9 +174,13 @@ public static class DependencyInjection
                     trigger.ForJob(jobKey)
                            .WithSimpleSchedule(schedule =>
                                 schedule.WithIntervalInSeconds(5).RepeatForever()));
+
+        return options;
     }
 
-    private static void AddStocksFeedUpdaterJob(IServiceCollectionQuartzConfigurator options, IServiceCollection services)
+    private static IServiceCollectionQuartzConfigurator AddStocksFeedUpdaterJob(
+        this IServiceCollectionQuartzConfigurator options, 
+        IServiceCollection services)
     {
         using var scope = services.BuildServiceProvider().CreateScope();
         var stockUpdateOptions = scope.ServiceProvider.GetRequiredService<IOptions<StockUpdateOptions>>().Value;
@@ -197,15 +188,16 @@ public static class DependencyInjection
         var jobKey = JobKey.Create(StocksFeedUpdater.Name);
 
         options.AddJob<StocksFeedUpdater>(jobKey)
-               .AddTrigger((trigger) =>
-               {
-                   trigger.ForJob(jobKey)
-                          .WithSimpleSchedule(schedule =>
-                              schedule.WithInterval(stockUpdateOptions.UpdateInterval).RepeatForever());
-               });
+          .AddTrigger(trigger =>
+                    trigger.ForJob(jobKey)
+                           .WithSimpleSchedule(schedule =>
+                                schedule.WithIntervalInSeconds(1).RepeatForever()));
+
+        return options;
     }
 
-    private static void AddDatabaseInitializerJob(IServiceCollectionQuartzConfigurator options)
+    private static IServiceCollectionQuartzConfigurator AddDatabaseInitializerJob(
+        this IServiceCollectionQuartzConfigurator options)
     {
         var jobKey = JobKey.Create(DatabaseInitializer.Name);
 
@@ -216,6 +208,7 @@ public static class DependencyInjection
                     .WithSimpleSchedule(schedule =>
                         schedule.WithRepeatCount(0) // No repeats
                                 .WithInterval(TimeSpan.FromMilliseconds(1))));
-    }
 
+        return options;
+    }
 }
