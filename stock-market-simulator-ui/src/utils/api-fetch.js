@@ -6,15 +6,15 @@ export async function apiFetch(
   { method = "GET", body = null, requiresAuth = false } = {}
 ) {
   const url = new URL(`${config.baseApiUrl}${endpoint}`);
-  const headers = { "Content-Type": "application/json" };
+  const headers = {
+    "Content-Type": "application/json",
+  };
 
   if (requiresAuth) {
     const user = await ensureAuthenticated();
     if (!user) {
       return null;
     }
-
-    console.log("Hit ");
 
     headers.Authorization = `Bearer ${user.accessToken}`;
   }
@@ -24,8 +24,6 @@ export async function apiFetch(
     headers,
     ...(body && { body: JSON.stringify(body) }),
   };
-
-  console.log({ url, options });
 
   const response = await fetch(url, options);
 

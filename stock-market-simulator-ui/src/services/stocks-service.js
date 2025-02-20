@@ -7,3 +7,11 @@ export async function searchStocks(searchTerm) {
 
   return await apiFetch(`/api/v1/stocks/search/${searchTerm}`);
 }
+
+export async function fetchPrice(ticker) {
+  if (!ticker) {
+    return null;
+  }
+
+  return await apiFetch(`/api/v1/stocks/${ticker}`);
+}

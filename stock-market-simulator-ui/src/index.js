@@ -1,7 +1,7 @@
 import { debounce } from "./utils/utils.js";
 import { clearTokens, ensureAuthenticated } from "./utils/auth.js";
 import { fetchBudget } from "./services/budget-service.js";
-import { searchStocks } from "./services/stocks-service.js";
+import { searchStocks, fetchPrice } from "./services/stocks-service.js";
 import { fetchTransactions } from "./services/transaction-service.js";
 import { TransactionWidget } from "./models/transaction-widget.js";
 import { config } from "./utils/config.js";
@@ -34,8 +34,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }, // Blue
   ];
 
-  // TODO: Make this changeable in the UI
-  let selectedTicker = "AMD";
+  let selectedTicker = "";
 
   const currentBalance = document.getElementById("current-balance");
   const changeBalance = document.getElementById("balance-change");
@@ -186,16 +185,58 @@ document.addEventListener("DOMContentLoaded", async () => {
     const filteredTransactions = filterByDate(transactions);
 
     const tbody = document.getElementById("trading-history-body");
-    if (!tbody) return;
+    if (!tbody) {
+      return;
+    }
 
     tbody.innerHTML = "";
+    const tickers = new Set();
+
     filteredTransactions.forEach((transaction, index) => {
       const widget = createTransactionWidget(transaction, index);
       transactionWidgets.push(widget);
       tbody.appendChild(widget.element);
+
+      tickers.add(transaction.ticker);
     });
 
+    const firstTransaction = transactions[0];
+
+    if (firstTransaction) {
+      selectedTicker = firstTransaction.ticker;
+    }
+
     updateBalanceUI();
+    updateTickerButtons(Array.from(tickers));
+  }
+
+  function updateTickerButtons(tickers) {
+    const tickerContainer = document.getElementById("ticker-buttons");
+
+    if (!tickerContainer) {
+      return;
+    }
+
+    tickerContainer.innerHTML = "";
+
+    tickers.forEach((ticker) => {
+      const button = document.createElement("button");
+
+      button.innerText = ticker;
+      button.className = `px-4 py-2 m-1 rounded-md transition ${
+        selectedTicker === ticker
+          ? "bg-gray-700 text-white font-bold"
+          : "bg-gray-500 text-white hover:bg-gray-600"
+      }`;
+
+      button.addEventListener("click", () => {
+        selectedTicker = ticker;
+        updateTickerButtons(tickers);
+        updateChart();
+      });
+
+      tickerContainer.appendChild(button);
+    });
   }
 
   function calculateInitialBalance(transactions) {
@@ -263,9 +304,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         : results
             .map(
               (result) =>
-                `<div class="p-2 text-gray-300 hover:bg-gray-700 cursor-pointer" data-ticker="${
-                  result.symbol
-                }" data-price="${390}">${result.symbol}</div>`
+                `<div class="p-2 text-gray-300 hover:bg-gray-700 cursor-pointer" data-ticker="${result.symbol}">${result.symbol}</div>`
             )
             .join("");
 
@@ -273,11 +312,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const resultItems = searchResults.querySelectorAll("div[data-ticker]");
     resultItems.forEach((item) => {
-      item.addEventListener("click", () => {
+      item.addEventListener("click", async () => {
         const ticker = item.getAttribute("data-ticker");
-        const price = item.getAttribute("data-price");
 
-        console.log({ price });
+        const stockPrice = await fetchPrice(ticker);
+
+        const price = stockPrice.price;
 
         openModal(ticker, price);
       });
@@ -445,6 +485,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             },
           },
         },
+        // False to avoid funky animation updates in real time.
         animation: false,
       },
     });
