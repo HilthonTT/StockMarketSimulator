@@ -14,6 +14,7 @@
 - Swagger
 - Serilog
 - SignalR
+- Docker 
 
 ## System Architecture
 
@@ -41,5 +42,4 @@ The persistence layer is responsible for implementing database related concerns.
 
 The Api project will open up the Swagger UI once it starts. Here you can browse the documentation for each endpoint, making it easy to test all of the endpoints.
 
-![Swagger UI](images/swagger_ui.png)
 
