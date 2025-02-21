@@ -26,13 +26,13 @@ The domain layer contains all of the entities, value objects, enums, interfaces 
 
 ### Application
 
-The application layer is responsible for orchestrating all of the application logic and the necessary use-cases. It depends on the domain layer, but has no dependencies on any other layer. This layer defines additional interfaces that are required for supporting the application logic, that are implemented by outside layers. For example, the ***IDbContext*** interface is defined in this layer but implemented by the Persistence layer.
+The application layer is responsible for orchestrating all of the application logic and the necessary use-cases. It depends on the domain layer, but has no dependencies on any other layer. This layer defines additional interfaces that are required for supporting the application logic, that are implemented by outside layers.
 
 This layer utilizes the **CQRS pattern** for structuring the application logic into commands and queries, using the MediatR library.
 
 ### Infrastucture
 
-The infrastructure layer contains classes tasked with accessing external resources. These classes are based on the interfaces defined within the application layer. In the current system, this layer is possibly oversimplified and redundant as it contains only the ***MachineDateTime*** class for getting the current UTC date and time.
+The infrastructure layer contains classes tasked with accessing external resources. These classes are based on the interfaces defined within the application layer.
 
 ### Persistence
 
