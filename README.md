@@ -3,7 +3,7 @@
 \
 ![Build](https://github.com/thelanmi/rally-simulator/workflows/Build/badge.svg)
 
-** Stock market simulator implemented using .NET 9 and postgresql.**
+**Stock market simulator implemented using .NET 9 and postgresql.**
 
 ## Technologies
 
