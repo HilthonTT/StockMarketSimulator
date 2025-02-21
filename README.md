@@ -28,7 +28,7 @@ The domain layer contains all of the entities, value objects, enums, interfaces 
 
 The application layer is responsible for orchestrating all of the application logic and the necessary use-cases. It depends on the domain layer, but has no dependencies on any other layer. This layer defines additional interfaces that are required for supporting the application logic, that are implemented by outside layers.
 
-This layer utilizes the **CQRS pattern** for structuring the application logic into commands and queries, using the MediatR library.
+This layer utilizes the **CQRS pattern** for structuring the application logic into commands and queries.
 
 ### Infrastucture
 
@@ -36,7 +36,7 @@ The infrastructure layer contains classes tasked with accessing external resourc
 
 ### Persistence
 
-The persistence layer is responsible for implementing database related concerns. It contains EF Core Configurations for entities, implements the application database context and wires up some persistence related dependencies.
+The persistence layer is responsible for implementing database related concerns. It implements the application database context and wires up some persistence related dependencies.
 
 ## Swagger UI
 
