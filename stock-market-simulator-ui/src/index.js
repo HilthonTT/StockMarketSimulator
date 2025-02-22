@@ -9,6 +9,11 @@ import {
   buyTransaction,
   sellTransaction,
 } from "./services/transaction-service.js";
+import {
+  DARK_MODE,
+  checkThemePreference,
+  DARK_MODE_STORAGE_KEY,
+} from "./utils/theme.js";
 
 const FIVE_SECONDS_IN_MS = 5000;
 
@@ -66,6 +71,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   selectedDate1.textContent = dateRange1.toDateString();
   selectedDate2.textContent = dateRange2.toDateString();
+
+  const darkModeToggle = document.getElementById("dark-mode-toggle");
+  darkModeToggle.addEventListener("click", () => {
+    document.documentElement.classList.toggle(DARK_MODE);
+
+    localStorage.setItem(
+      DARK_MODE_STORAGE_KEY,
+      document.documentElement.classList.contains(DARK_MODE)
+    );
+  });
 
   const transactionWidgets = [];
 
@@ -532,6 +547,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     chart.update();
   }
 
+  checkThemePreference();
   createChart();
   await ensureAuthenticated();
   await loadBudget();
