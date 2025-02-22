@@ -10,8 +10,7 @@ export class TransactionWidget {
     quantity,
     totalAmount,
     createdOnUtc,
-    connection,
-    index
+    connection
   ) {
     this.id = id;
     this.userId = userId;
@@ -23,7 +22,7 @@ export class TransactionWidget {
     this.createdOnUtc = new Date(createdOnUtc);
     this.connection = connection;
 
-    this.element = this.createWidget(index);
+    this.element = this.createWidget();
     this.priceElement = this.element.querySelector(".stock-price");
 
     this.lastPrice = null;
@@ -33,34 +32,37 @@ export class TransactionWidget {
     this.fetchPrice();
   }
 
-  createWidget(index) {
+  createWidget() {
     const widget = document.createElement("tr");
 
     widget.className =
-      index % 2 === 0
-        ? "bg-[#1a1b23] hover:bg-[#2C2E39] transition"
-        : "bg-[#292B36] hover:bg-[#2C2E39] transition";
+      "even:bg-gray-100 dark:even:bg-[#292B36] text-black dark:text-white hover:bg-gray-200 dark:hover:bg-[#2C2E39] transition";
 
     widget.innerHTML = `
-          <td class="py-3 px-4">${this.createdOnUtc.toLocaleString("en-US", {
+        <td class="py-3 px-4">
+          ${this.createdOnUtc.toLocaleString("en-US", {
             month: "short",
             day: "2-digit",
             year: "numeric",
             hour: "2-digit",
             minute: "2-digit",
           })}
-          </td>
-          <td class="py-3 px-4">${this.ticker}</td>
-          <td class="py-3 px-4 ${
-            this.type === 1 ? "text-emerald-500" : "text-red-500"
-          } font-semibold">
-            <button>${this.type === 0 ? "Sell" : "Buy"}</button>
-          </td>
-          <td class="py-3 px-4">$${this.limitPrice.toFixed(2)}</td>
-          <td class="py-3 px-4">${this.quantity}</td>
-          <td class="py-3 px-4">$${this.totalAmount.toFixed(2)}</td>
-          <td class="py-3 px-4 stock-price">Loading...</td>
-        `;
+        </td>
+        <td class="py-3 px-4">${this.ticker}</td>
+        <td class="py-3 px-4 font-semibold">
+          <button class="px-3 py-1 rounded-md transition ${
+            this.type === 1
+              ? "bg-emerald-500 text-white hover:bg-emerald-600"
+              : "bg-red-500 text-white hover:bg-red-600"
+          }">
+            ${this.type === 0 ? "Sell" : "Buy"}
+          </button>
+        </td>
+        <td class="py-3 px-4">$${this.limitPrice.toFixed(2)}</td>
+        <td class="py-3 px-4">${this.quantity}</td>
+        <td class="py-3 px-4">$${this.totalAmount.toFixed(2)}</td>
+        <td class="py-3 px-4 stock-price">Loading...</td>
+    `;
 
     return widget;
   }

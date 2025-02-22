@@ -207,8 +207,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     tbody.innerHTML = "";
     const tickers = new Set();
 
-    filteredTransactions.forEach((transaction, index) => {
-      const widget = createTransactionWidget(transaction, index);
+    filteredTransactions.forEach((transaction) => {
+      const widget = createTransactionWidget(transaction);
       transactionWidgets.push(widget);
       tbody.appendChild(widget.element);
 
@@ -268,7 +268,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  function createTransactionWidget(transaction, index) {
+  function createTransactionWidget(transaction) {
     return new TransactionWidget(
       transaction.id,
       transaction.userId,
@@ -278,8 +278,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       transaction.quantity,
       transaction.totalAmount,
       transaction.createdOnUtc,
-      connection,
-      index
+      connection
     );
   }
 

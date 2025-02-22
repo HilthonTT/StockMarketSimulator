@@ -19,14 +19,14 @@
       rel="stylesheet"
     />
   </head>
-  <body class="bg-[#1a1b23] text-white min-h-screen overflow-y-auto">
-    <div class="bg-[#343a40] w-full h-20 flex items-center justify-center">
-      <!-- HTML -->
-      <div class="search-container relative">
-        <div
-          class="rounded-md w-[400px] bg-[#101114] flex items-center px-4 py-2"
-        >
-          <svg
+  <body
+    class="dark:bg-[#1a1b23] bg-neutral-100 text-white min-h-screen overflow-y-auto"
+  >
+  <div class="bg-gray-100 dark:bg-[#343a40] w-full h-20 flex items-center justify-center transition-colors">
+    <!-- Search Bar -->
+    <div class="search-container relative">
+      <div class="rounded-md w-[400px] bg-white dark:bg-[#101114] flex items-center px-4 py-2 shadow-md transition-colors">
+        <svg
             width="24px"
             height="24px"
             viewBox="0 0 24 24"
@@ -41,48 +41,32 @@
               stroke-linejoin="round"
             />
           </svg>
-
-          <input
-            id="search-input"
-            placeholder="Search"
-            class="bg-transparent text-gray-300 placeholder-gray-500 focus:outline-none w-full ml-2"
-          />
-        </div>
-        <!-- Results dropdown -->
-        <div
-          id="search-results"
-          class="absolute bg-[#1a1b1f] mt-2 rounded-md shadow-lg hidden"
-          style="width: 400px"
-        ></div>
+        <input id="search-input" placeholder="Search"
+          class="bg-transparent text-gray-800 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none w-full ml-2" />
       </div>
-
-      <div class="absolute right-4">
-        <button
-          id="logout-button"
-          class="flex items-center justify-center group"
-        >
-          <span
-            class="mr-2 font-semibold text-white group-hover:text-neutral-200 transition"
-            >Logout</span
-          >
-          <svg
-            class="size-6 text-white group-hover:text-neutral-200 transition"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            fill="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path d="M14 19V5h4a1 1 0 0 1 1 1v11h1a1 1 0 0 1 0 2h-6Z" />
-            <path
-              fill-rule="evenodd"
-              d="M12 4.571a1 1 0 0 0-1.275-.961l-5 1.428A1 1 0 0 0 5 6v11H4a1 1 0 0 0 0 2h1.86l4.865 1.39A1 1 0 0 0 12 19.43V4.57ZM10 11a1 1 0 0 1 1 1v.5a1 1 0 0 1-2 0V12a1 1 0 0 1 1-1Z"
-              clip-rule="evenodd"
-            />
-          </svg>
-        </button>
+  
+      <!-- Search Results Dropdown -->
+      <div id="search-results"
+        class="absolute bg-white dark:bg-[#1a1b1f] mt-2 rounded-md shadow-lg hidden transition-colors"
+        style="width: 400px">
       </div>
+    </div>
+  
+    <!-- Logout Button & Theme Toggle -->
+    <div class="absolute right-4 flex items-center space-x-4">
+     
+  
+      <!-- Logout Button -->
+      <button id="logout-button" class="flex items-center justify-center group">
+        <span class="mr-2 font-semibold text-gray-800 dark:text-white group-hover:text-gray-600 dark:group-hover:text-neutral-200 transition">Logout</span>
+        <svg class="size-6 text-gray-800 dark:text-white group-hover:text-gray-600 dark:group-hover:text-neutral-200 transition"
+          xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M14 19V5h4a1 1 0 0 1 1 1v11h1a1 1 0 0 1 0 2h-6Z" />
+          <path fill-rule="evenodd" d="M12 4.571a1 1 0 0 0-1.275-.961l-5 1.428A1 1 0 0 0 5 6v11H4a1 1 0 0 0 0 2h1.86l4.865 1.39A1 1 0 0 0 12 19.43V4.57ZM10 11a1 1 0 0 1 1 1v.5a1 1 0 0 1-2 0V12a1 1 0 0 1 1-1Z" clip-rule="evenodd" />
+        </svg>
+      </button>
+    </div>
+  </div>
 
       <!-- Modal -->
       <div
@@ -184,7 +168,9 @@
     </div>
     <div class="py-8 max-w-screen-xl mx-auto">
       <div class="flex items-center justify-between">
-        <h1 class="text-3xl font-bold">Stock Market Simulator</h1>
+        <h1 class="text-3xl font-bold dark:text-white text-black">
+          Stock Market Simulator
+        </h1>
 
         <button
           id="dark-mode-toggle"
@@ -208,14 +194,21 @@
       </div>
 
       <div class="block mt-4 mb-2">
-        <p class="text-gray-400 font-semibold text-sm">Current Balance</p>
+        <p class="dark:text-gray-400 text-gray-600 font-semibold text-sm">
+          Current Balance
+        </p>
       </div>
 
       <div class="block space-y-2">
-        <p class="text-4xl font-bold text-white" id="current-balance">
+        <p
+          class="text-4xl font-bold dark:text-white text-black"
+          id="current-balance"
+        >
           $100,645.87
         </p>
-        <p class="text-emerald-500" id="balance-change">+$645.78 (6.46%)</p>
+        <p class="text-emerald-500 font-semibold" id="balance-change">
+          +$645.78 (6.46%)
+        </p>
       </div>
 
       <div
@@ -230,27 +223,34 @@
       <!-- <div class="bg-gray-700 w-full h-96 mt-4 rounded-xl"></div> -->
 
       <div class="mt-6">
-        <div class="border-t border-gray-800 w-full"></div>
+        <div class="border-t dark:border-gray-800 border-gray-400 w-full"></div>
         <!-- Top Separator -->
         <div class="flex items-center justify-between py-4">
-          <p class="text-lg font-semibold">Buying Power</p>
-          <p id="buying-power" class="text-lg font-semibold text-white">
+          <p class="text-lg font-semibold dark:text-white text-black">
+            Buying Power
+          </p>
+          <p
+            id="buying-power"
+            class="text-lg font-semibold dark:text-white text-black"
+          >
             <!-- Budget price here -->
           </p>
         </div>
-        <div class="border-t border-gray-800 w-full"></div>
+        <div class="border-t dark:border-gray-800 border-gray-400 w-full"></div>
         <!-- Bottom Separator -->
       </div>
 
       <div class="py-8 max-w-screen-xl mx-auto text-white">
-        <h2 class="text-3xl font-bold mb-4">Trading History</h2>
+        <h2 class="text-3xl font-bold mb-4 dark:text-white text-black">
+          Trading History
+        </h2>
 
         <!-- Date Pickers -->
         <div class="flex space-x-4 mb-4">
           <!-- Date Picker 1 -->
           <button
             id="datePicker1"
-            class="flex items-center space-x-2 bg-[#292B36] px-4 py-2 rounded-md text-gray-300 hover:bg-[#2C2E39] transition"
+            class="flex items-center space-x-2 dark:bg-[#292B36] bg-neutral-200 hover:bg-neutral-300 px-4 py-2 rounded-md text-gray-300 dark:hover:bg-[#2C2E39] transition"
           >
             <svg
               width="24px"
@@ -266,14 +266,16 @@
                 stroke-linecap="round"
               />
             </svg>
-            <span id="selectedDate1">Dec 22, 2024</span>
+            <span id="selectedDate1" class="text-black dark:text-white"
+              >Dec 22, 2024</span
+            >
           </button>
           <input type="date" id="inputDate1" class="hidden" />
 
           <!-- Date Picker 2 -->
           <button
             id="datePicker2"
-            class="flex items-center space-x-2 bg-[#292B36] px-4 py-2 rounded-md text-gray-300 hover:bg-[#2C2E39] transition"
+            class="flex items-center space-x-2 dark:bg-[#292B36] bg-neutral-200 hover:bg-neutral-300 px-4 py-2 rounded-md text-gray-300 dark:hover:bg-[#2C2E39] transition"
           >
             <svg
               width="24px"
@@ -289,16 +291,22 @@
                 stroke-linecap="round"
               />
             </svg>
-            <span id="selectedDate2">Jan 22, 2025</span>
+            <span id="selectedDate2" class="text-black dark:text-white"
+              >Jan 22, 2025</span
+            >
           </button>
           <input type="date" id="inputDate2" class="hidden" />
         </div>
 
         <!-- Trading History Table -->
-        <div class="overflow-x-auto bg-[#1a1b23] rounded-lg">
+        <div
+          class="overflow-x-auto bg-white dark:bg-[#1a1b23] rounded-lg shadow-md"
+        >
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-[#292B36] text-gray-400">
+              <tr
+                class="bg-gray-100 dark:bg-[#292B36] text-black dark:text-gray-400"
+              >
                 <th class="py-3 px-4">Date</th>
                 <th class="py-3 px-4">Symbol</th>
                 <th class="py-3 px-4">Type</th>
@@ -308,7 +316,10 @@
                 <th class="py-3 px-4">New Price</th>
               </tr>
             </thead>
-            <tbody id="trading-history-body"></tbody>
+            <tbody
+              id="trading-history-body"
+              class="text-black dark:text-white"
+            ></tbody>
           </table>
         </div>
       </div>
