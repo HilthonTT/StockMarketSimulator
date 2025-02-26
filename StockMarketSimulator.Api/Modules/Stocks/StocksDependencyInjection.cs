@@ -45,6 +45,9 @@ public static class StocksDependencyInjection
 
     private static IServiceCollection AddRealtimeStock(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddTransient<LoggingDelegatingHandler>();
+        services.AddTransient<RetryDelegatingHandler>();
+
         services.AddScoped<IStockService, StockService>();
         services.AddSingleton<ActiveTickerManager>();
 
@@ -55,6 +58,8 @@ public static class StocksDependencyInjection
 
             httpClient.BaseAddress = new Uri(apiUrl);
         })
+        .AddHttpMessageHandler<LoggingDelegatingHandler>()
+        .AddHttpMessageHandler<RetryDelegatingHandler>()
         .AddStandardResilienceHandler();
 
         return services;
