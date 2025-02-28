@@ -1,10 +1,13 @@
 ﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Npgsql;
 using Quartz;
+using RedisRateLimiting.AspNetCore;
 using SharedKernel;
+using StackExchange.Redis;
 using StockMarketSimulator.Api.Infrastructure;
 using StockMarketSimulator.Api.Infrastructure.Authorization;
 using StockMarketSimulator.Api.Infrastructure.Caching;
@@ -29,7 +32,8 @@ public static class DependencyInjection
             .AddEmailServices(configuration)
             .AddApiVersioningInternal()
             .AddAuthorizationInternal()
-            .AddBackgroundJobs(configuration);
+            .AddBackgroundJobs(configuration)
+            .AddRateLimiting(configuration);
 
         return services;
     }
@@ -210,5 +214,27 @@ public static class DependencyInjection
                                 .WithInterval(TimeSpan.FromMilliseconds(1))));
 
         return options;
+    }
+
+    private static IServiceCollection AddRateLimiting(this IServiceCollection services, IConfiguration configuration)
+    {
+        string? redisConnectionString = configuration.GetConnectionString("Cache");
+        Ensure.NotNullOrEmpty(redisConnectionString, nameof(redisConnectionString));
+
+        var connectionMultiplexer = ConnectionMultiplexer.Connect(redisConnectionString);
+
+        services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            options.AddRedisSlidingWindowLimiter("sliding_window", (opt) =>
+            {
+                opt.ConnectionMultiplexerFactory = () => connectionMultiplexer;
+                opt.PermitLimit = 15;
+                opt.Window = TimeSpan.FromSeconds(10);
+            });
+        });
+
+        return services;
     }
 }

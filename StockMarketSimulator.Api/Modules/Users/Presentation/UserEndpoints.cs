@@ -2,6 +2,7 @@
 using StockMarketSimulator.Api.Endpoints;
 using StockMarketSimulator.Api.Extensions;
 using StockMarketSimulator.Api.Infrastructure;
+using StockMarketSimulator.Api.Infrastructure.Ratelimit;
 using StockMarketSimulator.Api.Modules.Roles.Domain;
 using StockMarketSimulator.Api.Modules.Users.Application.ChangePassword;
 using StockMarketSimulator.Api.Modules.Users.Application.DeleteAll;
@@ -60,7 +61,8 @@ internal sealed class UserEndpoints : IEndpoint
             return result.Match(Results.NoContent, CustomResults.Problem);
         })
         .WithOpenApi()
-        .WithTags(Tags.Users);
+        .WithTags(Tags.Users)
+        .RequireRateLimiting(RatelimitPolicyNames.SlidingWindow);
 
         app.MapPost("/users/login", async (
             LoginUserRequest request,
@@ -74,7 +76,8 @@ internal sealed class UserEndpoints : IEndpoint
             return result.Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()
-        .WithTags(Tags.Users);
+        .WithTags(Tags.Users)
+        .RequireRateLimiting(RatelimitPolicyNames.SlidingWindow);
 
         app.MapPost("/users/refresh-token", async (
             LoginWithRefreshTokenRequest request,
@@ -88,7 +91,8 @@ internal sealed class UserEndpoints : IEndpoint
             return result.Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()
-        .WithTags(Tags.Users);
+        .WithTags(Tags.Users)
+        .RequireRateLimiting(RatelimitPolicyNames.SlidingWindow);
 
         app.MapPatch("/users/{userId:guid}/change-password", async (
             Guid userId,
@@ -103,7 +107,8 @@ internal sealed class UserEndpoints : IEndpoint
             return result.Match(Results.NoContent, CustomResults.Problem);
         })
         .WithOpenApi()
-        .WithTags(Tags.Users);
+        .WithTags(Tags.Users)
+        .RequireRateLimiting(RatelimitPolicyNames.SlidingWindow);
 
         app.MapDelete("/users/{userId:guid}/refresh-tokens", async (
             Guid userId,

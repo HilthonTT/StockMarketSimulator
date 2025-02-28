@@ -61,6 +61,8 @@ app.MapHealthChecks("health", new HealthCheckOptions
 
 app.MapHub<StocksFeedHub>("/stocks-feed");
 
+app.UseRateLimiter();
+
 app.UseHttpsRedirection();
 
 app.UseRequestContextLogging();
