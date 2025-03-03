@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
+using StockMarketSimulator.Api.Infrastructure.Validation;
 
 namespace StockMarketSimulator.Api.Extensions;
 
@@ -40,6 +41,19 @@ public static class ServiceCollectionExtensions
 
             o.AddSecurityRequirement(securityRequirement);
         });
+
+        return services;
+    }
+
+    public static IServiceCollection AddOptionsWithFluentValidation<TOptions>(
+        this IServiceCollection services,
+        string configurationSection)
+        where TOptions : class
+    {
+        services.AddOptions<TOptions>()
+            .BindConfiguration(configurationSection)
+            .ValidateFluentValidation()
+            .ValidateOnStart();
 
         return services;
     }

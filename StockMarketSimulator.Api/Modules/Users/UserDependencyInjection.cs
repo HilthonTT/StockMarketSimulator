@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using StockMarketSimulator.Api.Infrastructure;
 using StockMarketSimulator.Api.Modules.Users.Api;
 using StockMarketSimulator.Api.Modules.Users.Application.ChangePassword;
 using StockMarketSimulator.Api.Modules.Users.Application.DeleteAll;

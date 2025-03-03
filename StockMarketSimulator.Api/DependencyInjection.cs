@@ -2,17 +2,21 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Npgsql;
 using Quartz;
 using RedisRateLimiting.AspNetCore;
 using SharedKernel;
 using StackExchange.Redis;
+using StockMarketSimulator.Api.Extensions;
 using StockMarketSimulator.Api.Infrastructure;
 using StockMarketSimulator.Api.Infrastructure.Authorization;
+using StockMarketSimulator.Api.Infrastructure.BackgroundJobs;
 using StockMarketSimulator.Api.Infrastructure.Caching;
 using StockMarketSimulator.Api.Infrastructure.Database;
 using StockMarketSimulator.Api.Infrastructure.Email;
+using StockMarketSimulator.Api.Infrastructure.Validation;
 using StockMarketSimulator.Api.Modules.Stocks.Infrastructure;
 using StockMarketSimulator.Api.Modules.Users.Infrastructure;
 using StockMarketSimulator.Api.OpenApi;
@@ -124,9 +128,14 @@ public static class DependencyInjection
 
     private static IServiceCollection AddEmailServices(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddOptionsWithFluentValidation<EmailOptions>(EmailOptions.ConfigurationSection);
+
+        using var scope = services.BuildServiceProvider().CreateScope();
+        var emailOptions = scope.ServiceProvider.GetRequiredService<IOptions<EmailOptions>>().Value;
+
         services
-            .AddFluentEmail(configuration["Email:SenderEmail"], configuration["Email:Sender"])
-            .AddSmtpSender(configuration["Email:Host"], configuration.GetValue<int>("Email:Port"));
+            .AddFluentEmail(emailOptions.SenderEmail, emailOptions.Sender)
+            .AddSmtpSender(emailOptions.Host, emailOptions.Port);
 
         services.AddScoped<IEmailService, EmailService>();
 
@@ -151,12 +160,14 @@ public static class DependencyInjection
         string? connectionString = configuration.GetConnectionString("Database");
         Ensure.NotNullOrEmpty(connectionString, nameof(connectionString));
 
-        services.Configure<StockUpdateOptions>(configuration.GetSection("StockUpdateOptions"));
+        services.AddOptionsWithFluentValidation<StockUpdateOptions>(StockUpdateOptions.ConfigurationSection);
+
+        services.AddOptionsWithFluentValidation<BackgroundJobsOptions>(BackgroundJobsOptions.ConfigurationSection);
 
         services.AddQuartz(options =>
         {
             options.AddDatabaseInitializerJob();
-            options.AddRevokeExpiredRefreshTokenJob();
+            options.AddRevokeExpiredRefreshTokenJob(services);
             options.AddStocksFeedUpdaterJob(services);
         });
 
@@ -169,15 +180,19 @@ public static class DependencyInjection
     }
 
     private static IServiceCollectionQuartzConfigurator AddRevokeExpiredRefreshTokenJob(
-        this IServiceCollectionQuartzConfigurator options)
+        this IServiceCollectionQuartzConfigurator options,
+        IServiceCollection services)
     {
+        using var scope = services.BuildServiceProvider().CreateScope();
+        var backgroundJobsOptions = scope.ServiceProvider.GetRequiredService<IOptions<BackgroundJobsOptions>>().Value;
+
         var jobKey = JobKey.Create(RevokeExpiredRefreshTokenBackgroundJob.Name);
 
         options.AddJob<RevokeExpiredRefreshTokenBackgroundJob>(jobKey)
                .AddTrigger(trigger =>
                     trigger.ForJob(jobKey)
                            .WithSimpleSchedule(schedule =>
-                                schedule.WithIntervalInSeconds(5).RepeatForever()));
+                                schedule.WithIntervalInSeconds(backgroundJobsOptions.IntervalInSeconds).RepeatForever()));
 
         return options;
     }
@@ -195,7 +210,7 @@ public static class DependencyInjection
           .AddTrigger(trigger =>
                     trigger.ForJob(jobKey)
                            .WithSimpleSchedule(schedule =>
-                                schedule.WithIntervalInSeconds(1).RepeatForever()));
+                                schedule.WithIntervalInSeconds(stockUpdateOptions.UpdateIntervalInSeconds).RepeatForever()));
 
         return options;
     }
