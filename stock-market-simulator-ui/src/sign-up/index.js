@@ -8,14 +8,41 @@ import { config } from "../utils/config.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.querySelector("form");
-  const darkModeToggle = document.getElementById("dark-mode-toggle");
 
+  const darkModeToggle = document.getElementById("dark-mode-toggle");
   darkModeToggle.addEventListener("click", () => {
     document.documentElement.classList.toggle(DARK_MODE);
     localStorage.setItem(
       DARK_MODE_STORAGE_KEY,
       document.documentElement.classList.contains(DARK_MODE)
     );
+  });
+
+  const togglePassword = document.getElementById("togglePassword");
+  const passwordInput = document.getElementById("password");
+
+  togglePassword.addEventListener("click", () => {
+    if (passwordInput.type === "password") {
+      passwordInput.type = "text";
+      togglePassword.textContent = "🙈";
+    } else {
+      passwordInput.type = "password";
+      togglePassword.textContent = "👁";
+    }
+  });
+
+  const confirmPasswordInput = document.getElementById("confirm-password");
+  const toggleConfirmPassword = document.getElementById(
+    "toggleConfirmPassword"
+  );
+  toggleConfirmPassword.addEventListener("click", () => {
+    if (confirmPasswordInput.type === "password") {
+      confirmPasswordInput.type = "text";
+      toggleConfirmPassword.textContent = "🙈";
+    } else {
+      confirmPasswordInput.type = "password";
+      toggleConfirmPassword.textContent = "👁";
+    }
   });
 
   form.addEventListener("submit", handleSubmit);

@@ -48,6 +48,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const connection = new signalR.HubConnectionBuilder()
     .withUrl(`${config.baseApiUrl}/stocks-feed`)
     .configureLogging(signalR.LogLevel.Information)
+    .withAutomaticReconnect()
     .build();
 
   const datePicker1 = document.getElementById("datePicker1");
