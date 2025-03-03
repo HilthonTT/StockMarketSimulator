@@ -550,6 +550,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   checkThemePreference();
   createChart();
   await ensureAuthenticated();
-  await loadBudget();
-  await filterTransactions();
+
+  await Promise.all([loadBudget(), filterTransactions()]);
 });
