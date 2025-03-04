@@ -20,6 +20,7 @@ export async function buyTransaction(ticker, quantity) {
     method: "POST",
     body: { ticker, quantity },
     requiresAuth: true,
+    requiresIdempotencyKey: true,
   });
 }
 
@@ -28,5 +29,6 @@ export async function sellTransaction(ticker, quantity) {
     method: "POST",
     body: { ticker, quantity },
     requiresAuth: true,
+    requiresIdempotencyKey: true,
   });
 }

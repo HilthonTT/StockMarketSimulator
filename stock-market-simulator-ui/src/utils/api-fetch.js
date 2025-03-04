@@ -3,7 +3,12 @@ import { ensureAuthenticated } from "./auth.js";
 
 export async function apiFetch(
   endpoint,
-  { method = "GET", body = null, requiresAuth = false } = {}
+  {
+    method = "GET",
+    body = null,
+    requiresAuth = false,
+    requiresIdempotencyKey = false,
+  } = {}
 ) {
   const url = new URL(`${config.baseApiUrl}${endpoint}`);
   const headers = {
@@ -17,6 +22,12 @@ export async function apiFetch(
     }
 
     headers.Authorization = `Bearer ${user.accessToken}`;
+  }
+
+  if (requiresIdempotencyKey) {
+    const idempotenceKey = crypto.randomUUID();
+
+    headers["Idempotence-Key"] = idempotenceKey;
   }
 
   const options = {

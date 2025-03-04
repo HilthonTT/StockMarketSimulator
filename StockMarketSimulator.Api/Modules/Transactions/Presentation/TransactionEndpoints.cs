@@ -2,6 +2,7 @@
 using StockMarketSimulator.Api.Endpoints;
 using StockMarketSimulator.Api.Extensions;
 using StockMarketSimulator.Api.Infrastructure;
+using StockMarketSimulator.Api.Infrastructure.Idempotency;
 using StockMarketSimulator.Api.Modules.Transactions.Application.Buy;
 using StockMarketSimulator.Api.Modules.Transactions.Application.GetById;
 using StockMarketSimulator.Api.Modules.Transactions.Application.GetByUserId;
@@ -57,7 +58,8 @@ internal sealed class TransactionEndpoints : IEndpoint
         })
         .WithOpenApi()
         .WithTags(Tags.Transactions)
-        .RequireAuthorization();
+        .RequireAuthorization()
+        .AddEndpointFilter<IdempotencyFilter>();
 
         app.MapPost("transactions/sell", async (
             SellTransactionRequest request,
@@ -72,6 +74,7 @@ internal sealed class TransactionEndpoints : IEndpoint
         })
         .WithOpenApi()
         .WithTags(Tags.Transactions)
-        .RequireAuthorization();
+        .RequireAuthorization()
+        .AddEndpointFilter<IdempotencyFilter>();
     }
 }
