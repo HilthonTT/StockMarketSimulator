@@ -2,7 +2,7 @@
 
 namespace StockMarketSimulator.Api.Modules.Users.Domain;
 
-internal sealed class RefreshToken
+internal sealed class RefreshToken : IEntity
 {
     public RefreshToken(Guid id, string token, Guid userId, DateTime expiresOnUtc)
     {

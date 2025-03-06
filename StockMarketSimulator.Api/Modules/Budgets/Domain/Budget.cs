@@ -2,7 +2,7 @@
 
 namespace StockMarketSimulator.Api.Modules.Budgets.Domain;
 
-internal sealed class Budget
+internal sealed class Budget : IEntity
 {
     private Budget(Guid id, Guid userId, decimal buyingPower)
     {

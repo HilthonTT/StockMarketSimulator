@@ -22,6 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const togglePassword = document.getElementById("togglePassword");
   const passwordInput = document.getElementById("password");
+  const submitButton = document.getElementById("submit");
 
   togglePassword.addEventListener("click", () => {
     if (passwordInput.type === "password") {
@@ -37,6 +38,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function handleSubmit(event) {
     event.preventDefault();
+
+    disableLoginButton();
 
     const emailInput = document.getElementById("email");
     const emailError = emailInput.nextElementSibling;
@@ -86,6 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
       if (!response.ok) {
+        enableLoginButton();
         alert("Something went wrong!");
         return;
       }
@@ -102,7 +106,19 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         alert("Something went wrong!");
       }
+
+      enableLoginButton();
     }
+  }
+
+  function enableLoginButton() {
+    submitButton.disabled = false;
+    submitButton.textContent = "Login";
+  }
+
+  function disableLoginButton() {
+    submitButton.disabled = true;
+    submitButton.textContent = "Loading...";
   }
 
   checkThemePreference();

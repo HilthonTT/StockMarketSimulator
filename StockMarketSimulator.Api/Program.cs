@@ -6,7 +6,6 @@ using Serilog;
 using StockMarketSimulator.Api;
 using StockMarketSimulator.Api.Extensions;
 using StockMarketSimulator.Api.Modules.Users;
-using System.Reflection;
 using StockMarketSimulator.Api.Modules.Stocks;
 using StockMarketSimulator.Api.Modules.Stocks.Infrastructure;
 using StockMarketSimulator.Api.Modules.Transactions;
@@ -27,7 +26,7 @@ builder.Services
     .AddBudgetModule()
     .AddRolesModule();
 
-builder.Services.AddEndpoints(Assembly.GetExecutingAssembly());
+builder.Services.AddEndpoints(PresentationAssembly.Instance);
 
 WebApplication app = builder.Build();
 

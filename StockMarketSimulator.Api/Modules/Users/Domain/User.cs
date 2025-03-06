@@ -2,7 +2,7 @@
 
 namespace StockMarketSimulator.Api.Modules.Users.Domain;
 
-internal sealed class User
+internal sealed class User : IEntity
 {
     private User(Guid id, string email, string username, string passwordHash)
     {

@@ -2,7 +2,7 @@
 
 namespace StockMarketSimulator.Api.Modules.Transactions.Domain;
 
-internal sealed class Transaction
+internal sealed class Transaction : IEntity
 {
     private Transaction(
         Guid id,

@@ -2,7 +2,7 @@
 
 namespace StockMarketSimulator.Api.Modules.Roles.Domain;
 
-internal sealed class UserRole
+internal sealed class UserRole : IEntity
 {
     private UserRole()
     {

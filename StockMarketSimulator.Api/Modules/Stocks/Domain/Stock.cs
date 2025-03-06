@@ -2,7 +2,7 @@
 
 namespace StockMarketSimulator.Api.Modules.Stocks.Domain;
 
-internal sealed class Stock
+internal sealed class Stock : IEntity
 {
     private Stock(Guid id, string ticker, decimal price, DateTime timestamp)
     {

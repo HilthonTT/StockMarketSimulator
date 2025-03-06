@@ -43,4 +43,13 @@ public abstract class BaseTest
             .And()
             .AreNotPublic()
             .As("Budgets Module - Internal API");
+
+    // Roles Module and public API
+    public static readonly IObjectProvider<IType> RolesModule =
+       Types().That().ResideInNamespace("Modules.Roles", true).As("Roles Module");
+    public static readonly IObjectProvider<IType> RolesModuleInternal =
+        Types().That().ResideInNamespace("Modules.Roles", true)
+            .And()
+            .AreNotPublic()
+            .As("Roles Module - Internal API");
 }
