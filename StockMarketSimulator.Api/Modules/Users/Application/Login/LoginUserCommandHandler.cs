@@ -6,6 +6,7 @@ using StockMarketSimulator.Api.Infrastructure.Helpers;
 using StockMarketSimulator.Api.Infrastructure.Messaging;
 using StockMarketSimulator.Api.Modules.Users.Contracts;
 using StockMarketSimulator.Api.Modules.Users.Domain;
+using StockMarketSimulator.Api.Modules.Users.Domain.ValueObjects;
 using StockMarketSimulator.Api.Modules.Users.Infrastructure;
 
 namespace StockMarketSimulator.Api.Modules.Users.Application.Login;
@@ -41,6 +42,12 @@ internal sealed class LoginUserCommandHandler : ICommandHandler<LoginUserCommand
         if (!validationResult.IsValid)
         {
             return Result.Failure<TokenResponse>(ValidationErrorFactory.CreateValidationError(validationResult.Errors));
+        }
+
+        Result<Email> emailResult = Email.Create(command.Email);
+        if (emailResult.IsFailure)
+        {
+            return Result.Failure<TokenResponse>(emailResult.Error);
         }
 
         await using var connection = await _dbConnectionFactory.GetOpenConnectionAsync(cancellationToken);

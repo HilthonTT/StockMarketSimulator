@@ -8,6 +8,7 @@ using StockMarketSimulator.Api.Modules.Budgets.Api;
 using StockMarketSimulator.Api.Modules.Roles.Api;
 using StockMarketSimulator.Api.Modules.Roles.Domain;
 using StockMarketSimulator.Api.Modules.Users.Domain;
+using StockMarketSimulator.Api.Modules.Users.Domain.ValueObjects;
 using StockMarketSimulator.Api.Modules.Users.Infrastructure;
 
 namespace StockMarketSimulator.Api.Modules.Users.Application.Register;
@@ -52,6 +53,14 @@ internal sealed class RegisterUserCommandHandler : ICommandHandler<RegisterUserC
 
         try
         {
+            Result<Email> emailResult = Email.Create(command.Email);
+            Result<Password> passwordResult = Password.Create(command.Password);
+            Result firstFailureOrSuccess = Result.FirstFailureOrSuccess(emailResult, passwordResult);
+            if (firstFailureOrSuccess.IsFailure)
+            {
+                return firstFailureOrSuccess;
+            }
+
             if (await _userRepository.ExistsByEmailAsync(connection, command.Email, cancellationToken, transaction))
             {
                 return Result.Failure(UserErrors.EmailNotUnique);

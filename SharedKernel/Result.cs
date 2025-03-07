@@ -30,6 +30,18 @@ public class Result
 
     public static Result<TValue> Failure<TValue>(Error error) =>
         new(default, false, error);
+
+    public static Result FirstFailureOrSuccess(params Result[] results)
+    {
+        Result? failureResult = results.FirstOrDefault(r => r.IsFailure);
+
+        if (failureResult is not null)
+        {
+            return failureResult;
+        }
+
+        return Success();
+    }
 }
 
 public sealed class Result<TValue> : Result
