@@ -1,4 +1,5 @@
 ﻿using SharedKernel;
+using StockMarketSimulator.Api.Extensions;
 using StockMarketSimulator.Api.Modules.Stocks.Api;
 using StockMarketSimulator.Api.Modules.Stocks.Application.GetByTicker;
 using StockMarketSimulator.Api.Modules.Stocks.Application.Search;
@@ -58,6 +59,7 @@ public static class StocksDependencyInjection
 
             httpClient.BaseAddress = new Uri(apiUrl);
         })
+        .CustomRemoveAllResilienceHandlers()
         .AddHttpMessageHandler<LoggingDelegatingHandler>()
         .AddHttpMessageHandler<RetryDelegatingHandler>()
         .AddStandardResilienceHandler();

@@ -5,7 +5,7 @@ namespace StockMarketSimulator.Api.Modules.Stocks.Infrastructure;
 
 internal sealed class RetryDelegatingHandler : DelegatingHandler
 {
-    private readonly AsyncRetryPolicy<HttpResponseMessage> _retryPolicy =
+    private static readonly AsyncRetryPolicy<HttpResponseMessage> _retryPolicy =
         Policy<HttpResponseMessage>
             .Handle<HttpRequestException>()
             .RetryAsync(2);

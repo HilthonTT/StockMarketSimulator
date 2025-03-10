@@ -72,6 +72,9 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
+// Add the user context enrichment middleware after authentication
+app.UseUserContextEnrichment();
+
 app.UseExceptionHandler();
 
 app.UseStatusCodePages();

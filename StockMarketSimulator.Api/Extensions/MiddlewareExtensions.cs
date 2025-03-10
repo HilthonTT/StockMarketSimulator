@@ -10,4 +10,11 @@ public static class MiddlewareExtensions
 
         return app;
     }
+
+    public static IApplicationBuilder UseUserContextEnrichment(this IApplicationBuilder app)
+    {
+        app.UseMiddleware<UserContextEnrichementMiddleware>();
+
+        return app;
+    }
 }
