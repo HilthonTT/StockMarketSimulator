@@ -2,6 +2,7 @@
 using StockMarketSimulator.Api.Endpoints;
 using StockMarketSimulator.Api.Extensions;
 using StockMarketSimulator.Api.Infrastructure;
+using StockMarketSimulator.Api.Infrastructure.Messaging;
 using StockMarketSimulator.Api.Modules.Stocks.Application.GetByTicker;
 using StockMarketSimulator.Api.Modules.Stocks.Application.Search;
 using StockMarketSimulator.Api.Modules.Stocks.Contracts;
@@ -15,7 +16,7 @@ internal sealed class StockEndpoints : IEndpoint
     {
         app.MapGet("/stocks/{ticker}", async (
             string ticker,
-            GetStockTickerQueryHandler useCase,
+            IQueryHandler<GetStockByTickerQuery, StockPriceResponse> useCase,
             CancellationToken cancellationToken) =>
         {
             var query = new GetStockByTickerQuery(ticker);
@@ -30,7 +31,7 @@ internal sealed class StockEndpoints : IEndpoint
 
         app.MapGet("/stocks/search/{searchTerm}", async (
             string searchTerm,
-            SearchStocksQueryHandler useCase,
+            IQueryHandler<SearchStocksQuery, List<Match>> useCase,
             CancellationToken cancellationToken) =>
         {
             var query = new SearchStocksQuery(searchTerm);

@@ -30,6 +30,8 @@ builder.Services.AddEndpoints(PresentationAssembly.Instance);
 
 WebApplication app = builder.Build();
 
+app.UseResponseCompression();
+
 ApiVersionSet apiVersionSet = app.NewApiVersionSet()
     .HasApiVersion(new ApiVersion(1))
     .ReportApiVersions()

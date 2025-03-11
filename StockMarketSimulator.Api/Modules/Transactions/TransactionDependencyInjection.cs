@@ -1,7 +1,9 @@
-﻿using StockMarketSimulator.Api.Modules.Transactions.Application.Buy;
+﻿using StockMarketSimulator.Api.Infrastructure.Messaging;
+using StockMarketSimulator.Api.Modules.Transactions.Application.Buy;
 using StockMarketSimulator.Api.Modules.Transactions.Application.GetById;
 using StockMarketSimulator.Api.Modules.Transactions.Application.GetByUserId;
 using StockMarketSimulator.Api.Modules.Transactions.Application.Sell;
+using StockMarketSimulator.Api.Modules.Transactions.Contracts;
 using StockMarketSimulator.Api.Modules.Transactions.Domain;
 using StockMarketSimulator.Api.Modules.Transactions.Persistence;
 
@@ -20,11 +22,13 @@ public static class TransactionDependencyInjection
 
     private static IServiceCollection AddUseCases(this IServiceCollection services)
     {
-        services.AddScoped<BuyTransactionCommandHandler>();
-        services.AddScoped<SellTransactionCommandHandler>();
+        services.AddScoped<ICommandHandler<BuyTransactionCommand, Guid>, BuyTransactionCommandHandler>();
+        services.AddScoped<ICommandHandler<SellTransactionCommand, Guid>, SellTransactionCommandHandler>();
 
-        services.AddScoped<GetTransactionByIdQueryHandler>();
-        services.AddScoped<GetTransactionByUserIdQueryHandler>();
+        services
+            .AddScoped<IQueryHandler<GetTransactionByIdQuery, TransactionResponse>, GetTransactionByIdQueryHandler>();
+        services
+            .AddScoped<IQueryHandler<GetTransactionsByUserIdQuery, List<TransactionResponse>>, GetTransactionByUserIdQueryHandler>();
 
         return services;
     }

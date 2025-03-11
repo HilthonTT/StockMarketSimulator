@@ -1,5 +1,7 @@
-﻿using StockMarketSimulator.Api.Modules.Budgets.Api;
+﻿using StockMarketSimulator.Api.Infrastructure.Messaging;
+using StockMarketSimulator.Api.Modules.Budgets.Api;
 using StockMarketSimulator.Api.Modules.Budgets.Application.GetByUserId;
+using StockMarketSimulator.Api.Modules.Budgets.Contracts;
 using StockMarketSimulator.Api.Modules.Budgets.Domain;
 using StockMarketSimulator.Api.Modules.Budgets.Persistence;
 
@@ -33,7 +35,7 @@ public static class BudgetDependencyInjection
 
     private static IServiceCollection AddUseCases(this IServiceCollection services)
     {
-        services.AddScoped<GetBudgetByUserIdQueryHandler>();
+        services.AddScoped<IQueryHandler<GetBudgetByUserIdQuery, BudgetResponse>, GetBudgetByUserIdQueryHandler>();
 
         return services;
     }

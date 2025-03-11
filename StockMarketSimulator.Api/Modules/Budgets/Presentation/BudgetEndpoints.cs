@@ -2,6 +2,7 @@
 using StockMarketSimulator.Api.Endpoints;
 using StockMarketSimulator.Api.Extensions;
 using StockMarketSimulator.Api.Infrastructure;
+using StockMarketSimulator.Api.Infrastructure.Messaging;
 using StockMarketSimulator.Api.Modules.Budgets.Application.GetByUserId;
 using StockMarketSimulator.Api.Modules.Budgets.Contracts;
 
@@ -13,7 +14,7 @@ internal sealed class BudgetEndpoints : IEndpoint
     {
         app.MapGet("/users/{userId:guid}/budgets", async (
             Guid userId,
-            GetBudgetByUserIdQueryHandler useCase,
+            IQueryHandler<GetBudgetByUserIdQuery, BudgetResponse> useCase,
             CancellationToken cancellationToken) =>
         {
             var query = new GetBudgetByUserIdQuery(userId);

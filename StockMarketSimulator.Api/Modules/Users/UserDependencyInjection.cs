@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using StockMarketSimulator.Api.Infrastructure;
+using StockMarketSimulator.Api.Infrastructure.Messaging;
 using StockMarketSimulator.Api.Modules.Users.Api;
 using StockMarketSimulator.Api.Modules.Users.Application.ChangePassword;
 using StockMarketSimulator.Api.Modules.Users.Application.DeleteAll;
@@ -12,6 +12,7 @@ using StockMarketSimulator.Api.Modules.Users.Application.Login;
 using StockMarketSimulator.Api.Modules.Users.Application.LoginWithRefreshToken;
 using StockMarketSimulator.Api.Modules.Users.Application.Register;
 using StockMarketSimulator.Api.Modules.Users.Application.RevokeRefreshTokens;
+using StockMarketSimulator.Api.Modules.Users.Contracts;
 using StockMarketSimulator.Api.Modules.Users.Domain;
 using StockMarketSimulator.Api.Modules.Users.Infrastructure;
 using StockMarketSimulator.Api.Modules.Users.Persistence;
@@ -45,18 +46,21 @@ public static class UserDependencyInjection
 
     private static IServiceCollection AddUseCases(this IServiceCollection services)
     {
-        services.AddScoped<RegisterUserCommandHandler>();
-        services.AddScoped<LoginUserCommandHandler>();
-        services.AddScoped<LoginUserWithRefreshTokenCommandHandler>();
-        services.AddScoped<RevokeRefreshTokensCommandHandler>();
-        services.AddScoped<ChangeUserPasswordCommandHandler>();
-        services.AddScoped<DeleteAllUsersCommandHandler>();
+        services.AddScoped<ICommandHandler<RegisterUserCommand>, RegisterUserCommandHandler>();
+        services.AddScoped<ICommandHandler<LoginUserCommand, TokenResponse>, LoginUserCommandHandler>();
+        services.AddScoped<ICommandHandler<LoginUserWithRefreshTokenCommand, TokenResponse>, LoginUserWithRefreshTokenCommandHandler>();
+        services.AddScoped<ICommandHandler<RevokeRefreshTokensCommand>, RevokeRefreshTokensCommandHandler>();
+        services.AddScoped<ICommandHandler<ChangeUserPasswordCommand>, ChangeUserPasswordCommandHandler>();
+        services.AddScoped<ICommandHandler<DeleteAllUsersCommand>, DeleteAllUsersCommandHandler>();
 
-        services.AddScoped<GetCurrentUserQueryHandler>();
-        services.AddScoped<GetUserByIdQueryHandler>();
+        services
+            .AddScoped<IQueryHandler<GetCurrentUserQuery, UserResponse>, GetCurrentUserQueryHandler>();
+        services
+            .AddScoped<IQueryHandler<GetUserByIdQuery, UserResponse>, GetUserByIdQueryHandler>();
 
         return services;
     }
+
 
     private static IServiceCollection AddPersistence(this IServiceCollection services)
     {

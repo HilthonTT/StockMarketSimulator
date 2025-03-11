@@ -1,8 +1,7 @@
 ﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Options;
 using Npgsql;
 using Quartz;
@@ -16,11 +15,11 @@ using StockMarketSimulator.Api.Infrastructure.BackgroundJobs;
 using StockMarketSimulator.Api.Infrastructure.Caching;
 using StockMarketSimulator.Api.Infrastructure.Database;
 using StockMarketSimulator.Api.Infrastructure.Email;
-using StockMarketSimulator.Api.Infrastructure.Validation;
 using StockMarketSimulator.Api.Modules.Stocks.Infrastructure;
 using StockMarketSimulator.Api.Modules.Users.Infrastructure;
 using StockMarketSimulator.Api.OpenApi;
 using System.Diagnostics;
+using System.IO.Compression;
 
 namespace StockMarketSimulator.Api;
 
@@ -37,7 +36,8 @@ public static class DependencyInjection
             .AddApiVersioningInternal()
             .AddAuthorizationInternal()
             .AddBackgroundJobs(configuration)
-            .AddRateLimiting(configuration);
+            .AddRateLimiting(configuration)
+            .AddCompression();
 
         return services;
     }
@@ -248,6 +248,23 @@ public static class DependencyInjection
                 opt.PermitLimit = 15;
                 opt.Window = TimeSpan.FromSeconds(10);
             });
+        });
+
+        return services;
+    }
+
+    private static IServiceCollection AddCompression(this IServiceCollection services)
+    {
+        services.AddResponseCompression(options =>
+        {
+            options.EnableForHttps = true;
+            options.Providers.Add<GzipCompressionProvider>();
+            options.MimeTypes = ResponseCompressionDefaults.MimeTypes;
+        });
+
+        services.Configure<BrotliCompressionProviderOptions>(options =>
+        {
+            options.Level = CompressionLevel.Optimal;
         });
 
         return services;

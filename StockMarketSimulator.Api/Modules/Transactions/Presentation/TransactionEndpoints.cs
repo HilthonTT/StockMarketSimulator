@@ -3,6 +3,7 @@ using StockMarketSimulator.Api.Endpoints;
 using StockMarketSimulator.Api.Extensions;
 using StockMarketSimulator.Api.Infrastructure;
 using StockMarketSimulator.Api.Infrastructure.Idempotency;
+using StockMarketSimulator.Api.Infrastructure.Messaging;
 using StockMarketSimulator.Api.Modules.Transactions.Application.Buy;
 using StockMarketSimulator.Api.Modules.Transactions.Application.GetById;
 using StockMarketSimulator.Api.Modules.Transactions.Application.GetByUserId;
@@ -17,7 +18,7 @@ internal sealed class TransactionEndpoints : IEndpoint
     {
         app.MapGet("transactions/{transactionId}", async (
             Guid transactionId,
-            GetTransactionByIdQueryHandler useCase,
+            IQueryHandler<GetTransactionByIdQuery, TransactionResponse> useCase,
             CancellationToken cancellationToken) =>
         {
             var query = new GetTransactionByIdQuery(transactionId);
@@ -32,7 +33,7 @@ internal sealed class TransactionEndpoints : IEndpoint
 
         app.MapGet("users/{userId}/transactions", async (
             Guid userId,
-            GetTransactionByUserIdQueryHandler useCase,
+            IQueryHandler<GetTransactionsByUserIdQuery, List<TransactionResponse>> useCase,
             CancellationToken cancellationToken) =>
         {
             var query = new GetTransactionsByUserIdQuery(userId);
@@ -47,7 +48,7 @@ internal sealed class TransactionEndpoints : IEndpoint
 
         app.MapPost("transactions/buy", async (
             BuyTransactionRequest request,
-            BuyTransactionCommandHandler useCase,
+            ICommandHandler<BuyTransactionCommand, Guid> useCase,
             CancellationToken cancellationToken) =>
         {
             var command = new BuyTransactionCommand(request.Ticker, request.Quantity);
@@ -63,7 +64,7 @@ internal sealed class TransactionEndpoints : IEndpoint
 
         app.MapPost("transactions/sell", async (
             SellTransactionRequest request,
-            SellTransactionCommandHandler useCase,
+            ICommandHandler<SellTransactionCommand, Guid> useCase,
             CancellationToken cancellationToken) =>
         {
             var command = new SellTransactionCommand(request.Ticker, request.Quantity);

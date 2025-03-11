@@ -2,6 +2,7 @@
 using StockMarketSimulator.Api.Endpoints;
 using StockMarketSimulator.Api.Extensions;
 using StockMarketSimulator.Api.Infrastructure;
+using StockMarketSimulator.Api.Infrastructure.Messaging;
 using StockMarketSimulator.Api.Infrastructure.Ratelimit;
 using StockMarketSimulator.Api.Modules.Roles.Domain;
 using StockMarketSimulator.Api.Modules.Users.Application.ChangePassword;
@@ -21,7 +22,7 @@ internal sealed class UserEndpoints : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapGet("/users/me", async (
-            GetCurrentUserQueryHandler useCase,
+            IQueryHandler<GetCurrentUserQuery, UserResponse> useCase,
             CancellationToken cancellationToken) =>
         {
             var query = new GetCurrentUserQuery();
@@ -36,7 +37,7 @@ internal sealed class UserEndpoints : IEndpoint
 
         app.MapGet("/users/{userId:guid}", async (
             Guid userId,
-            GetUserByIdQueryHandler useCase,
+            IQueryHandler<GetUserByIdQuery, UserResponse> useCase,
             CancellationToken cancellationToken) =>
         {
             var query = new GetUserByIdQuery(userId);
@@ -51,7 +52,7 @@ internal sealed class UserEndpoints : IEndpoint
 
         app.MapPost("/users/register", async (
             RegisterUserRequest request,
-            RegisterUserCommandHandler useCase,
+            ICommandHandler<RegisterUserCommand> useCase,
             CancellationToken cancellationToken) =>
         {
             var command = new RegisterUserCommand(request.Email, request.Username, request.Password, request.ConfirmPassword);
@@ -66,7 +67,7 @@ internal sealed class UserEndpoints : IEndpoint
 
         app.MapPost("/users/login", async (
             LoginUserRequest request,
-            LoginUserCommandHandler useCase,
+            ICommandHandler<LoginUserCommand, TokenResponse> useCase,
             CancellationToken cancellationToken) =>
         {
             var command = new LoginUserCommand(request.Email, request.Password);
@@ -81,7 +82,7 @@ internal sealed class UserEndpoints : IEndpoint
 
         app.MapPost("/users/refresh-token", async (
             LoginWithRefreshTokenRequest request,
-            LoginUserWithRefreshTokenCommandHandler useCase,
+             ICommandHandler<LoginUserWithRefreshTokenCommand, TokenResponse> useCase,
             CancellationToken cancellationToken) =>
         {
             var command = new LoginUserWithRefreshTokenCommand(request.RefreshToken);
@@ -97,7 +98,7 @@ internal sealed class UserEndpoints : IEndpoint
         app.MapPatch("/users/{userId:guid}/change-password", async (
             Guid userId,
             ChangePasswordRequest request,
-            ChangeUserPasswordCommandHandler useCase,
+            ICommandHandler<ChangeUserPasswordCommand> useCase,
             CancellationToken cancellationToken) =>
         {
             var command = new ChangeUserPasswordCommand(userId, request.CurrentPassword, request.NewPassword);
@@ -112,7 +113,7 @@ internal sealed class UserEndpoints : IEndpoint
 
         app.MapDelete("/users/{userId:guid}/refresh-tokens", async (
             Guid userId,
-            RevokeRefreshTokensCommandHandler useCase,
+            ICommandHandler<RevokeRefreshTokensCommand> useCase,
             CancellationToken cancellationToken) =>
         {
             var command = new RevokeRefreshTokensCommand(userId);
@@ -126,7 +127,7 @@ internal sealed class UserEndpoints : IEndpoint
         .WithTags(Tags.Users);
 
         app.MapDelete("/users", async (
-            DeleteAllUsersCommandHandler useCase,
+            ICommandHandler<DeleteAllUsersCommand> useCase,
             CancellationToken cancellationToken) =>
         {
             var command = new DeleteAllUsersCommand();
