@@ -14,6 +14,7 @@ import {
   checkThemePreference,
   DARK_MODE_STORAGE_KEY,
 } from "./utils/theme.js";
+import { revokeRefreshTokens } from "./services/user-service.js";
 
 const FIVE_SECONDS_IN_MS = 5000;
 
@@ -94,9 +95,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   window.addEventListener("beforeunload", () => connection.stop());
 
-  logoutButton.addEventListener("click", () => {
-    clearTokens();
-    window.location.reload();
+  logoutButton.addEventListener("click", async () => {
+    await revokeRefreshTokens().then(() => {
+      clearTokens();
+      window.location.href = "/sign-in/index.html";
+    });
   });
 
   datePicker1.addEventListener("click", () => inputDate1.showPicker());

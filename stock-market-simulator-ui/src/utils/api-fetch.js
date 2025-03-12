@@ -8,6 +8,7 @@ export async function apiFetch(
     body = null,
     requiresAuth = false,
     requiresIdempotencyKey = false,
+    throwException = false,
   } = {}
 ) {
   const url = new URL(`${config.baseApiUrl}${endpoint}`);
@@ -37,6 +38,18 @@ export async function apiFetch(
   };
 
   const response = await fetch(url, options);
+
+  if (!response.ok && throwException) {
+    const text = await response.text();
+    console.error(text);
+
+    throw new Error("Something went wrong.");
+  }
+
+  if (!response.ok && (response.status === 403 || response.status === 401)) {
+    window.location.href = "/sign-in/index.html";
+    return null;
+  }
 
   if (!response.ok) {
     alert(`Failed to fetch: ${response.status}`);
