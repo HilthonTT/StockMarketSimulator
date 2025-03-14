@@ -7,7 +7,7 @@ using System.Globalization;
 
 namespace StockMarketSimulator.Api.Modules.Stocks.Infrastructure;
 
-internal sealed class StocksClient
+internal sealed class StocksClient : IStocksClient
 {
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;

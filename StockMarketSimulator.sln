@@ -32,6 +32,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yarp.LoadBalancer", "Yarp.L
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain.UnitTests", "Domain.UnitTests\Domain.UnitTests.csproj", "{50633ABD-8FE6-499D-BE20-60BF5069FB1A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Api.Tests", "Api.Tests\Api.Tests.csproj", "{AED62E21-A5DF-406B-A9D0-216C40E30197}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,6 +68,10 @@ Global
 		{50633ABD-8FE6-499D-BE20-60BF5069FB1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{50633ABD-8FE6-499D-BE20-60BF5069FB1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{50633ABD-8FE6-499D-BE20-60BF5069FB1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AED62E21-A5DF-406B-A9D0-216C40E30197}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AED62E21-A5DF-406B-A9D0-216C40E30197}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AED62E21-A5DF-406B-A9D0-216C40E30197}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AED62E21-A5DF-406B-A9D0-216C40E30197}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -80,6 +86,7 @@ Global
 		{CAEE8BBA-763B-48D8-A6E2-4B55BA0AEB27} = {0629A2D7-9056-4BD4-AC56-4D87E08F216B}
 		{F24A4370-A02D-4131-9F8C-1EF6D21A8A72} = {CAEE8BBA-763B-48D8-A6E2-4B55BA0AEB27}
 		{50633ABD-8FE6-499D-BE20-60BF5069FB1A} = {7B1C7E13-1007-4A2E-B520-EEC97C976A73}
+		{AED62E21-A5DF-406B-A9D0-216C40E30197} = {7B1C7E13-1007-4A2E-B520-EEC97C976A73}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CD593C20-A8F4-4A5C-961C-E5BA7D03D2BF}

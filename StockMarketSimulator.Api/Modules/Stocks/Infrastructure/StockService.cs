@@ -9,13 +9,13 @@ internal sealed class StockService : IStockService
 {
     private readonly ActiveTickerManager _activeTickerManager;
     private readonly IDbConnectionFactory _dbConnectionFactory;
-    private readonly StocksClient _stocksClient;
+    private readonly IStocksClient _stocksClient;
     private readonly ILogger<StockService> _logger;
 
     public StockService(
         ActiveTickerManager activeTickerManager,
         IDbConnectionFactory dbConnectionFactory,
-        StocksClient stocksClient,
+        IStocksClient stocksClient,
         ILogger<StockService> logger)
     {
         _activeTickerManager = activeTickerManager;

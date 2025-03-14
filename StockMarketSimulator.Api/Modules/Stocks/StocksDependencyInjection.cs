@@ -8,7 +8,6 @@ using StockMarketSimulator.Api.Modules.Stocks.Contracts;
 using StockMarketSimulator.Api.Modules.Stocks.Domain;
 using StockMarketSimulator.Api.Modules.Stocks.Infrastructure;
 using StockMarketSimulator.Api.Modules.Stocks.Persistence;
-using System.Collections.Generic;
 
 namespace StockMarketSimulator.Api.Modules.Stocks;
 
@@ -57,7 +56,7 @@ public static class StocksDependencyInjection
         services.AddScoped<IStockService, StockService>();
         services.AddSingleton<ActiveTickerManager>();
 
-        services.AddHttpClient<StocksClient>(httpClient =>
+        services.AddHttpClient<IStocksClient, StocksClient>(httpClient =>
         {
             string? apiUrl = configuration["Stocks:ApiUrl"];
             Ensure.NotNullOrEmpty(apiUrl, nameof(apiUrl));

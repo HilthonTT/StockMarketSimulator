@@ -10,11 +10,11 @@ namespace StockMarketSimulator.Api.Modules.Stocks.Application.Search;
 
 internal sealed class SearchStocksQueryHandler : IQueryHandler<SearchStocksQuery, List<Match>>
 {
-    private readonly StocksClient _stocksClient;
+    private readonly IStocksClient _stocksClient;
     private readonly IValidator<SearchStocksQuery> _validator;
 
     public SearchStocksQueryHandler(
-        StocksClient stocksClient,
+        IStocksClient stocksClient,
         IValidator<SearchStocksQuery> validator)
     {
         _stocksClient = stocksClient;
