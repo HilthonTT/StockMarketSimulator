@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using StockMarketSimulator.Api.Infrastructure.Database;
 using StockMarketSimulator.Api.Modules.Stocks.Contracts;
+using StockMarketSimulator.Api.Modules.Users.Contracts;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 
@@ -23,7 +24,6 @@ public abstract class BaseIntegrationTest : IClassFixture<CustomWebAppFactory>, 
         DbConnectionFactory = scope.ServiceProvider.GetRequiredService<IDbConnectionFactory>();
     }
 
-
     public Task DisposeAsync()
     {
         return Task.CompletedTask;
@@ -39,6 +39,18 @@ public abstract class BaseIntegrationTest : IClassFixture<CustomWebAppFactory>, 
         Factory.WireMockServer
             .Given(Request.Create()
                 .WithPath($"api/v1/stocks/{ticker}")
+                .UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(response));
+    }
+
+    internal void SetupUsersApiMock(Guid userId, UserResponse response)
+    {
+        Factory.WireMockServer
+            .Given(Request.Create()
+                .WithPath($"api/v1/users/{userId}")
                 .UsingGet())
             .RespondWith(Response.Create()
                 .WithStatusCode(200)

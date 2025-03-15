@@ -29,7 +29,7 @@
     <PackageReference Include="Quartz.Extensions.Hosting" Version="3.14.0" />
     <PackageReference Include="Quartz.Serialization.Json" Version="3.14.0" />
     <PackageReference Include="RedisRateLimiting.AspNetCore" Version="1.2.0" />
-    <PackageReference Include="Scalar.AspNetCore" Version="2.0.29" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.0.34" />
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
     <PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.3.1" />
@@ -43,6 +43,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Application.IntegrationTests" />
     <InternalsVisibleTo Include="Domain.UnitTests" />
+    <InternalsVisibleTo Include="Api.Tests" />
   </ItemGroup>
 
 </Project>
