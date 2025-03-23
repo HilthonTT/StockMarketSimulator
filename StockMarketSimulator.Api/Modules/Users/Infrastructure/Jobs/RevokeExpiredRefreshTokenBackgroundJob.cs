@@ -4,7 +4,7 @@ using StockMarketSimulator.Api.Infrastructure.Database;
 using System.Data;
 using System.Diagnostics;
 
-namespace StockMarketSimulator.Api.Modules.Users.Infrastructure;
+namespace StockMarketSimulator.Api.Modules.Users.Infrastructure.Jobs;
 
 [DisallowConcurrentExecution]
 internal sealed class RevokeExpiredRefreshTokenBackgroundJob : IJob

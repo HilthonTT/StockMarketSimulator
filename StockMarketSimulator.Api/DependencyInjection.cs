@@ -16,7 +16,7 @@ using StockMarketSimulator.Api.Infrastructure.Caching;
 using StockMarketSimulator.Api.Infrastructure.Database;
 using StockMarketSimulator.Api.Infrastructure.Email;
 using StockMarketSimulator.Api.Modules.Stocks.Infrastructure;
-using StockMarketSimulator.Api.Modules.Users.Infrastructure;
+using StockMarketSimulator.Api.Modules.Users.Infrastructure.Jobs;
 using StockMarketSimulator.Api.OpenApi;
 using System.Diagnostics;
 using System.IO.Compression;

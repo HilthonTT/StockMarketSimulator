@@ -1,13 +1,13 @@
 ﻿using FluentValidation;
-using FluentValidation.Results;
+using Npgsql;
+using Quartz;
 using SharedKernel;
 using StockMarketSimulator.Api.Infrastructure.Database;
-using StockMarketSimulator.Api.Infrastructure.Email;
 using StockMarketSimulator.Api.Infrastructure.Helpers;
 using StockMarketSimulator.Api.Infrastructure.Messaging;
-using StockMarketSimulator.Api.Modules.Users.Contracts;
 using StockMarketSimulator.Api.Modules.Users.Domain;
 using StockMarketSimulator.Api.Modules.Users.Infrastructure;
+using StockMarketSimulator.Api.Modules.Users.Infrastructure.Jobs;
 
 namespace StockMarketSimulator.Api.Modules.Users.Application.ChangePassword;
 
@@ -17,36 +17,31 @@ internal sealed class ChangeUserPasswordCommandHandler : ICommandHandler<ChangeU
     private readonly IUserContext _userContext;
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
-    private readonly IEmailService _emailService;
     private readonly IValidator<ChangeUserPasswordCommand> _validator;
+    private readonly ISchedulerFactory _schedulerFactory;
 
     public ChangeUserPasswordCommandHandler(
         IDbConnectionFactory dbConnectionFactory,
         IUserContext userContext,
         IUserRepository userRepository,
         IPasswordHasher passwordHasher,
-        IEmailService emailService,
-        IValidator<ChangeUserPasswordCommand> validator)
+        IValidator<ChangeUserPasswordCommand> validator,
+        ISchedulerFactory schedulerFactory)
     {
         _dbConnectionFactory = dbConnectionFactory;
         _userContext = userContext;
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
-        _emailService = emailService;
         _validator = validator;
+        _schedulerFactory = schedulerFactory;
     }
 
     public async Task<Result> Handle(ChangeUserPasswordCommand command, CancellationToken cancellationToken = default)
     {
-        ValidationResult validationResult = await _validator.ValidateAsync(command, cancellationToken);
-        if (!validationResult.IsValid)
+        Result validationResult = await ValidateCommand(command, cancellationToken);
+        if (validationResult.IsFailure)
         {
-            return Result.Failure(ValidationErrorFactory.CreateValidationError(validationResult.Errors));
-        }
-
-        if (command.UserId != _userContext.UserId)
-        {
-            return Result.Failure(UserErrors.Unauthorized);
+            return validationResult;
         }
 
         await using var connection = await _dbConnectionFactory.GetOpenConnectionAsync(cancellationToken);
@@ -57,28 +52,60 @@ internal sealed class ChangeUserPasswordCommandHandler : ICommandHandler<ChangeU
             return Result.Failure(UserErrors.NotFound(command.UserId));
         }
 
-        bool verified = _passwordHasher.Verify(command.CurrentPassword, user.PasswordHash);
-        if (!verified)
+        if (!_passwordHasher.Verify(command.CurrentPassword, user.PasswordHash))
         {
-            return Result.Failure<TokenResponse>(UserErrors.Unauthorized);
+            return Result.Failure(UserErrors.Unauthorized);
         }
 
-        string newPasswordHash = _passwordHasher.Hash(command.NewPassword);
+        await UpdatePassword(connection, user, command.NewPassword, cancellationToken);
+
+        await SchedulePasswordChangeNotification(user, cancellationToken);
+
+        return Result.Success();
+    }
+
+    private async Task<Result> ValidateCommand(ChangeUserPasswordCommand command, CancellationToken cancellationToken)
+    {
+        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return Result.Failure(ValidationErrorFactory.CreateValidationError(validationResult.Errors));
+        }
+
+        return command.UserId == _userContext.UserId
+            ? Result.Success()
+            : Result.Failure(UserErrors.Unauthorized);
+    }
+
+    private Task UpdatePassword(NpgsqlConnection connection, User user, string newPassword, CancellationToken cancellationToken)
+    {
+        string newPasswordHash = _passwordHasher.Hash(newPassword);
 
         user.ChangePassword(newPasswordHash);
 
-        await _userRepository.UpdateAsync(connection, user, cancellationToken);
+        return _userRepository.UpdateAsync(connection, user, cancellationToken);
+    }
 
-        await _emailService.SendEmailAsync(
-             user.Email,
-             "Your Password Has Been Changed",
-             $"Hello {user.Username},\n\n" +
-             $"We wanted to let you know that your password was successfully changed on {DateTime.UtcNow:MMMM d, yyyy 'at' HH:mm} (UTC).\n\n" +
-             "If you made this change, no further action is needed.\n\n" +
-             "If you did not request this change, please reset your password immediately and contact our support team.\n\n" +
-             "Best regards,\nYour Support Team",
-             cancellationToken);
+    private async Task SchedulePasswordChangeNotification(User user, CancellationToken cancellationToken)
+    {
+        var scheduler = await _schedulerFactory.GetScheduler(cancellationToken);
 
-        return Result.Success();
+        var jobData = new JobDataMap
+        {
+            { "email", user.Email },
+            { "username", user.Username }
+        };
+
+        IJobDetail job = JobBuilder.Create<PasswordChangedNotifierJob>()
+            .WithIdentity($"notifier-{Guid.NewGuid()}", "notifiers")
+            .SetJobData(jobData)
+            .Build();
+
+        ITrigger trigger = TriggerBuilder.Create()
+            .WithIdentity($"trigger-{Guid.NewGuid()}", "notifiers")
+            .StartNow()
+            .Build();
+
+        await scheduler.ScheduleJob(job, trigger, cancellationToken);
     }
 }
