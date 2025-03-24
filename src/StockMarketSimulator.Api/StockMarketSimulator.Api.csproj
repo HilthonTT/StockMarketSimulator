@@ -36,14 +36,16 @@
     <PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="8.0.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\SharedKernel\SharedKernel.csproj" />
-  </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Application.IntegrationTests" />
     <InternalsVisibleTo Include="Domain.UnitTests" />
     <InternalsVisibleTo Include="Api.Tests" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\SharedKernel\SharedKernel.csproj" />
   </ItemGroup>
 
 </Project>

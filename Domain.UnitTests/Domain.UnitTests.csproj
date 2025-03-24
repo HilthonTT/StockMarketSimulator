@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\StockMarketSimulator.Api\StockMarketSimulator.Api.csproj" />
+    <ProjectReference Include="..\src\StockMarketSimulator.Api\StockMarketSimulator.Api.csproj" />
   </ItemGroup>
 
   <ItemGroup>

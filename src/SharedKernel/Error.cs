@@ -12,11 +12,11 @@ public record Error
         Type = type;
     }
 
-    public string Code { get; init; }
+    public string Code { get; }
 
-    public string Description { get; init; }
+    public string Description { get;  }
 
-    public ErrorType Type { get; init; }
+    public ErrorType Type { get; }
 
     public static Error Failure(string code, string description) => 
         new(code, description, ErrorType.Failure);
