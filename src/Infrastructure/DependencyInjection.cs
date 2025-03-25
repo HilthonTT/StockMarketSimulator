@@ -1,12 +1,13 @@
 ﻿using Application.Abstractions.Caching;
 using Application.Abstractions.Data;
-using Application.Abstractions.Email;
+using Application.Abstractions.Emails;
 using Application.Abstractions.Notifications;
 using Infrastructure.Caching;
 using Infrastructure.Database;
-using Infrastructure.Email;
+using Infrastructure.Emails;
 using Infrastructure.Notifications;
 using Infrastructure.Time;
+using Infrastructure.Validation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
@@ -22,9 +23,10 @@ public static class DependencyInjection
     {
         services
             .AddServices()
+            .AddEmail()
             .AddDatabase(configuration)
             .AddCaching(configuration)
-            .AddEmail(configuration);
+            .AddHealthChecks(configuration);
 
         return services;
     }
@@ -60,10 +62,22 @@ public static class DependencyInjection
         return services;
     }
 
-    private static IServiceCollection AddEmail(this IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection AddEmail(this IServiceCollection services)
     {
+        services.AddOptionsWithFluentValidation<EmailOptions>(EmailOptions.SettingsKey);
+
         services.AddTransient<IEmailService, EmailService>();
         services.AddTransient<INotificationService, NotificationService>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddHealthChecks(this IServiceCollection services, IConfiguration configuration)
+    {
+        services
+            .AddHealthChecks()
+            .AddNpgSql(configuration.GetConnectionString("Database")!)
+            .AddRedis(configuration.GetConnectionString("Cache")!);
 
         return services;
     }
