@@ -12,7 +12,10 @@ internal sealed class EmailService(IOptions<EmailOptions> options) : IEmailServi
 {
     private readonly EmailOptions _options = options.Value;
 
-    public async Task SendEmailAsync(MailRequest mailRequest, CancellationToken cancellationToken = default)
+    public async Task SendEmailAsync(
+        MailRequest mailRequest, 
+        bool isHtml = false, 
+        CancellationToken cancellationToken = default)
     {
         var email = new MimeMessage()
         {
@@ -25,7 +28,7 @@ internal sealed class EmailService(IOptions<EmailOptions> options) : IEmailServi
                 MailboxAddress.Parse(mailRequest.EmailTo)
             },
             Subject = mailRequest.Subject,
-            Body = new TextPart(TextFormat.Text)
+            Body = new TextPart(isHtml ? TextFormat.Html : TextFormat.Text)
             {
                 Text = mailRequest.Body
             }

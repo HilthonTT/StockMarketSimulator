@@ -29,6 +29,8 @@ public sealed class RefreshToken : Entity
 
     public DateTime ExpiresOnUtc { get; private set; }
 
+    public User User { get; set; } = null!;
+
     public static RefreshToken Create(string token, Guid userId)
     {
         DateTime expiresOnUtc = DateTime.UtcNow.AddDays(7);
