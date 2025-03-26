@@ -4,6 +4,8 @@ namespace Modules.Users.Domain.Entities;
 
 public sealed class RefreshToken : Entity
 {
+    private const int DefaultExpirationDays = 7;
+
     private RefreshToken(Guid id, string token, Guid userId, DateTime expiresOnUtc)
     {
         Ensure.NotNullOrEmpty(id, nameof(id));
@@ -17,6 +19,12 @@ public sealed class RefreshToken : Entity
         ExpiresOnUtc = expiresOnUtc;
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RefreshToken"/>
+    /// </summary>
+    /// <remarks>
+    /// Required for EF Core
+    /// </remarks>
     private RefreshToken()
     {
     }
@@ -29,18 +37,28 @@ public sealed class RefreshToken : Entity
 
     public DateTime ExpiresOnUtc { get; private set; }
 
+    /// <summary>
+    /// Gets or sets the user.
+    /// </summary>
+    /// <remarks>
+    /// Navigation property for EF Core.
+    /// </remarks>
     public User User { get; set; } = null!;
 
     public static RefreshToken Create(string token, Guid userId)
     {
-        DateTime expiresOnUtc = DateTime.UtcNow.AddDays(7);
-
-        return new(Guid.CreateVersion7(), token, userId, expiresOnUtc);
+        return new(Guid.CreateVersion7(), token, userId, CalculateExpirationDate());
     }
 
-    public void Update(string token)
+    public void Refresh(string newToken)
     {
-        Token = token;
-        ExpiresOnUtc = DateTime.UtcNow.AddDays(7);
+        Ensure.NotNullOrEmpty(newToken, nameof(newToken));
+
+        Token = newToken;
+        ExpiresOnUtc = CalculateExpirationDate();
     }
+
+    public bool IsExpired() => DateTime.UtcNow >= ExpiresOnUtc;
+
+    private static DateTime CalculateExpirationDate() => DateTime.UtcNow.AddDays(DefaultExpirationDays);
 }

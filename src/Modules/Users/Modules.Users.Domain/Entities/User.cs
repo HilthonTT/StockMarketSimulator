@@ -21,6 +21,12 @@ public sealed class User : Entity, IAuditable
         EmailVerified = emailVerified;
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="User"/>
+    /// </summary>
+    /// <remarks>
+    /// Required for EF Core
+    /// </remarks>
     private User()
     {
     }
@@ -41,11 +47,11 @@ public sealed class User : Entity, IAuditable
 
     public DateTime? ModifiedOnUtc { get; set; }
 
-    public static User Create(Username username, Email email, string passwordHash)
+    public static User Create(Username username, Email email, string passwordHash, string verificationLink)
     {
         var user = new User(Guid.CreateVersion7(), username, email, passwordHash, false);
 
-        user.Raise(new UserCreatedDomainEvent(user.Id));
+        user.Raise(new UserCreatedDomainEvent(user.Id, verificationLink));
 
         return user;
     }

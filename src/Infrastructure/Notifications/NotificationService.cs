@@ -6,6 +6,22 @@ namespace Infrastructure.Notifications;
 
 internal sealed class NotificationService(IEmailService emailService) : INotificationService
 {
+    public Task SendEmailVerificationAsync(EmailVerificationEmail request, CancellationToken cancellationToken = default)
+    {
+        var mailRequest = new MailRequest(
+           request.EmailTo,
+           "Verify Your Email Address",
+           $"""
+            <p>Dear {request.EmailTo},</p>
+            <p>Thank you for signing up! To complete your registration, please verify your email address by clicking the link below:</p>
+            <p><a href="{request.VerificationLink}" target="_blank" style="color: #007bff; text-decoration: none;">Verify Email</a></p>
+            <p>If you didn't sign up, you can safely ignore this email.</p>
+            <p>Best regards,<br>The Team</p>
+            """);
+
+        return emailService.SendEmailAsync(mailRequest, true, cancellationToken);
+    }
+
     public Task SendPasswordChangedAsync(PasswordChangedEmail request, CancellationToken cancellationToken = default)
     {
         var mailRequest = new MailRequest(

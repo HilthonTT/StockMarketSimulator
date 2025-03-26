@@ -80,6 +80,8 @@ public static class DependencyInjection
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
         services.AddSingleton<ITokenProvider, TokenProvider>();
 
+        services.AddScoped<IEmailVerificationLinkFactory, EmailVerificationLinkFactory>();
+
         return services;
     }
 

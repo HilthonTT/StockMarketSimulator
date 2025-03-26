@@ -4,6 +4,8 @@ namespace Application.Abstractions.Notifications;
 
 public interface INotificationService
 {
+    Task SendEmailVerificationAsync(EmailVerificationEmail request, CancellationToken cancellationToken = default);
+
     Task SendPurchaseConfirmedAsync(PurchaseConfirmedEmail request, CancellationToken cancellationToken = default);
 
     Task SendWelcomeAsync(WelcomeEmail request, CancellationToken cancellationToken = default);

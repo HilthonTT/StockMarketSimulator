@@ -4,6 +4,8 @@ namespace Modules.Users.Domain.Entities;
 
 public sealed class EmailVerificationToken : Entity, IAuditable
 {
+    private const int DefaultExpirationHours = 24;
+
     private EmailVerificationToken(Guid id, Guid userId, DateTime expiresOnUtc)
     {
         Ensure.NotNullOrEmpty(id, nameof(id));
@@ -15,6 +17,12 @@ public sealed class EmailVerificationToken : Entity, IAuditable
         ExpiresOnUtc = expiresOnUtc;
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EmailVerificationToken"/>
+    /// </summary>
+    /// <remarks>
+    /// Required for EF Core
+    /// </remarks>
     private EmailVerificationToken()
     {
     }
@@ -29,10 +37,26 @@ public sealed class EmailVerificationToken : Entity, IAuditable
 
     public DateTime? ModifiedOnUtc { get; set; }
 
-    public User User { get; set; } = null!;
+    /// <summary>
+    /// Gets or sets the user.
+    /// </summary>
+    /// <remarks>
+    /// Navigation property for EF Core.
+    /// </remarks>
+    public User User { get; set; } = null!; 
 
-    public static EmailVerificationToken Create(Guid userId, DateTime expiresOnUtc)
+    public static EmailVerificationToken Create(Guid id, Guid userId)
     {
-        return new EmailVerificationToken(Guid.CreateVersion7(), userId, expiresOnUtc);
+        return new EmailVerificationToken(id, userId, CalculateExpirationDate());
     }
+
+    public void RefreshExpiration()
+    {
+        ExpiresOnUtc = CalculateExpirationDate();
+        ModifiedOnUtc = DateTime.UtcNow;
+    }
+
+    public bool IsExpired() => DateTime.UtcNow >= ExpiresOnUtc;
+
+    private static DateTime CalculateExpirationDate() => DateTime.UtcNow.AddHours(DefaultExpirationHours);
 }

@@ -7,9 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Quartz.Extensions.Hosting" Version="3.14.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\Application\Application.csproj" />
-    <ProjectReference Include="..\Modules.Users.BackgroundJobs\Modules.Users.BackgroundJobs.csproj" />
-    <ProjectReference Include="..\Modules.Users.Domain\Modules.Users.Domain.csproj" />
   </ItemGroup>
 
 </Project>
