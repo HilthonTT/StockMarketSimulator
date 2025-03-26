@@ -1,7 +1,9 @@
-﻿using Application.Abstractions.Caching;
+﻿using Application.Abstractions.Authentication;
+using Application.Abstractions.Caching;
 using Application.Abstractions.Data;
 using Application.Abstractions.Emails;
 using Application.Abstractions.Notifications;
+using Infrastructure.Authentication;
 using Infrastructure.Caching;
 using Infrastructure.Database;
 using Infrastructure.Emails;
@@ -34,6 +36,9 @@ public static class DependencyInjection
     private static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
+
+        services.AddHttpContextAccessor();
+        services.AddScoped<IUserContext, UserContext>();
 
         return services;
     }
