@@ -32,7 +32,7 @@ internal sealed class RegisterUserCommandHandler(
         Username username = usernameResult.Value;
 
         // Step 2: Ensure Email Uniqueness
-        if (await userRepository.EmailExistsAsync(email, cancellationToken))
+        if (await userRepository.EmailNotUniqueAsync(email, cancellationToken))
         {
             return Result.Failure<Guid>(UserErrors.EmailNotUnique);
         }

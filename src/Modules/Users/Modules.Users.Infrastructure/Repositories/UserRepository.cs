@@ -8,9 +8,14 @@ namespace Modules.Users.Infrastructure.Repositories;
 
 internal sealed class UserRepository(UsersDbContext context) : IUserRepository
 {
-    public Task<bool> EmailExistsAsync(Email email, CancellationToken cancellationToken = default)
+    public async Task<bool> EmailNotUniqueAsync(Email email, CancellationToken cancellationToken = default)
     {
-        return context.Users.AnyAsync(u => u.Email.Value == email.Value, cancellationToken);
+        return !await context.Users.AnyAsync(u => u.Email.Value == email.Value, cancellationToken);
+    }
+
+    public Task<User?> GetByEmailAsync(Email email, CancellationToken cancellationToken = default)
+    {
+        return context.Users.FirstOrDefaultAsync(u => u.Email.Value == email.Value, cancellationToken);
     }
 
     public Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)

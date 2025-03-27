@@ -7,6 +7,13 @@ namespace Modules.Users.Infrastructure.Repositories;
 
 internal sealed class RefreshTokenRepository(UsersDbContext context) : IRefreshTokenRepository
 {
+    public Task<int> BatchDeleteAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return context.RefreshTokens
+            .Where(x => x.UserId == userId)
+            .ExecuteDeleteAsync(cancellationToken);
+    }
+
     public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken cancellationToken = default)
     {
         return context.RefreshTokens

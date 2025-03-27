@@ -67,4 +67,16 @@ public sealed class User : Entity, IAuditable
 
         PasswordHash = passwordHash;
     }
+
+    public void VerifyEmail()
+    {
+        if (EmailVerified)
+        {
+            return;
+        }
+
+        EmailVerified = true;
+
+        Raise(new UserEmailVerifiedDomainEvent(Id));
+    }
 }
