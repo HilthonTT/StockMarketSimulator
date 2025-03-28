@@ -11,7 +11,7 @@ public static class Ensure
     {
         if (string.IsNullOrEmpty(value))
         {
-            throw new ArgumentNullException(paramName);
+            throw new ArgumentNullException(paramName, $"{paramName} cannot be null or empty.");
         }
     }
 
@@ -21,7 +21,7 @@ public static class Ensure
     {
         if (value is null || value == Guid.Empty)
         {
-            throw new ArgumentNullException(paramName);
+            throw new ArgumentNullException(paramName, $"{paramName} cannot be null or an empty GUID.");
         }
     }
 
@@ -29,9 +29,9 @@ public static class Ensure
         [NotNull] object? value,
         [CallerArgumentExpression(nameof(value))] string? paramName = default)
     {
-        if (value is null) 
+        if (value is null)
         {
-            throw new ArgumentNullException(paramName);
+            throw new ArgumentNullException(paramName, $"{paramName} cannot be null.");
         }
     }
 
@@ -41,7 +41,7 @@ public static class Ensure
     {
         if (value < 0)
         {
-            throw new ArgumentOutOfRangeException(paramName);
+            throw new ArgumentOutOfRangeException(paramName, "Value must be greater than or equal to zero.");
         }
     }
 
@@ -51,7 +51,27 @@ public static class Ensure
     {
         if (value < 0)
         {
-            throw new ArgumentOutOfRangeException(paramName);
+            throw new ArgumentOutOfRangeException(paramName, "Value must be greater than or equal to zero.");
+        }
+    }
+
+    public static void GreaterThanZero(
+        int value,
+        [CallerArgumentExpression(nameof(value))] string? paramName = default)
+    {
+        if (value <= 0)
+        {
+            throw new ArgumentOutOfRangeException(paramName, "Value must be greater than or equal to zero.");
+        }
+    }
+
+    public static void GreaterThanZero(
+        decimal value,
+        [CallerArgumentExpression(nameof(value))] string? paramName = default)
+    {
+        if (value <= 0)
+        {
+            throw new ArgumentOutOfRangeException(paramName, "Value must be greater than or equal to zero.");
         }
     }
 }

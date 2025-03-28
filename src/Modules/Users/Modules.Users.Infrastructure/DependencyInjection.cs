@@ -9,9 +9,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
+using Modules.Users.Api;
 using Modules.Users.Application.Abstractions.Authentication;
 using Modules.Users.Application.Abstractions.Data;
 using Modules.Users.Domain.Repositories;
+using Modules.Users.Infrastructure.Api;
 using Modules.Users.Infrastructure.Authentication;
 using Modules.Users.Infrastructure.Authorization;
 using Modules.Users.Infrastructure.Database;
@@ -27,7 +29,8 @@ public static class DependencyInjection
         services
             .AddDatabase(configuration)
             .AddAuthenticationInternal(configuration)
-            .AddAuthorizationInternal();
+            .AddAuthorizationInternal()
+            .AddApi();
 
         return services;
     }
@@ -94,6 +97,13 @@ public static class DependencyInjection
         services.AddTransient<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
         services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddApi(this IServiceCollection services)
+    {
+        services.AddScoped<IUsersApi, UsersApi>();
 
         return services;
     }
