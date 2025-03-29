@@ -5,6 +5,7 @@ using Application.Abstractions.Emails;
 using Application.Abstractions.Notifications;
 using Infrastructure.Authentication;
 using Infrastructure.Caching;
+using Infrastructure.Channels;
 using Infrastructure.Database;
 using Infrastructure.Emails;
 using Infrastructure.Notifications;
@@ -39,6 +40,8 @@ public static class DependencyInjection
 
         services.AddHttpContextAccessor();
         services.AddScoped<IUserContext, UserContext>();
+
+        services.AddHostedService<ChannelNotificationsProcessor>();
 
         return services;
     }
