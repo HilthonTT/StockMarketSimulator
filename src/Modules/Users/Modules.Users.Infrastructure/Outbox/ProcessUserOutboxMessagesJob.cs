@@ -10,13 +10,13 @@ using SharedKernel;
 namespace Modules.Users.Infrastructure.Outbox;
 
 [DisallowConcurrentExecution]
-public sealed class ProcessOutboxMessagesJob(
+public sealed class ProcessUserOutboxMessagesJob(
     IDbConnectionFactory dbConnectionFactory,
     IPublisher publisher,
     IDateTimeProvider dateTimeProvider,
-    ILogger<ProcessOutboxMessagesJob> logger) : IJob
+    ILogger<ProcessUserOutboxMessagesJob> logger) : IJob
 {
-    public const string Name = nameof(ProcessOutboxMessagesJob);
+    public const string Name = nameof(ProcessUserOutboxMessagesJob);
 
     private const int BatchSize = 15;
     private static readonly JsonSerializerSettings JsonSerializerSettings = new()
