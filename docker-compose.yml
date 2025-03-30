@@ -1,13 +1,13 @@
 services:
-  stockmarketsimulator-api:
-    image: ${DOCKER_REGISTRY-}stockmarketsimulatorapi
-    container_name: stockmarketsimulator-api
-    build:
-      context: .
-      dockerfile: StockMarketSimulator.Api/Dockerfile
-    ports:
-     - 5000:8080
-     - 5001:8081
+  # stockmarketsimulator-api:
+  #   image: ${DOCKER_REGISTRY-}stockmarketsimulatorapi
+  #   container_name: stockmarketsimulator-api
+  #   build:
+  #     context: .
+  #     dockerfile: StockMarketSimulator.Api/Dockerfile
+  #   ports:
+  #    - 5000:8080
+  #    - 5001:8081
 
   stockmarketsimulator-postgres:
     image: postgres:latest
@@ -42,3 +42,13 @@ services:
     ports:
       - 8080:80
       - 25:25
+
+  web.api:
+    image: ${DOCKER_REGISTRY-}webapi
+    build:
+      context: .
+      dockerfile: src/Web.Api/Dockerfile
+    ports:
+     - 5000:8080
+     - 5001:8081
+

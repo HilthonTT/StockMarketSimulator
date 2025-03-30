@@ -4,7 +4,8 @@
       "commandName": "DockerCompose",
       "commandVersion": "1.0",
       "serviceActions": {
-        "stockmarketsimulator.api": "StartDebugging"
+        "stockmarketsimulator.api": "StartDebugging",
+        "web.api": "StartDebugging"
       }
     }
   }

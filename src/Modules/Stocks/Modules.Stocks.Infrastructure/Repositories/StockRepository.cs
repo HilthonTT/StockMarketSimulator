@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Modules.Stocks.Domain.Entities;
+using Modules.Stocks.Domain.Repositories;
 using Modules.Stocks.Infrastructure.Database;
-using Stocks.Domain.Entities;
-using Stocks.Domain.Repositories;
 
 namespace Modules.Stocks.Infrastructure.Repositories;
 

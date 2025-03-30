@@ -1,6 +1,6 @@
-﻿using Stocks.Domain.Entities;
+﻿using Modules.Stocks.Domain.Entities;
 
-namespace Stocks.Domain.Repositories;
+namespace Modules.Stocks.Domain.Repositories;
 
 public interface IStockRepository
 {

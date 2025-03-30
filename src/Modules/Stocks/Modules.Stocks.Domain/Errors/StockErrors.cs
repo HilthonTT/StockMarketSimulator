@@ -1,6 +1,6 @@
 ﻿using SharedKernel;
 
-namespace Stocks.Domain.Errors;
+namespace Modules.Stocks.Domain.Errors;
 
 public static class StockErrors
 {

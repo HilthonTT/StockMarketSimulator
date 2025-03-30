@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Infrastructure.Database.Configurations;
+using Microsoft.EntityFrameworkCore;
 using Modules.Users.Application.Abstractions.Data;
 using Modules.Users.Domain.Entities;
 
@@ -18,4 +19,12 @@ public sealed class UsersDbContext(DbContextOptions<UsersDbContext> options)
     public DbSet<RolePermission> RolePermissions { get; set; }
 
     public DbSet<Permission> Permissions { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(UsersDbContext).Assembly);
+        modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
+
+        modelBuilder.HasDefaultSchema(Schemas.Users);
+    }
 }

@@ -5,6 +5,8 @@ namespace Modules.Users.Domain.ValueObjects;
 
 public sealed record Username
 {
+    private Username() { } // Required by EF Core
+
     private Username(string value) => Value = value;
 
     public string Value { get; }

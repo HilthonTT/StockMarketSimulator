@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Stocks.Domain.Entities;
+using Modules.Stocks.Domain.Entities;
 
 namespace Modules.Stocks.Infrastructure.Database.Configurations;
 

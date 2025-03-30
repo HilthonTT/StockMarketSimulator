@@ -1,7 +1,7 @@
-﻿using SharedKernel;
-using Stocks.Domain.DomainEvents;
+﻿using Modules.Stocks.Domain.DomainEvents;
+using SharedKernel;
 
-namespace Stocks.Domain.Entities;
+namespace Modules.Stocks.Domain.Entities;
 
 public sealed class StockSearchResult : Entity, IAuditable
 {

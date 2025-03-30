@@ -3,6 +3,7 @@ using Application.Abstractions.Caching;
 using Application.Abstractions.Data;
 using Application.Abstractions.Emails;
 using Application.Abstractions.Notifications;
+using FluentValidation;
 using Infrastructure.Authentication;
 using Infrastructure.Caching;
 using Infrastructure.Channels;
@@ -43,12 +44,14 @@ public static class DependencyInjection
 
         services.AddHostedService<ChannelNotificationsProcessor>();
 
+        services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly, includeInternalTypes: true);
+
         return services;
     }
 
     private static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
     {
-        string? connectionString = configuration.GetConnectionString("Database");
+        string? connectionString = configuration.GetConnectionString(ConfigurationNames.Database);
         Ensure.NotNullOrEmpty(connectionString);
 
         services.AddSingleton<IDbConnectionFactory>(_ =>
@@ -59,7 +62,7 @@ public static class DependencyInjection
 
     private static IServiceCollection AddCaching(this IServiceCollection services, IConfiguration configuration)
     {
-        string? redisConnectionString = configuration.GetConnectionString("Cache");
+        string? redisConnectionString = configuration.GetConnectionString(ConfigurationNames.Redis);
         Ensure.NotNullOrEmpty(redisConnectionString, nameof(redisConnectionString));
 
         services.AddStackExchangeRedisCache(options =>
@@ -84,8 +87,8 @@ public static class DependencyInjection
     {
         services
             .AddHealthChecks()
-            .AddNpgSql(configuration.GetConnectionString("Database")!)
-            .AddRedis(configuration.GetConnectionString("Cache")!);
+            .AddNpgSql(configuration.GetConnectionString(ConfigurationNames.Database)!)
+            .AddRedis(configuration.GetConnectionString(ConfigurationNames.Redis)!);
 
         return services;
     }

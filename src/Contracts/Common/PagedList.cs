@@ -35,4 +35,12 @@ public sealed class PagedList<T>
 
         return new(items, page, pageSize, totalCount);
     }
+
+    public static PagedList<T> Create(IEnumerable<T> query, int page, int pageSize)
+    {
+        int totalCount = query.Count();
+        List<T> items = [.. query.Skip((page - 1) * pageSize).Take(pageSize)];
+
+        return new(items, page, pageSize, totalCount);
+    }
 }

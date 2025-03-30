@@ -1,5 +1,5 @@
 ﻿using SharedKernel;
 
-namespace Stocks.Domain.DomainEvents;
+namespace Modules.Stocks.Domain.DomainEvents;
 
 public sealed record StockCreatedDomainEvent(Guid Id) : IDomainEvent;

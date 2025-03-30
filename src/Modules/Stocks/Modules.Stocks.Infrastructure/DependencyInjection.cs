@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Infrastructure;
 using Infrastructure.Database.Interceptors;
 using Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore;
@@ -9,12 +10,12 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Modules.Stocks.Application.Abstractions.Data;
 using Modules.Stocks.Application.Abstractions.Http;
 using Modules.Stocks.Application.Abstractions.Realtime;
+using Modules.Stocks.Domain.Repositories;
 using Modules.Stocks.Infrastructure.Database;
 using Modules.Stocks.Infrastructure.Http;
 using Modules.Stocks.Infrastructure.Realtime;
 using Modules.Stocks.Infrastructure.Repositories;
 using SharedKernel;
-using Stocks.Domain.Repositories;
 
 namespace Modules.Stocks.Infrastructure;
 
@@ -37,7 +38,7 @@ public static class DependencyInjection
         services.TryAddSingleton<InsertOutboxMessagesInterceptor>();
         services.TryAddSingleton<UpdateAuditableInterceptor>();
 
-        string? connectionString = configuration.GetConnectionString("Database");
+        string? connectionString = configuration.GetConnectionString(ConfigurationNames.Database);
         Ensure.NotNullOrEmpty(connectionString, nameof(connectionString));
 
         services.AddDbContext<StocksDbContext>(
@@ -54,6 +55,7 @@ public static class DependencyInjection
         services.AddScoped<IDbContext>(sp => sp.GetRequiredService<StocksDbContext>());
 
         services.AddScoped<IStockRepository, StockRepository>();
+        services.AddScoped<IStockSearchResultRepository, StockSearchResultRepository>();
 
         return services;
     }

@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Infrastructure;
 using Infrastructure.Database.Interceptors;
 using Infrastructure.Outbox;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -40,7 +41,7 @@ public static class DependencyInjection
         services.TryAddSingleton<InsertOutboxMessagesInterceptor>();
         services.TryAddSingleton<UpdateAuditableInterceptor>();
 
-        string? connectionString = configuration.GetConnectionString("Database");
+        string? connectionString = configuration.GetConnectionString(ConfigurationNames.Database);
         Ensure.NotNullOrEmpty(connectionString, nameof(connectionString));
 
         services.AddDbContext<UsersDbContext>(

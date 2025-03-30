@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Stocks.Domain.Entities;
+using Modules.Stocks.Domain.Entities;
 
 namespace Modules.Stocks.Application.Abstractions.Data;
 

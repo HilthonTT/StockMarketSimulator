@@ -5,8 +5,8 @@ using Microsoft.Extensions.Logging;
 using Modules.Stocks.Application.Abstractions.Http;
 using Modules.Stocks.Application.Abstractions.Realtime;
 using Modules.Stocks.Contracts.Stocks;
+using Modules.Stocks.Domain.Entities;
 using SharedKernel;
-using Stocks.Domain.Entities;
 
 namespace Modules.Stocks.Infrastructure.Realtime;
 

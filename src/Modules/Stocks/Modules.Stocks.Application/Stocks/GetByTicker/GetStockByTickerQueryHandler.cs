@@ -1,8 +1,8 @@
 ﻿using Application.Abstractions.Messaging;
 using Modules.Stocks.Application.Abstractions.Realtime;
 using Modules.Stocks.Contracts.Stocks;
+using Modules.Stocks.Domain.Errors;
 using SharedKernel;
-using Stocks.Domain.Errors;
 
 namespace Modules.Stocks.Application.Stocks.GetByTicker;
 
