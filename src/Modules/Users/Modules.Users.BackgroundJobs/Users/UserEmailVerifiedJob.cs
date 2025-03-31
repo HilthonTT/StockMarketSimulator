@@ -6,8 +6,8 @@ using SharedKernel;
 
 namespace Modules.Users.BackgroundJobs.Users;
 
-public sealed class EmailVerificationJob(
-    ILogger<EmailVerificationJob> logger, 
+public sealed class UserEmailVerifiedJob(
+    ILogger<UserEmailVerifiedJob> logger,
     INotificationService notificationService,
     IDateTimeProvider dateTimeProvider) : IJob
 {
@@ -19,7 +19,7 @@ public sealed class EmailVerificationJob(
 
         Guid userId = data.GetGuid("userId");
         string? email = data.GetString("email");
-        string? verificationLink = data.GetString("verification-link");
+        string? username = data.GetString("username");
 
         logger.LogInformation("Executing {JobName} for user {UserId} at {Timestamp}", Name, userId, dateTimeProvider.UtcNow);
 
@@ -35,30 +35,28 @@ public sealed class EmailVerificationJob(
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(verificationLink))
+        if (string.IsNullOrWhiteSpace(username))
         {
-            logger.LogWarning("Execution aborted: Missing verification link for user {UserId}.", userId);
+            logger.LogWarning("Execution aborted: Missing or invalid username for user {UserId}.", userId);
             return;
         }
 
         try
         {
-            logger.LogDebug("Preparing to send verification email to {Email} for user {UserId}.", email, userId);
+            logger.LogDebug("Preparing to send welcome email to {Email} for user {UserId}.", email, userId);
 
-            var request = new EmailVerificationEmail(email, verificationLink);
+            var request = new WelcomeEmail(email, username);
 
-            await notificationService.SendEmailVerificationAsync(request, context.CancellationToken);
+            await notificationService.SendWelcomeAsync(request, context.CancellationToken);
 
-            logger.LogInformation("Successfully sent verification email to {Email} for user {UserId}.", email, userId);
+            logger.LogInformation("Successfully sent welcome email to {Email} for user {UserId}.", email, userId);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to send verification email to user {UserId}. Exception: {Message}", userId, ex.Message);
+            logger.LogError(ex, "Failed to send welcome email to user {UserId}. Exception: {Message}", userId, ex.Message);
 
             // Rethrow to let Quartz handle retry logic
             throw;
         }
-
-        logger.LogInformation("{JobName} execution completed for user {UserId} at {Timestamp}", Name, userId, DateTime.UtcNow);
     }
 }

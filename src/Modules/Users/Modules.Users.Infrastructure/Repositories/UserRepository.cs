@@ -10,17 +10,21 @@ internal sealed class UserRepository(UsersDbContext context) : IUserRepository
 {
     public async Task<bool> EmailNotUniqueAsync(Email email, CancellationToken cancellationToken = default)
     {
-        return !await context.Users.AnyAsync(u => u.Email.Value == email.Value, cancellationToken);
+        return await context.Users.AnyAsync(u => u.Email == email, cancellationToken);
     }
 
     public Task<User?> GetByEmailAsync(Email email, CancellationToken cancellationToken = default)
     {
-        return context.Users.FirstOrDefaultAsync(u => u.Email.Value == email.Value, cancellationToken);
+        return context.Users
+            .Include(u => u.Roles)
+            .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
     }
 
     public Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return context.Users.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+        return context.Users
+            .Include(u => u.Roles)
+            .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
     }
 
     public void Insert(User user)

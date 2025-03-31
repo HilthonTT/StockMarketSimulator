@@ -8,7 +8,7 @@ internal sealed class PermissionProvider(UsersDbContext context)
 {
     public async Task<HashSet<string>> GetForUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        ICollection<Role>[] roles = await context.Users
+        IReadOnlyList<Role>[] roles = await context.Users
            .Include(x => x.Roles)
            .ThenInclude(x => x.Permissions)
            .Where(x => x.Id == userId)

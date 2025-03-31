@@ -7,10 +7,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Modules.Stocks.Api;
 using Modules.Stocks.Application.Abstractions.Data;
 using Modules.Stocks.Application.Abstractions.Http;
 using Modules.Stocks.Application.Abstractions.Realtime;
 using Modules.Stocks.Domain.Repositories;
+using Modules.Stocks.Infrastructure.Api;
 using Modules.Stocks.Infrastructure.Database;
 using Modules.Stocks.Infrastructure.Http;
 using Modules.Stocks.Infrastructure.Realtime;
@@ -28,7 +30,8 @@ public static class DependencyInjection
         services
             .AddDatabase(configuration)
             .AddRealtime()
-            .AddHttpClients(configuration);
+            .AddHttpClients(configuration)
+            .AddApis();
 
         return services;
     }
@@ -84,6 +87,13 @@ public static class DependencyInjection
 
         services.AddScoped<IStockService, StockService>();
         services.AddSingleton<IActiveTickerManager, ActiveTickerManager>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddApis(this IServiceCollection services)
+    {
+        services.AddScoped<IStocksApi, StocksApi>();
 
         return services;
     }

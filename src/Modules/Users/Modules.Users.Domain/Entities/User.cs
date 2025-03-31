@@ -6,6 +6,8 @@ namespace Modules.Users.Domain.Entities;
 
 public sealed class User : Entity, IAuditable
 {
+    private readonly List<Role> _roles = [];
+
     private User(Guid id, Username username, Email email, string passwordHash, bool emailVerified)
     {
         Ensure.NotNullOrEmpty(id, nameof(id));
@@ -41,7 +43,7 @@ public sealed class User : Entity, IAuditable
 
     public bool EmailVerified { get; private set; }
 
-    public List<Role> Roles { get; set; } = [];
+    public IReadOnlyList<Role> Roles => [.. _roles];
 
     public DateTime CreatedOnUtc { get; set; }
 
@@ -78,5 +80,15 @@ public sealed class User : Entity, IAuditable
         EmailVerified = true;
 
         Raise(new UserEmailVerifiedDomainEvent(Id));
+    }
+
+    public void AddRole(Role role)
+    {
+        if (Roles.FirstOrDefault(r => r.Id == role.Id) is not null)
+        {
+            return;
+        }
+
+        _roles.Add(role);
     }
 }

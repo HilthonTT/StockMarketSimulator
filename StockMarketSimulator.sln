@@ -70,6 +70,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockMarketSimulator.Servic
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "aspire", "aspire", "{D7C45B87-CB15-4F2C-88B1-7081BB4D8A43}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Modules.Stocks.Api", "src\Modules\Stocks\Modules.Stocks.Api\Modules.Stocks.Api.csproj", "{DA1AAD52-DDFB-4A81-94C0-4EACEB3FE524}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -168,6 +170,10 @@ Global
 		{98493E50-0E43-6382-9284-CBA3FAA72432}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{98493E50-0E43-6382-9284-CBA3FAA72432}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{98493E50-0E43-6382-9284-CBA3FAA72432}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA1AAD52-DDFB-4A81-94C0-4EACEB3FE524}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA1AAD52-DDFB-4A81-94C0-4EACEB3FE524}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA1AAD52-DDFB-4A81-94C0-4EACEB3FE524}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA1AAD52-DDFB-4A81-94C0-4EACEB3FE524}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -201,6 +207,7 @@ Global
 		{CE5C9466-19AA-4517-9A46-1FE19A373989} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{41825512-2D73-4893-94BF-43EEB14ABAEC} = {D7C45B87-CB15-4F2C-88B1-7081BB4D8A43}
 		{98493E50-0E43-6382-9284-CBA3FAA72432} = {D7C45B87-CB15-4F2C-88B1-7081BB4D8A43}
+		{DA1AAD52-DDFB-4A81-94C0-4EACEB3FE524} = {116DFD56-9731-4B98-B843-865D9F7CF53C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CD593C20-A8F4-4A5C-961C-E5BA7D03D2BF}

@@ -27,6 +27,8 @@ internal sealed class VerifyEmailCommandHandler(
 
         token.User.VerifyEmail();
 
+        token.User.AddRole(Role.Registered);
+
         emailVerificationTokenRepository.Remove(token);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
