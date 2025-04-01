@@ -87,7 +87,7 @@ public sealed class RevokeExpiredRefreshTokenJob(
 
         const string deleteSql =
             """
-            DELETE FROM refresh_tokens
+            DELETE FROM users.refresh_tokens
             WHERE id = ANY(@Ids)
             """;
 

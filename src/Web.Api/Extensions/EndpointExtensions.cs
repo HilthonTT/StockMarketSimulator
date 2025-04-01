@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection.Extensions;
+using Modules.Users.Domain.Enums;
 using System.Reflection;
 using Web.Api.Endpoints;
 
@@ -35,8 +36,10 @@ public static class EndpointExtensions
         return app;
     }
 
-    public static RouteHandlerBuilder HasPermission(this RouteHandlerBuilder app, string permission)
+    public static RouteHandlerBuilder HasPermission(this RouteHandlerBuilder app, params Permission[] permissions)
     {
-        return app.RequireAuthorization(permission);
+        string[] permissionNames = [.. permissions.Select(p => p.ToString())];
+
+        return app.RequireAuthorization(permissionNames);
     }
 }

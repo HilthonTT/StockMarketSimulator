@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using Modules.Users.Application.Users.Register;
+using Modules.Users.Application.Users.LoginWithRefreshToken;
 using Modules.Users.Contracts.Users;
 using SharedKernel;
 using Web.Api.Extensions;
@@ -7,18 +7,18 @@ using Web.Api.Infrastructure;
 
 namespace Web.Api.Endpoints.Users;
 
-internal sealed class Register : IEndpoint
+internal sealed class LoginWithRefreshTokens : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPost("users/register", async (
-            RegisterRequest request,
+        app.MapPost("users/refresh-tokens", async (
+            LoginWithRefreshTokenRequest request,
             ISender sender,
             CancellationToken cancellationToken) =>
         {
-            var command = new RegisterUserCommand(request.Email, request.Username, request.Password);
+            var command = new LoginUserWithRefreshTokenCommand(request.RefreshToken);
 
-            Result<Guid> result = await sender.Send(command, cancellationToken);
+            Result<TokenResponse> result = await sender.Send(command, cancellationToken);
 
             return result.Match(Results.Ok, CustomResults.Problem);
         })
