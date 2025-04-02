@@ -72,6 +72,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "aspire", "aspire", "{D7C45B
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Modules.Stocks.Api", "src\Modules\Stocks\Modules.Stocks.Api\Modules.Stocks.Api.csproj", "{DA1AAD52-DDFB-4A81-94C0-4EACEB3FE524}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Budgeting", "Budgeting", "{0BA43F17-D161-4743-9E2C-2139AB05506F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Modules.Budgeting.Domain", "src\Modules\Budgeting\Modules.Budgeting.Domain\Modules.Budgeting.Domain.csproj", "{3E0A14AF-52B9-4B01-A972-F2C8B7E22D03}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -174,6 +178,10 @@ Global
 		{DA1AAD52-DDFB-4A81-94C0-4EACEB3FE524}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DA1AAD52-DDFB-4A81-94C0-4EACEB3FE524}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DA1AAD52-DDFB-4A81-94C0-4EACEB3FE524}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E0A14AF-52B9-4B01-A972-F2C8B7E22D03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E0A14AF-52B9-4B01-A972-F2C8B7E22D03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E0A14AF-52B9-4B01-A972-F2C8B7E22D03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E0A14AF-52B9-4B01-A972-F2C8B7E22D03}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -208,6 +216,8 @@ Global
 		{41825512-2D73-4893-94BF-43EEB14ABAEC} = {D7C45B87-CB15-4F2C-88B1-7081BB4D8A43}
 		{98493E50-0E43-6382-9284-CBA3FAA72432} = {D7C45B87-CB15-4F2C-88B1-7081BB4D8A43}
 		{DA1AAD52-DDFB-4A81-94C0-4EACEB3FE524} = {116DFD56-9731-4B98-B843-865D9F7CF53C}
+		{0BA43F17-D161-4743-9E2C-2139AB05506F} = {3452BB72-23B5-4DBD-B227-617A67089FBC}
+		{3E0A14AF-52B9-4B01-A972-F2C8B7E22D03} = {0BA43F17-D161-4743-9E2C-2139AB05506F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CD593C20-A8F4-4A5C-961C-E5BA7D03D2BF}
