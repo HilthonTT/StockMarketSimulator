@@ -1,4 +1,7 @@
-﻿using Modules.Stocks.Infrastructure.Outbox;
+﻿using Microsoft.Extensions.Options;
+using Modules.Stocks.Infrastructure.Outbox;
+using Modules.Stocks.Infrastructure.Realtime;
+using Modules.Stocks.Infrastructure.Realtime.Options;
 using Modules.Users.BackgroundJobs.Users;
 using Modules.Users.Infrastructure.Outbox;
 using Quartz;
@@ -14,6 +17,7 @@ public static class BackgroundJobExtensions
             ConfigureUserOutboxJob(configure);
             ConfigureStockOutboxJob(configure);
             ConfigureRevokeExpiredTokensJob(configure);
+            ConfigureStocksFeedUpdaterJob(configure, services);
         });
 
         services.AddQuartzHostedService(options =>
@@ -49,5 +53,21 @@ public static class BackgroundJobExtensions
             .AddJob<RevokeExpiredRefreshTokenJob>(jobKey)
             .AddTrigger(trigger => trigger.ForJob(jobKey).WithSimpleSchedule(
                 schedule => schedule.WithIntervalInSeconds(20).RepeatForever()));
+    }
+
+    private static void ConfigureStocksFeedUpdaterJob(
+        IServiceCollectionQuartzConfigurator configure, 
+        IServiceCollection services)
+    {
+        using var scope = services.BuildServiceProvider().CreateScope();
+        var stockUpdateOptions = scope.ServiceProvider.GetRequiredService<IOptions<StockUpdateOptions>>().Value;
+
+        var jobKey = JobKey.Create(StocksFeedUpdater.Name);
+
+        configure.AddJob<StocksFeedUpdater>(jobKey)
+          .AddTrigger(trigger =>
+                trigger.ForJob(jobKey)
+                    .WithSimpleSchedule(schedule =>
+                        schedule.WithIntervalInSeconds(stockUpdateOptions.UpdateIntervalInSeconds).RepeatForever()));
     }
 }

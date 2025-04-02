@@ -3,7 +3,7 @@ using Modules.Stocks.Application.Abstractions.Realtime;
 
 namespace Modules.Stocks.Infrastructure.Realtime;
 
-internal sealed class StocksFeedHub : Hub<IStocksUpdateClient>
+public sealed class StocksFeedHub : Hub<IStocksUpdateClient>
 {
     public Task JoinGroup(string ticker)
     {

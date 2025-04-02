@@ -82,6 +82,14 @@ namespace Modules.Stocks.Infrastructure.Database.Migrations
                 column: "ticker");
 
             migrationBuilder.CreateIndex(
+                name: "ix_stock_search_results_ticker_name",
+                schema: "stocks",
+                table: "stock_search_results",
+                columns: new[] { "ticker", "name" })
+                .Annotation("Npgsql:IndexMethod", "GIN")
+                .Annotation("Npgsql:TsVectorConfig", "english");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_stocks_created_on_utc",
                 schema: "stocks",
                 table: "stocks",

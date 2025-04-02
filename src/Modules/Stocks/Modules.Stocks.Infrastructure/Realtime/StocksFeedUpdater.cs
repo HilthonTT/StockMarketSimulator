@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Modules.Stocks.Application.Abstractions.Realtime;
 using Modules.Stocks.Contracts.Stocks;
 using Modules.Stocks.Infrastructure.Realtime.Options;
@@ -9,16 +10,17 @@ using Quartz;
 namespace Modules.Stocks.Infrastructure.Realtime;
 
 [DisallowConcurrentExecution]
-internal sealed class StocksFeedUpdater(
+public sealed class StocksFeedUpdater(
     IActiveTickerManager activeTickerManager,
     IServiceScopeFactory serviceScopeFactory,
     IHubContext<StocksFeedHub, IStocksUpdateClient> hubContext,
-    StockUpdateOptions options,
+    IOptions<StockUpdateOptions> options,
     ILogger<StocksFeedUpdater> logger) : IJob
 {
     public const string Name = nameof(StocksFeedUpdater);
 
     private static readonly Random _random = new();
+    private readonly StockUpdateOptions _options = options.Value;
 
     public Task Execute(IJobExecutionContext context)
     {
@@ -52,7 +54,7 @@ internal sealed class StocksFeedUpdater(
     {
         double dt = 1.0 / 252; // Daily step assuming 252 trading days per year
         double mu = 0.0005; // Expected return (adjust this as needed)
-        double sigma = options.Volatility; // Volatility factor
+        double sigma = _options.Volatility; // Volatility factor
 
         double randomShock = sigma * Math.Sqrt(dt) * _random.NextDouble();
         double percentageChange = mu * dt + randomShock;

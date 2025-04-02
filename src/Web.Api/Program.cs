@@ -7,6 +7,7 @@ using Infrastructure;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Modules.Stocks.Application;
 using Modules.Stocks.Infrastructure;
+using Modules.Stocks.Infrastructure.Realtime;
 using Modules.Users.Application;
 using Modules.Users.Infrastructure;
 using Web.Api;
@@ -68,11 +69,18 @@ app.MapHealthChecks("health", new HealthCheckOptions
     ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
 });
 
+app.MapHub<StocksFeedHub>("/stocks-feed");
+
 app.UseExceptionHandler();
 
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+// Add the user context enrichment middleware after authentication
+app.UseUserContextEnrichment();
+
+app.UseStatusCodePages();
 
 await app.RunAsync();
 

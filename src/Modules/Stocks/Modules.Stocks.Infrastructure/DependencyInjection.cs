@@ -2,6 +2,7 @@
 using Infrastructure;
 using Infrastructure.Database.Interceptors;
 using Infrastructure.Outbox;
+using Infrastructure.Validation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
@@ -16,6 +17,7 @@ using Modules.Stocks.Infrastructure.Api;
 using Modules.Stocks.Infrastructure.Database;
 using Modules.Stocks.Infrastructure.Http;
 using Modules.Stocks.Infrastructure.Realtime;
+using Modules.Stocks.Infrastructure.Realtime.Options;
 using Modules.Stocks.Infrastructure.Repositories;
 using SharedKernel;
 
@@ -84,6 +86,8 @@ public static class DependencyInjection
     private static IServiceCollection AddRealtime(this IServiceCollection services)
     {
         services.AddSignalR();
+
+        services.AddOptionsWithFluentValidation<StockUpdateOptions>(StockUpdateOptions.ConfigurationSection);
 
         services.AddScoped<IStockService, StockService>();
         services.AddSingleton<IActiveTickerManager, ActiveTickerManager>();

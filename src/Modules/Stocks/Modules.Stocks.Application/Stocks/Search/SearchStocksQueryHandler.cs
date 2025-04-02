@@ -1,5 +1,6 @@
 ﻿using Application.Abstractions.Messaging;
 using Contracts.Common;
+using Microsoft.EntityFrameworkCore;
 using Modules.Stocks.Application.Abstractions.Data;
 using Modules.Stocks.Application.Abstractions.Http;
 using Modules.Stocks.Contracts.AlphaVantage;
@@ -25,7 +26,11 @@ internal sealed class SearchStocksQueryHandler(
 
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
-            searchQuery = searchQuery.Where(s => s.Name.Contains(request.SearchTerm));
+            string searchTerm = request.SearchTerm.ToLower();
+
+            searchQuery = searchQuery.Where(s =>
+                EF.Functions.ToTsVector("english", s.Ticker + " " + s.Name)
+                    .Matches(EF.Functions.PhraseToTsQuery("english", searchTerm)));
         }
 
         var stockSearchResponsesQuery = searchQuery
@@ -44,7 +49,8 @@ internal sealed class SearchStocksQueryHandler(
             request.PageSize,
             cancellationToken);
 
-        if (stockSearches.Items.Count != 0) // If there are results, return them
+        // If there are results, return them
+        if (stockSearches.Items.Count != 0 && string.IsNullOrWhiteSpace(request.SearchTerm)) 
         {
             return stockSearches;
         }

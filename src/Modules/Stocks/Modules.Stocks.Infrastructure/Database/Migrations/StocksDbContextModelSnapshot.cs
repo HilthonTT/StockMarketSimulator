@@ -160,6 +160,12 @@ namespace Modules.Stocks.Infrastructure.Database.Migrations
                     b.HasIndex("Ticker")
                         .HasDatabaseName("ix_stock_search_results_ticker");
 
+                    b.HasIndex("Ticker", "Name")
+                        .HasDatabaseName("ix_stock_search_results_ticker_name")
+                        .HasAnnotation("Npgsql:TsVectorConfig", "english");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Ticker", "Name"), "GIN");
+
                     b.ToTable("stock_search_results", "stocks");
                 });
 #pragma warning restore 612, 618

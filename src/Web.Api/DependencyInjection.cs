@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http.Features;
 using System.Diagnostics;
 using Web.Api.Infrastructure;
+using Web.Api.Middleware;
 
 namespace Web.Api;
 
@@ -9,10 +10,24 @@ public static class DependencyInjection
     public static IServiceCollection AddPresentation(this IServiceCollection services)
     {
         services.AddOpenApi();
+        services.AddSwaggerServices();
+        services.AddCors();
+        services.AddExceptionHandling();
+        services.AddMiddlewares();
+
+        return services;
+    }
+
+    private static IServiceCollection AddSwaggerServices(this IServiceCollection services)
+    {
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
-        services.AddCors();
 
+        return services;
+    }
+
+    private static IServiceCollection AddExceptionHandling(this IServiceCollection services)
+    {
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails(options =>
         {
@@ -27,6 +42,13 @@ public static class DependencyInjection
                 context.ProblemDetails.Extensions.TryAdd("traceId", activity?.Id);
             };
         });
+
+        return services;
+    }
+
+    private static IServiceCollection AddMiddlewares(this IServiceCollection services)
+    {
+        services.AddTransient<UserContextEnrichementMiddleware>();
 
         return services;
     }

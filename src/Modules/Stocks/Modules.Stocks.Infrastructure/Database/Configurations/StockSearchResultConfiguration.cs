@@ -14,5 +14,9 @@ internal sealed class StockSearchResultConfiguration : IEntityTypeConfiguration<
 
         builder.HasIndex(x => x.Ticker);
         builder.HasIndex(x => x.CreatedOnUtc);
+
+        builder.HasIndex(x => new { x.Ticker, x.Name })
+            .HasMethod("GIN")
+            .IsTsVectorExpressionIndex("english");
     }
 }

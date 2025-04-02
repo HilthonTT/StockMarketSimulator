@@ -1,6 +1,6 @@
 ﻿namespace Modules.Stocks.Infrastructure.Realtime.Options;
 
-internal sealed class StockUpdateOptions
+public sealed class StockUpdateOptions
 {
     public const string ConfigurationSection = "StockUpdateOptions";
 
