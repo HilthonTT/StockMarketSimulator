@@ -55,7 +55,7 @@ internal sealed class SearchStocksQueryHandler(
             return stockSearches;
         }
 
-        AlphaVantageSearchData? result = await stocksClient.SearchTickerAsync(request.SearchTerm, cancellationToken);
+        AlphaVantageSearchData? result = await stocksClient.SearchTickerAsync(request.SearchTerm ?? "", cancellationToken);
 
         if (result is null || result.BestMatches.Count == 0)
         {

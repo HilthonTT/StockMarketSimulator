@@ -116,5 +116,5 @@ public sealed class ProcessStockOutboxMessagesJob(
             transaction: transaction);
     }
 
-    internal sealed record OutboxMessageResponse(Guid Id, string Content);
+    private sealed record OutboxMessageResponse(Guid Id, string Content);
 }

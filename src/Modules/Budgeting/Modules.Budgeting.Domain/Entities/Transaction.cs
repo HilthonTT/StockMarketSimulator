@@ -57,7 +57,12 @@ public sealed class Transaction : Entity, IAuditable
 
     public decimal TotalAmount => LimitPrice * Quantity;
 
-    public static Result<Transaction> Create(Budget budget, string ticker, decimal limitPrice, TransactionType type, int quantity)
+    public static Result<Transaction> Create(
+        Budget budget, 
+        string ticker, 
+        decimal limitPrice, 
+        TransactionType type, 
+        int quantity)
     {
         Ensure.NotNull(budget, nameof(budget));
 

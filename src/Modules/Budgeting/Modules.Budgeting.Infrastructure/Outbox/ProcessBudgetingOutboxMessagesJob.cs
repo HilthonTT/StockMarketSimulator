@@ -7,16 +7,16 @@ using Newtonsoft.Json;
 using Quartz;
 using SharedKernel;
 
-namespace Modules.Users.Infrastructure.Outbox;
+namespace Modules.Budgeting.Infrastructure.Outbox;
 
 [DisallowConcurrentExecution]
-public sealed class ProcessUserOutboxMessagesJob(
+public sealed class ProcessBudgetingOutboxMessagesJob(
     IDbConnectionFactory dbConnectionFactory,
     IPublisher publisher,
     IDateTimeProvider dateTimeProvider,
-    ILogger<ProcessUserOutboxMessagesJob> logger) : IJob
+    ILogger<ProcessBudgetingOutboxMessagesJob> logger) : IJob
 {
-    public const string Name = nameof(ProcessUserOutboxMessagesJob);
+    public const string Name = nameof(ProcessBudgetingOutboxMessagesJob);
 
     private const int BatchSize = 15;
     private static readonly JsonSerializerSettings JsonSerializerSettings = new()
@@ -46,7 +46,7 @@ public sealed class ProcessUserOutboxMessagesJob(
             try
             {
                 IDomainEvent domainEvent = JsonConvert.DeserializeObject<IDomainEvent>(
-                    outboxMessage.Content,
+                outboxMessage.Content,
                     JsonSerializerSettings)!;
 
                 await publisher.Publish(domainEvent);
@@ -76,7 +76,7 @@ public sealed class ProcessUserOutboxMessagesJob(
         const string sql =
             """
             SELECT id, content
-            FROM users.outbox_messages
+            FROM budgeting.outbox_messages
             WHERE processed_on_utc IS NULL
             ORDER BY created_on_utc
             LIMIT @BatchSize
@@ -99,7 +99,7 @@ public sealed class ProcessUserOutboxMessagesJob(
     {
         const string sql =
             """
-            UPDATE users.outbox_messages
+            UPDATE budgeting.outbox_messages
             SET processed_on_utc = @ProcessedOnUtc,
                 error = @Error
             WHERE id = @Id
