@@ -5,6 +5,8 @@ using Asp.Versioning.Builder;
 using HealthChecks.UI.Client;
 using Infrastructure;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Modules.Budgeting.Application;
+using Modules.Budgeting.Infrastructure;
 using Modules.Stocks.Application;
 using Modules.Stocks.Infrastructure;
 using Modules.Stocks.Infrastructure.Realtime;
@@ -32,6 +34,10 @@ builder.Services
 builder.Services
     .AddStocksApplication()
     .AddStocksInfrastructure(builder.Configuration);
+
+builder.Services
+    .AddBudgetingApplication()
+    .AddBudgetingInfrastructure(builder.Configuration);
 
 builder.Services.AddBackgroundJobs();
 builder.Services.AddVersioning();

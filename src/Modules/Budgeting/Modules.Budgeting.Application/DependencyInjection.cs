@@ -6,7 +6,7 @@ namespace Modules.Budgeting.Application;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddBudgetingApplications(this IServiceCollection services)
+    public static IServiceCollection AddBudgetingApplication(this IServiceCollection services)
     {
         Assembly assembly = typeof(DependencyInjection).Assembly;
 

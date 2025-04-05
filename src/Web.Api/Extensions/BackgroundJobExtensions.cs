@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using Modules.Budgeting.Infrastructure.Outbox;
 using Modules.Stocks.Infrastructure.Outbox;
 using Modules.Stocks.Infrastructure.Realtime;
 using Modules.Stocks.Infrastructure.Realtime.Options;
@@ -16,6 +17,7 @@ public static class BackgroundJobExtensions
         {
             ConfigureUserOutboxJob(configure);
             ConfigureStockOutboxJob(configure);
+            ConfigureBudgetingOutboxJob(configure);
             ConfigureRevokeExpiredTokensJob(configure);
             ConfigureStocksFeedUpdaterJob(configure, services);
         });
@@ -30,7 +32,7 @@ public static class BackgroundJobExtensions
 
     private static void ConfigureUserOutboxJob(IServiceCollectionQuartzConfigurator configure)
     {
-        var jobKey = new JobKey(ProcessUserOutboxMessagesJob.Name);
+        JobKey jobKey = JobKey.Create(ProcessUserOutboxMessagesJob.Name);
         configure
             .AddJob<ProcessUserOutboxMessagesJob>(jobKey)
             .AddTrigger(trigger => trigger.ForJob(jobKey).WithSimpleSchedule(
@@ -39,16 +41,25 @@ public static class BackgroundJobExtensions
 
     private static void ConfigureStockOutboxJob(IServiceCollectionQuartzConfigurator configure)
     {
-        var jobKey = new JobKey(ProcessStockOutboxMessagesJob.Name);
+        JobKey jobKey = JobKey.Create(ProcessStockOutboxMessagesJob.Name);
         configure
             .AddJob<ProcessStockOutboxMessagesJob>(jobKey)
             .AddTrigger(trigger => trigger.ForJob(jobKey).WithSimpleSchedule(
                 schedule => schedule.WithIntervalInSeconds(5).RepeatForever()));
     }
 
+    private static void ConfigureBudgetingOutboxJob(IServiceCollectionQuartzConfigurator configure)
+    {
+        JobKey jobKey = JobKey.Create(ProcessBudgetingOutboxMessagesJob.Name);
+        configure
+            .AddJob<ProcessBudgetingOutboxMessagesJob>(jobKey)
+            .AddTrigger(trigger => trigger.ForJob(jobKey).WithSimpleSchedule(
+                schedule => schedule.WithIntervalInSeconds(5).RepeatForever()));
+    }
+
     private static void ConfigureRevokeExpiredTokensJob(IServiceCollectionQuartzConfigurator configure)
     {
-        var jobKey = new JobKey(RevokeExpiredRefreshTokenJob.Name);
+        JobKey jobKey = JobKey.Create(RevokeExpiredRefreshTokenJob.Name);
         configure
             .AddJob<RevokeExpiredRefreshTokenJob>(jobKey)
             .AddTrigger(trigger => trigger.ForJob(jobKey).WithSimpleSchedule(
@@ -59,10 +70,10 @@ public static class BackgroundJobExtensions
         IServiceCollectionQuartzConfigurator configure, 
         IServiceCollection services)
     {
-        using var scope = services.BuildServiceProvider().CreateScope();
+        using IServiceScope scope = services.BuildServiceProvider().CreateScope();
         var stockUpdateOptions = scope.ServiceProvider.GetRequiredService<IOptions<StockUpdateOptions>>().Value;
 
-        var jobKey = JobKey.Create(StocksFeedUpdater.Name);
+        JobKey jobKey = JobKey.Create(StocksFeedUpdater.Name);
 
         configure.AddJob<StocksFeedUpdater>(jobKey)
           .AddTrigger(trigger =>

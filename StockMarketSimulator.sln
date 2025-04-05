@@ -82,6 +82,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Modules.Budgeting.Infrastru
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Modules.Budgeting.Contracts", "src\Modules\Budgeting\Modules.Budgeting.Contracts\Modules.Budgeting.Contracts.csproj", "{C2F8F0D1-598C-4A70-82EE-13E95C4094EE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Modules.Budgeting.Api", "src\Modules\Budgeting\Modules.Budgeting.Api\Modules.Budgeting.Api.csproj", "{9AE97DF1-D09E-471B-8D23-0C7AC326899E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -200,6 +202,10 @@ Global
 		{C2F8F0D1-598C-4A70-82EE-13E95C4094EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2F8F0D1-598C-4A70-82EE-13E95C4094EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C2F8F0D1-598C-4A70-82EE-13E95C4094EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9AE97DF1-D09E-471B-8D23-0C7AC326899E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9AE97DF1-D09E-471B-8D23-0C7AC326899E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9AE97DF1-D09E-471B-8D23-0C7AC326899E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9AE97DF1-D09E-471B-8D23-0C7AC326899E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -239,6 +245,7 @@ Global
 		{0F44E7D3-852E-4560-A0A1-531BEC8CA8BE} = {0BA43F17-D161-4743-9E2C-2139AB05506F}
 		{3374E08E-221D-4692-AA1F-3E3A26ADD833} = {0BA43F17-D161-4743-9E2C-2139AB05506F}
 		{C2F8F0D1-598C-4A70-82EE-13E95C4094EE} = {0BA43F17-D161-4743-9E2C-2139AB05506F}
+		{9AE97DF1-D09E-471B-8D23-0C7AC326899E} = {0BA43F17-D161-4743-9E2C-2139AB05506F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CD593C20-A8F4-4A5C-961C-E5BA7D03D2BF}

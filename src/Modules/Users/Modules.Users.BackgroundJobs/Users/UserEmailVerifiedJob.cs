@@ -1,6 +1,7 @@
 ﻿using Application.Abstractions.Notifications;
 using Contracts.Emails;
 using Microsoft.Extensions.Logging;
+using Modules.Budgeting.Api;
 using Quartz;
 using SharedKernel;
 
@@ -9,7 +10,8 @@ namespace Modules.Users.BackgroundJobs.Users;
 public sealed class UserEmailVerifiedJob(
     ILogger<UserEmailVerifiedJob> logger,
     INotificationService notificationService,
-    IDateTimeProvider dateTimeProvider) : IJob
+    IDateTimeProvider dateTimeProvider,
+    IBudgetingApi budgetingApi) : IJob
 {
     public const string Name = nameof(EmailVerificationJob);
 
@@ -47,7 +49,10 @@ public sealed class UserEmailVerifiedJob(
 
             var request = new WelcomeEmail(email, username);
 
-            await notificationService.SendWelcomeAsync(request, context.CancellationToken);
+            var sendWelcomeTask = notificationService.SendWelcomeAsync(request, context.CancellationToken);
+            var addBudgetTask = budgetingApi.AddBudgetAsync(userId, context.CancellationToken);
+
+            await Task.WhenAll(sendWelcomeTask, addBudgetTask);
 
             logger.LogInformation("Successfully sent welcome email to {Email} for user {UserId}.", email, userId);
         }

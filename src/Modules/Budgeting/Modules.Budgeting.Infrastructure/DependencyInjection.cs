@@ -11,6 +11,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Modules.Budgeting.Application.Abstractions.Data;
 using Modules.Budgeting.Domain.Repositories;
 using Modules.Budgeting.Infrastructure.Repositories;
+using Modules.Budgeting.Api;
+using Modules.Budgeting.Infrastructure.Api;
 
 namespace Modules.Budgeting.Infrastructure;
 
@@ -20,7 +22,9 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddDatabase(configuration);
+        services
+            .AddDatabase(configuration)
+            .AddApi();
 
         return services;
     }
@@ -48,6 +52,13 @@ public static class DependencyInjection
 
         services.AddScoped<IBudgetRepository, BudgetRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddApi(this IServiceCollection services)
+    {
+        services.AddScoped<IBudgetingApi, BudgetingApi>();
 
         return services;
     }

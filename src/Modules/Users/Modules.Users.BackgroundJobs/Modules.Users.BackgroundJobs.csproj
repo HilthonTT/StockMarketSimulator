@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Infrastructure\Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Budgeting\Modules.Budgeting.Api\Modules.Budgeting.Api.csproj" />
   </ItemGroup>
 
 </Project>

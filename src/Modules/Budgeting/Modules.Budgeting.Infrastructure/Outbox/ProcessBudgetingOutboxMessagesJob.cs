@@ -18,7 +18,7 @@ public sealed class ProcessBudgetingOutboxMessagesJob(
 {
     public const string Name = nameof(ProcessBudgetingOutboxMessagesJob);
 
-    private const int BatchSize = 15;
+    private const int BatchSize = 1000;
     private static readonly JsonSerializerSettings JsonSerializerSettings = new()
     {
         TypeNameHandling = TypeNameHandling.All

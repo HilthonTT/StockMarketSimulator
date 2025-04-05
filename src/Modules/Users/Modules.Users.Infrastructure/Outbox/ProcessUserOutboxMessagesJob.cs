@@ -18,7 +18,7 @@ public sealed class ProcessUserOutboxMessagesJob(
 {
     public const string Name = nameof(ProcessUserOutboxMessagesJob);
 
-    private const int BatchSize = 15;
+    private const int BatchSize = 1000;
     private static readonly JsonSerializerSettings JsonSerializerSettings = new()
     {
         TypeNameHandling = TypeNameHandling.All
@@ -91,7 +91,7 @@ public sealed class ProcessUserOutboxMessagesJob(
         return [.. outboxMessages];
     }
 
-    private Task UpdateOutboxMessageAsync(
+    private Task<int> UpdateOutboxMessageAsync(
         IDbConnection connection,
         IDbTransaction transaction,
         OutboxMessageResponse outboxMessage,
