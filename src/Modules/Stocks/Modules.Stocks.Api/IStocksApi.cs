@@ -1,6 +1,8 @@
-﻿namespace Modules.Stocks.Api;
+﻿using SharedKernel;
+
+namespace Modules.Stocks.Api;
 
 public interface IStocksApi
 {
-    Task<StockApiResponse?> GetByTickerAsync(string ticker, CancellationToken cancellationToken = default);
+    Task<Option<StockApiResponse>> GetByTickerAsync(string ticker, CancellationToken cancellationToken = default);
 }

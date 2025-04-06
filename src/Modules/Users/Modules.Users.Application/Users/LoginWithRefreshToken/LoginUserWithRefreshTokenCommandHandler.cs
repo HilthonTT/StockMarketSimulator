@@ -16,8 +16,16 @@ internal sealed class LoginUserWithRefreshTokenCommandHandler(
 {
     public async Task<Result<TokenResponse>> Handle(LoginUserWithRefreshTokenCommand request, CancellationToken cancellationToken)
     {
-        RefreshToken? refreshToken = await refreshTokenRepository.GetByTokenAsync(request.RefreshToken, cancellationToken);
-        if (refreshToken is null || refreshToken.IsExpired())
+        Option<RefreshToken> optionRefreshToken = 
+            await refreshTokenRepository.GetByTokenAsync(request.RefreshToken, cancellationToken);
+
+        if (!optionRefreshToken.IsSome)
+        {
+            return Result.Failure<TokenResponse>(RefreshTokenErrors.Expired);
+        }
+
+        RefreshToken refreshToken = optionRefreshToken.ValueOrThrow();
+        if (refreshToken.IsExpired())
         {
             return Result.Failure<TokenResponse>(RefreshTokenErrors.Expired);
         }

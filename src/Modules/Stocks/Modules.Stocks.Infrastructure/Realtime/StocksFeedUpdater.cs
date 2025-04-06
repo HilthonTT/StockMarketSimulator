@@ -6,6 +6,7 @@ using Modules.Stocks.Application.Abstractions.Realtime;
 using Modules.Stocks.Contracts.Stocks;
 using Modules.Stocks.Infrastructure.Realtime.Options;
 using Quartz;
+using SharedKernel;
 
 namespace Modules.Stocks.Infrastructure.Realtime;
 
@@ -34,11 +35,13 @@ public sealed class StocksFeedUpdater(
 
         foreach (string ticker in activeTickerManager.GetAllTickers())
         {
-            StockPriceResponse? currentPrice = await stockService.GetLatestStockPriceAsync(ticker, cancellationToken);
-            if (currentPrice is null)
+            Option<StockPriceResponse> optionCurrentPrice = await stockService.GetLatestStockPriceAsync(ticker, cancellationToken);
+            if (!optionCurrentPrice.IsSome)
             {
                 continue;
             }
+
+            StockPriceResponse currentPrice = optionCurrentPrice.ValueOrThrow();
 
             decimal newPrice = CalculateNewPrice(currentPrice);
 

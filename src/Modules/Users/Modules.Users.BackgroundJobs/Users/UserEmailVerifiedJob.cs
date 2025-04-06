@@ -49,8 +49,8 @@ public sealed class UserEmailVerifiedJob(
 
             var request = new WelcomeEmail(email, username);
 
-            var sendWelcomeTask = notificationService.SendWelcomeAsync(request, context.CancellationToken);
-            var addBudgetTask = budgetingApi.AddBudgetAsync(userId, context.CancellationToken);
+            Task sendWelcomeTask = notificationService.SendWelcomeAsync(request, context.CancellationToken);
+            Task addBudgetTask = budgetingApi.AddBudgetAsync(userId, context.CancellationToken);
 
             await Task.WhenAll(sendWelcomeTask, addBudgetTask);
 

@@ -3,28 +3,33 @@ using Modules.Users.Domain.Entities;
 using Modules.Users.Domain.Repositories;
 using Modules.Users.Domain.ValueObjects;
 using Modules.Users.Infrastructure.Database;
+using SharedKernel;
 
 namespace Modules.Users.Infrastructure.Repositories;
 
 internal sealed class UserRepository(UsersDbContext context) : IUserRepository
 {
-    public async Task<bool> EmailNotUniqueAsync(Email email, CancellationToken cancellationToken = default)
+    public Task<bool> EmailNotUniqueAsync(Email email, CancellationToken cancellationToken = default)
     {
-        return await context.Users.AnyAsync(u => u.Email == email, cancellationToken);
+        return context.Users.AnyAsync(u => u.Email == email, cancellationToken);
     }
 
-    public Task<User?> GetByEmailAsync(Email email, CancellationToken cancellationToken = default)
+    public async Task<Option<User>> GetByEmailAsync(Email email, CancellationToken cancellationToken = default)
     {
-        return context.Users
+        User? user = await context.Users
             .Include(u => u.Roles)
             .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
+
+        return Option<User>.Some(user);
     }
 
-    public Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Option<User>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return context.Users
+        User? user = await context.Users
             .Include(u => u.Roles)
             .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+
+        return Option<User>.Some(user);
     }
 
     public void Insert(User user)

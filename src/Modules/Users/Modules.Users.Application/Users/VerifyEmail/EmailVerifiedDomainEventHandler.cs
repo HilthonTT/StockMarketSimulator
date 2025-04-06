@@ -21,11 +21,13 @@ internal sealed class EmailVerifiedDomainEventHandler(
         var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-        User? user = await userRepository.GetByIdAsync(notification.UserId, cancellationToken);
-        if (user is null)
+        Option<User> optionUser = await userRepository.GetByIdAsync(notification.UserId, cancellationToken);
+        if (!optionUser.IsSome)
         {
             throw new DomainException(UserErrors.NotFound(notification.UserId));
         }
+
+        User user = optionUser.ValueOrThrow();
 
         IScheduler scheduler = await schedulerFactory.GetScheduler(cancellationToken);
 

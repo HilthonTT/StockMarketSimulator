@@ -24,17 +24,21 @@ internal sealed class SellTransactionCommandHandler(
             return Result.Failure<Guid>(UserErrors.Unauthorized);
         }
 
-        Budget? budget = await budgetRepository.GetByUserIdAsync(request.UserId, cancellationToken);
-        if (budget is null)
+        Option<Budget> optionBudget = await budgetRepository.GetByUserIdAsync(request.UserId, cancellationToken);
+        if (!optionBudget.IsSome)
         {
             return Result.Failure<Guid>(BudgetErrors.NotFoundByUserId(request.UserId));
         }
 
-        StockApiResponse? stockInfo = await stocksApi.GetByTickerAsync(request.Ticker, cancellationToken);
-        if (stockInfo is null)
+        Budget budget = optionBudget.ValueOrThrow();
+
+        Option<StockApiResponse> optionStockInfo = await stocksApi.GetByTickerAsync(request.Ticker, cancellationToken);
+        if (!optionStockInfo.IsSome)
         {
             return Result.Failure<Guid>(StockErrors.NotFound(request.Ticker));
         }
+
+        StockApiResponse stockInfo = optionStockInfo.ValueOrThrow();
 
         int totalOwned = await transactionRepository.CalculateNetPurchasedQuantityAsync(
             request.UserId, 

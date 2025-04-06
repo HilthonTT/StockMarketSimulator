@@ -2,16 +2,19 @@
 using Modules.Users.Domain.Entities;
 using Modules.Users.Domain.Repositories;
 using Modules.Users.Infrastructure.Database;
+using SharedKernel;
 
 namespace Modules.Users.Infrastructure.Repositories;
 
 internal sealed class EmailVerificationTokenRepository(UsersDbContext context) : IEmailVerificationTokenRepository
 {
-    public Task<EmailVerificationToken?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Option<EmailVerificationToken>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return context.EmailVerificationTokens
+        EmailVerificationToken? token = await context.EmailVerificationTokens
             .Include(e => e.User)
             .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+
+        return Option<EmailVerificationToken>.Some(token);
     }
 
     public void Insert(EmailVerificationToken token)

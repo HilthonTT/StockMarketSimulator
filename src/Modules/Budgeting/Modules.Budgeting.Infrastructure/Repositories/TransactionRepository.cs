@@ -3,14 +3,17 @@ using Modules.Budgeting.Domain.Entities;
 using Modules.Budgeting.Domain.Enums;
 using Modules.Budgeting.Domain.Repositories;
 using Modules.Budgeting.Infrastructure.Database;
+using SharedKernel;
 
 namespace Modules.Budgeting.Infrastructure.Repositories;
 
 internal sealed class TransactionRepository(BudgetingDbContext context) : ITransactionRepository
 {
-    public Task<Transaction?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Option<Transaction>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return context.Transactions.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        Transaction? transaction = await context.Transactions.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+        return Option<Transaction>.Some(transaction);
     }
 
     public Task<int> CalculateNetPurchasedQuantityAsync(

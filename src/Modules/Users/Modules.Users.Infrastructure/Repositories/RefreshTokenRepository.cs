@@ -2,6 +2,7 @@
 using Modules.Users.Domain.Entities;
 using Modules.Users.Domain.Repositories;
 using Modules.Users.Infrastructure.Database;
+using SharedKernel;
 
 namespace Modules.Users.Infrastructure.Repositories;
 
@@ -14,11 +15,13 @@ internal sealed class RefreshTokenRepository(UsersDbContext context) : IRefreshT
             .ExecuteDeleteAsync(cancellationToken);
     }
 
-    public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken cancellationToken = default)
+    public async Task<Option<RefreshToken>> GetByTokenAsync(string token, CancellationToken cancellationToken = default)
     {
-        return context.RefreshTokens
+        RefreshToken? refreshToken = await context.RefreshTokens
             .Include(r => r.User)
             .FirstOrDefaultAsync(r => r.Token == token, cancellationToken);
+
+        return Option<RefreshToken>.Some(refreshToken);
     }
 
     public void Insert(RefreshToken refreshToken)

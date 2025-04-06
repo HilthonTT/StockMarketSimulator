@@ -33,7 +33,7 @@ internal sealed class SearchStocksQueryHandler(
                     .Matches(EF.Functions.PhraseToTsQuery("english", searchTerm)));
         }
 
-        var stockSearchResponsesQuery = searchQuery
+        IQueryable<StockSearchResponse> stockSearchResponsesQuery = searchQuery
             .Select(s => new StockSearchResponse(
                 s.Ticker,
                 s.Name,

@@ -25,8 +25,14 @@ internal sealed class LoginUserCommandHandler(
             return Result.Failure<TokenResponse>(emailResult.Error);
         }
 
-        User? user = await userRepository.GetByEmailAsync(emailResult.Value, cancellationToken);
-        if (user is null || !user.EmailVerified)
+        Option<User> userOption = await userRepository.GetByEmailAsync(emailResult.Value, cancellationToken);
+        if (!userOption.IsSome)
+        {
+            return Result.Failure<TokenResponse>(UserErrors.NotFoundByEmail);
+        }
+
+        User user = userOption.ValueOrThrow();
+        if (!user.EmailVerified)
         {
             return Result.Failure<TokenResponse>(UserErrors.NotFoundByEmail);
         }

@@ -13,9 +13,17 @@ internal sealed class VerifyEmailCommandHandler(
 {
     public async Task<Result> Handle(VerifyEmailCommand request, CancellationToken cancellationToken)
     {
-        EmailVerificationToken? token = await emailVerificationTokenRepository.GetByIdAsync(request.TokenId, cancellationToken);
+        Option<EmailVerificationToken> optionToken = 
+            await emailVerificationTokenRepository.GetByIdAsync(request.TokenId, cancellationToken);
 
-        if (token is null || token.IsExpired())
+        if (!optionToken.IsSome)
+        {
+            return Result.Failure(EmailVerificationTokenErrors.Expired);
+        }
+
+        EmailVerificationToken token = optionToken.ValueOrThrow();
+
+        if (token.IsExpired())
         {
             return Result.Failure(EmailVerificationTokenErrors.Expired);
         }

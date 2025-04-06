@@ -17,7 +17,9 @@ internal sealed class StockService(
     ILogger<StockService> logger,
     IDateTimeProvider dateTimeProvider) : IStockService
 {
-    public async Task<StockPriceResponse?> GetLatestStockPriceAsync(string ticker, CancellationToken cancellationToken = default)
+    public async Task<Option<StockPriceResponse>> GetLatestStockPriceAsync(
+        string ticker, 
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -27,7 +29,7 @@ internal sealed class StockService(
             {
                 activeTickerManager.AddTicker(ticker);
 
-                return dbPrice;
+                return Option<StockPriceResponse>.Some(dbPrice);
             }
 
             // If not found in the database, fetch from the external API
@@ -35,7 +37,7 @@ internal sealed class StockService(
             if (apiPrice is null)
             {
                 logger.LogWarning("No data returned from external API for ticker {Ticker}", ticker);
-                return null;
+                return Option<StockPriceResponse>.None();
             }
 
             // Save the new price to the database
@@ -43,7 +45,7 @@ internal sealed class StockService(
 
             activeTickerManager.AddTicker(ticker);
 
-            return apiPrice;
+            return Option<StockPriceResponse>.Some(dbPrice);
         }
         catch (Exception exception)
         {
@@ -84,7 +86,7 @@ internal sealed class StockService(
         return null;
     }
 
-    private async Task SavePriceToDatabaseAsync(StockPriceResponse price)
+    private Task<int> SavePriceToDatabaseAsync(StockPriceResponse price)
     {
         const string sql =
             """
@@ -94,11 +96,11 @@ internal sealed class StockService(
 
         using IDbConnection connection = dbConnectionFactory.GetOpenConnection();
 
-        await connection.ExecuteAsync(
+        return connection.ExecuteAsync(
             sql,
             new
             {
-                Id = Guid.NewGuid(),
+                Id = Guid.CreateVersion7(),
                 Ticker = price.Ticker,
                 Price = price.Price,
                 CreatedOnUtc = dateTimeProvider.UtcNow,

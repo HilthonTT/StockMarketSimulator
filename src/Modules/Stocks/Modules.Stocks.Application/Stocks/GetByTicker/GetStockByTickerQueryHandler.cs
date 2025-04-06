@@ -11,13 +11,15 @@ internal sealed class GetStockByTickerQueryHandler(IStockService stockService)
 {
     public async Task<Result<StockPriceResponse>> Handle(GetStockByTickerQuery request, CancellationToken cancellationToken)
     {
-        StockPriceResponse? result = await stockService.GetLatestStockPriceAsync(request.Ticker, cancellationToken);
+        Option<StockPriceResponse> optionStockPrice = await stockService.GetLatestStockPriceAsync(request.Ticker, cancellationToken);
 
-        if (result is null)
+        if (!optionStockPrice.IsSome)
         {
             return Result.Failure<StockPriceResponse>(StockErrors.NotFound(request.Ticker));
         }
 
-        return result;
+        StockPriceResponse stockPrice = optionStockPrice.ValueOrThrow();
+
+        return stockPrice;
     }
 }

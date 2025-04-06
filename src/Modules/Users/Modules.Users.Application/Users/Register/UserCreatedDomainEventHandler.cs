@@ -19,11 +19,13 @@ internal sealed class UserCreatedDomainEventHandler(
         using IServiceScope scope = serviceScopeFactory.CreateScope();
         var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
-        User? user = await userRepository.GetByIdAsync(notification.UserId, cancellationToken);
-        if (user is null)
+        Option<User> optionUser = await userRepository.GetByIdAsync(notification.UserId, cancellationToken);
+        if (!optionUser.IsSome)
         {
             throw new DomainException(UserErrors.NotFound(notification.UserId));
         }
+
+        User user = optionUser.ValueOrThrow();
 
         IScheduler scheduler = await schedulerFactory.GetScheduler(cancellationToken);
 

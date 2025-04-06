@@ -1,10 +1,11 @@
 ﻿using Modules.Users.Domain.Entities;
+using SharedKernel;
 
 namespace Modules.Users.Domain.Repositories;
 
 public interface IEmailVerificationTokenRepository
 {
-    Task<EmailVerificationToken?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<Option<EmailVerificationToken>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
     void Insert(EmailVerificationToken token);
 
