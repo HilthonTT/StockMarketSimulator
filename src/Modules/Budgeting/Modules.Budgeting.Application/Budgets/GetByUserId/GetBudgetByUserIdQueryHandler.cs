@@ -29,7 +29,7 @@ internal sealed class GetBudgetByUserIdQueryHandler(
                 user_id AS UserId,
                 buying_power AS BuyingPower
             FROM budgeting.budgets
-            WHERE user_id = @UserId;
+            WHERE user_id = @UserId
             LIMIT 1;
             """;
 

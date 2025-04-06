@@ -36,6 +36,16 @@ internal sealed class SellTransactionCommandHandler(
             return Result.Failure<Guid>(StockErrors.NotFound(request.Ticker));
         }
 
+        int totalOwned = await transactionRepository.CalculateNetPurchasedQuantityAsync(
+            request.UserId, 
+            request.Ticker, 
+            cancellationToken);
+
+        if (totalOwned < request.Quantity)
+        {
+            return Result.Failure<Guid>(TransactionErrors.InsufficientStock);
+        }
+
         Result<Transaction> transactionResult =
             Transaction.Create(budget, request.Ticker, stockInfo.Price, TransactionType.Sell, request.Quantity);
 
