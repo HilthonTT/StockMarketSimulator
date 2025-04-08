@@ -400,3 +400,4 @@ FodyWeavers.xsd
 *.sln.iml
 /.containers/db
 /.containers/queue/data
+/src/web-ui/src/package-lock.json

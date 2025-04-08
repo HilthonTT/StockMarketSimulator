@@ -1,0 +1,23 @@
+{
+  "name": "web-ui",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "lite-server",
+    "dev": "vite"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "axios": "^1.8.4",
+    "jwt-decode": "^4.0.0",
+    "notyf": "^3.10.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "vite": "^6.2.5"
+  }
+}

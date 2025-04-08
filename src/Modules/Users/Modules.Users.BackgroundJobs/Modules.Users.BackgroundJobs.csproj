@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Quartz.Extensions.Hosting" Version="3.14.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\..\Infrastructure\Infrastructure.csproj" />
     <ProjectReference Include="..\..\Budgeting\Modules.Budgeting.Api\Modules.Budgeting.Api.csproj" />
   </ItemGroup>

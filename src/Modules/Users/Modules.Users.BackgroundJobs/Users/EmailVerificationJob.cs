@@ -59,6 +59,10 @@ public sealed class EmailVerificationJob(
             throw;
         }
 
-        logger.LogInformation("{JobName} execution completed for user {UserId} at {Timestamp}", Name, userId, DateTime.UtcNow);
+        logger.LogInformation(
+            "{JobName} execution completed for user {UserId} at {Timestamp}",
+            Name, 
+            userId, 
+            dateTimeProvider.UtcNow);
     }
 }

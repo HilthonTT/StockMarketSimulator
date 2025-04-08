@@ -66,6 +66,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerWithUi();
 
     app.ApplyMigrations();
+
+    app.UseCorsConfiguration(builder.Configuration);
 }
 
 app.UseHttpsRedirection();

@@ -30,4 +30,15 @@ public static class ApplicationBuilderExtensions
 
         return app;
     }
+
+    public static IApplicationBuilder UseCorsConfiguration(this IApplicationBuilder app, IConfiguration configuration)
+    {
+        app.UseCors(policy => policy
+            .WithOrigins(configuration["Cors:AllowedOrigin"]!)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials());
+
+        return app;
+    }
 }
