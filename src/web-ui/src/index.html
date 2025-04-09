@@ -22,6 +22,324 @@
       class="bg-gray-100 dark:bg-[#343a40] w-full h-20 flex items-center justify-center transition-colors"
     >
       <!-- Search Bar -->
+      <div class="search-container relative">
+        <div
+          class="rounded-md w-[400px] bg-white dark:bg-[#101114] flex items-center px-4 py-2 shadow-md transition-colors"
+        >
+          <svg
+            width="24px"
+            height="24px"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M15.7955 15.8111L21 21M18 10.5C18 14.6421 14.6421 18 10.5 18C6.35786 18 3 14.6421 3 10.5C3 6.35786 6.35786 3 10.5 3C14.6421 3 18 6.35786 18 10.5Z"
+              stroke="#9CA3AF"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          <input
+            id="search-input"
+            placeholder="Search"
+            class="bg-transparent text-gray-800 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none w-full ml-2"
+          />
+        </div>
+
+        <!-- Search Results Dropdown -->
+        <div
+          id="search-results"
+          class="absolute bg-white dark:bg-[#1a1b1f] mt-2 rounded-md shadow-lg hidden transition-colors"
+          style="width: 400px"
+        ></div>
+      </div>
+
+      <!-- Logout Button & Theme Toggle -->
+      <div class="absolute right-4 flex items-center space-x-4">
+        <!-- Logout Button -->
+        <button
+          id="logout-button"
+          class="flex items-center justify-center group"
+        >
+          <span
+            class="mr-2 font-semibold text-gray-800 dark:text-white group-hover:text-gray-600 dark:group-hover:text-neutral-200 transition"
+            >Logout</span
+          >
+          <svg
+            class="size-6 text-gray-800 dark:text-white group-hover:text-gray-600 dark:group-hover:text-neutral-200 transition"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path d="M14 19V5h4a1 1 0 0 1 1 1v11h1a1 1 0 0 1 0 2h-6Z" />
+            <path
+              fill-rule="evenodd"
+              d="M12 4.571a1 1 0 0 0-1.275-.961l-5 1.428A1 1 0 0 0 5 6v11H4a1 1 0 0 0 0 2h1.86l4.865 1.39A1 1 0 0 0 12 19.43V4.57ZM10 11a1 1 0 0 1 1 1v.5a1 1 0 0 1-2 0V12a1 1 0 0 1 1-1Z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal -->
+      <div
+        id="modal"
+        class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center w-full"
+      >
+        <form
+          class="p-6 rounded-xl shadow-lg w-[450px] bg-[#23242f] text-white"
+          id="transaction-form"
+        >
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-4">
+            <h2 id="modal-title" class="text-lg font-bold">Place Order</h2>
+            <button
+              type="button"
+              id="close-modal"
+              class="bg-[#2c2d39] hover:bg-[#1a1b26] opacity-75 transition text-white px-4 py-2 rounded-xl"
+            >
+              X
+            </button>
+          </div>
+
+          <!-- Buy/Sell Toggle -->
+          <div
+            class="flex items-center justify-center mb-6 space-x-1 p-1.5 rounded-xl bg-[#2c2d39]"
+          >
+            <button
+              type="button"
+              id="buy-button"
+              class="rounded-xl bg-emerald-500 hover:bg-emerald-500 w-full py-2 font-bold transition"
+            >
+              Buy
+            </button>
+            <button
+              type="button"
+              id="sell-button"
+              class="rounded-xl bg-[#2c2d39] hover:bg-rose-500 w-full py-2 font-bold transition"
+            >
+              Sell
+            </button>
+          </div>
+
+          <!-- Stock Name -->
+          <div class="bg-[#2c2d39] rounded-xl p-4 mb-4">
+            <p class="font-bold text-lg"></p>
+          </div>
+
+          <!-- Price Per Stock -->
+          <div class="mb-4">
+            <p class="text-[#8B8CA7] text-sm">Price Per Stock</p>
+            <input
+              type="number"
+              value=""
+              id="price"
+              readonly
+              class="bg-[#2c2d39] text-white rounded-xl p-3 mt-2 w-full"
+            />
+          </div>
+
+          <!-- Quantity -->
+          <div class="mb-4">
+            <p class="text-[#8B8CA7] text-sm">Quantity</p>
+            <input
+              required
+              type="number"
+              placeholder="Enter quantity"
+              class="bg-[#2c2d39] text-white rounded-xl p-3 mt-2 w-full"
+            />
+          </div>
+
+          <!-- Buying Power and MAX Button -->
+          <div class="flex items-center justify-between mb-6">
+            <p id="buying-power-form" class="text-white font-bold text-sm">
+              Buying Power: $892.17
+            </p>
+            <button
+              type="button"
+              class="bg-[#3b3c4e] hover:bg-[#4a4b5e] text-white px-4 py-2 rounded-xl font-bold text-xs"
+              id="max-button"
+            >
+              MAX
+            </button>
+          </div>
+
+          <div class="hidden">
+            <input type="radio" id="buy-radio" name="action" value="buy" />
+            <input type="radio" id="sell-radio" name="action" value="sell" />
+          </div>
+
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            class="bg-emerald-500 hover:bg-emerald-600 transition rounded-2xl w-full py-4 font-bold text-lg"
+          >
+            Buy
+          </button>
+        </form>
+      </div>
+    </div>
+    <div class="py-8 max-w-screen-xl mx-auto">
+      <div class="flex items-center justify-between">
+        <h1 class="text-3xl font-bold dark:text-white text-black">
+          Stock Market Simulator
+        </h1>
+
+        <button
+          id="dark-mode-toggle"
+          class="p-2 rounded-full bg-gray-200 dark:bg-gray-700"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6 text-gray-800 dark:text-yellow-300"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <div class="block mt-4 mb-2">
+        <p class="dark:text-gray-400 text-gray-600 font-semibold text-sm">
+          Current Balance
+        </p>
+      </div>
+
+      <div class="block space-y-2">
+        <p
+          class="text-4xl font-bold dark:text-white text-black"
+          id="current-balance"
+        >
+          $100,645.87
+        </p>
+        <p class="text-emerald-500 font-semibold" id="balance-change">
+          +$645.78 (6.46%)
+        </p>
+      </div>
+
+      <div
+        id="ticker-buttons"
+        class="flex gap-2 mb-4 items-center justify-start my-4 overflow-x-auto whitespace-nowrap p-2 scrollbar-hide"
+      ></div>
+
+      <div class="w-full h-96">
+        <canvas class="chart"></canvas>
+      </div>
+
+      <!-- <div class="bg-gray-700 w-full h-96 mt-4 rounded-xl"></div> -->
+
+      <div class="mt-6">
+        <div class="border-t dark:border-gray-800 border-gray-400 w-full"></div>
+        <!-- Top Separator -->
+        <div class="flex items-center justify-between py-4">
+          <p class="text-lg font-semibold dark:text-white text-black">
+            Buying Power
+          </p>
+          <p
+            id="buying-power"
+            class="text-lg font-semibold dark:text-white text-black"
+          >
+            <!-- Budget price here -->
+          </p>
+        </div>
+        <div class="border-t dark:border-gray-800 border-gray-400 w-full"></div>
+        <!-- Bottom Separator -->
+      </div>
+
+      <div class="py-8 max-w-screen-xl mx-auto text-white">
+        <h2 class="text-3xl font-bold mb-4 dark:text-white text-black">
+          Trading History
+        </h2>
+
+        <!-- Date Pickers -->
+        <div class="flex space-x-4 mb-4">
+          <!-- Date Picker 1 -->
+          <button
+            id="datePicker1"
+            class="flex items-center space-x-2 dark:bg-[#292B36] bg-neutral-200 hover:bg-neutral-300 px-4 py-2 rounded-md text-gray-300 dark:hover:bg-[#2C2E39] transition"
+          >
+            <svg
+              width="24px"
+              height="24px"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M3 9H21M7 3V5M17 3V5M6 12H8M11 12H13M16 12H18M6 15H8M11 15H13M16 15H18M6 18H8M11 18H13M16 18H18M6.2 21H17.8C18.9201 21 19.4802 21 19.908 20.782C20.2843 20.5903 20.5903 20.2843 20.782 19.908C21 19.4802 21 18.9201 21 17.8V8.2C21 7.07989 21 6.51984 20.782 6.09202C20.5903 5.71569 20.2843 5.40973 19.908 5.21799C19.4802 5 18.9201 5 17.8 5H6.2C5.0799 5 4.51984 5 4.09202 5.21799C3.71569 5.40973 3.40973 5.71569 3.21799 6.09202C3 6.51984 3 7.07989 3 8.2V17.8C3 18.9201 3 19.4802 3.21799 19.908C3.40973 20.2843 3.71569 20.5903 4.09202 20.782C4.51984 21 5.07989 21 6.2 21Z"
+                stroke="#9CA3AF"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+            <span id="selectedDate1" class="text-black dark:text-white"
+              >Dec 22, 2024</span
+            >
+          </button>
+          <input type="date" id="inputDate1" class="hidden" />
+
+          <!-- Date Picker 2 -->
+          <button
+            id="datePicker2"
+            class="flex items-center space-x-2 dark:bg-[#292B36] bg-neutral-200 hover:bg-neutral-300 px-4 py-2 rounded-md text-gray-300 dark:hover:bg-[#2C2E39] transition"
+          >
+            <svg
+              width="24px"
+              height="24px"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M3 9H21M7 3V5M17 3V5M6 12H8M11 12H13M16 12H18M6 15H8M11 15H13M16 15H18M6 18H8M11 18H13M16 18H18M6.2 21H17.8C18.9201 21 19.4802 21 19.908 20.782C20.2843 20.5903 20.5903 20.2843 20.782 19.908C21 19.4802 21 18.9201 21 17.8V8.2C21 7.07989 21 6.51984 20.782 6.09202C20.5903 5.71569 20.2843 5.40973 19.908 5.21799C19.4802 5 18.9201 5 17.8 5H6.2C5.0799 5 4.51984 5 4.09202 5.21799C3.71569 5.40973 3.40973 5.71569 3.21799 6.09202C3 6.51984 3 7.07989 3 8.2V17.8C3 18.9201 3 19.4802 3.21799 19.908C3.40973 20.2843 3.71569 20.5903 4.09202 20.782C4.51984 21 5.07989 21 6.2 21Z"
+                stroke="#9CA3AF"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+            <span id="selectedDate2" class="text-black dark:text-white"
+              >Jan 22, 2025</span
+            >
+          </button>
+          <input type="date" id="inputDate2" class="hidden" />
+        </div>
+
+        <!-- Trading History Table -->
+        <div
+          class="overflow-x-auto bg-white dark:bg-[#1a1b23] rounded-lg shadow-md"
+        >
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr
+                class="bg-gray-100 dark:bg-[#292B36] text-black dark:text-gray-400"
+              >
+                <th class="py-3 px-4">Date</th>
+                <th class="py-3 px-4">Symbol</th>
+                <th class="py-3 px-4">Type</th>
+                <th class="py-3 px-4">Price</th>
+                <th class="py-3 px-4">Amount</th>
+                <th class="py-3 px-4">Bought Price</th>
+                <th class="py-3 px-4">New Price</th>
+              </tr>
+            </thead>
+            <tbody
+              id="trading-history-body"
+              class="text-black dark:text-white"
+            ></tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </body>
 
