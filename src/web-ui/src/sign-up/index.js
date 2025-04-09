@@ -24,6 +24,8 @@ const registrationSchema = z
   });
 
 document.addEventListener("DOMContentLoaded", () => {
+  const notyf = new Notyf();
+
   const form = document.querySelector("form");
 
   const darkModeToggle = document.getElementById("dark-mode-toggle");
@@ -125,8 +127,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const { confirmPassword, ...requestBody } = result.data;
 
     try {
-      const notyf = new Notyf();
-
       await axios.post(
         `${config.baseApiUrl}/api/v1/users/register`,
         requestBody

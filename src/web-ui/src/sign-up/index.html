@@ -1,163 +1,153 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css"
-    />
-    <title>Sign Up</title>
     <script>
       tailwind.config = {
         darkMode: "class",
       };
     </script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css"
+    />
+    <title>Sign Up</title>
   </head>
-  <body>
+  <body
+    class="bg-neutral-100 dark:bg-[#1a1b23] min-h-screen flex items-center justify-center px-4"
+  >
     <div
-      class="size-full flex items-center justify-center h-screen dark:bg-[#1a1b23] bg-neutral-100"
+      class="bg-white dark:bg-[#2c2d39] rounded-2xl shadow-lg p-8 w-full max-w-xl space-y-6"
     >
-      <div class="text-center w-full max-w-screen-sm mx-auto">
-        <!-- Flex container to align h1 and dark mode button -->
-        <div class="flex items-center justify-between mb-4">
-          <h1 class="font-bold text-2xl uppercase text-center dark:text-white">
-            Sign Up
-          </h1>
-
-          <!-- Dark mode toggle button on the right -->
-          <button
-            id="dark-mode-toggle"
-            class="p-2 rounded-full bg-gray-200 dark:bg-gray-700"
+      <!-- Header with title and dark mode toggle -->
+      <div class="flex items-center justify-between">
+        <h1 class="text-3xl font-bold uppercase text-gray-900 dark:text-white">
+          Sign Up
+        </h1>
+        <button
+          id="dark-mode-toggle"
+          class="p-2 rounded-full bg-gray-200 dark:bg-gray-700"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6 text-gray-800 dark:text-yellow-300"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-6 w-6 text-gray-800 dark:text-yellow-300"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-              />
-            </svg>
-          </button>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Form Starts Here -->
+      <form id="signup-form" class="space-y-5">
+        <!-- Email -->
+        <div class="flex flex-col gap-1">
+          <label for="email" class="font-semibold text-gray-700 dark:text-white"
+            >Email Address</label
+          >
+          <input
+            id="email"
+            type="email"
+            placeholder="example@domain.com"
+            required
+            class="h-12 px-4 rounded-xl bg-neutral-100 dark:bg-gray-800 text-black dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <p class="text-rose-500 text-sm hidden">Invalid email</p>
         </div>
 
-        <hr
-          class="text-center dark:bg-white bg-neutral-500 h-1 rounded-full my-4 w-[150px] mx-auto"
-        />
-
-        <form class="space-y-4">
-          <div class="space-y-2 relative flex flex-col">
-            <label
-              for="email"
-              class="font-bold dark:text-white text-left w-full block"
-            >
-              Email Address
-            </label>
-            <input
-              id="email"
-              class="p-4 rounded-xl bg-white w-full h-12"
-              placeholder="Email"
-              type="email"
-              required
-            />
-            <p class="text-rose-500 text-left hidden">Error</p>
-          </div>
-          <div class="space-x-4 relative flex items-center justify-between">
-            <div class="flex items-center flex-col w-full">
-              <label
-                for="username"
-                class="font-bold dark:text-white text-left w-full block"
-              >
-                Username
-              </label>
-              <input
-                id="username"
-                class="p-4 rounded-xl bg-white w-full h-12"
-                placeholder="Username"
-                required
-              />
-              <p class="text-rose-500 text-left hidden">Error</p>
-            </div>
-          </div>
-
-          <div class="space-y-2 relative flex flex-col">
-            <label
-              for="password"
-              class="font-bold dark:text-white text-left w-full block"
-            >
-              Password
-            </label>
-            <div class="relative w-full">
-              <input
-                id="password"
-                class="p-4 rounded-xl bg-white w-full h-12 pr-12"
-                placeholder="Password"
-                type="password"
-                minlength="6"
-                required
-              />
-              <span
-                id="togglePassword"
-                class="absolute inset-y-0 right-1 top-[20%] flex items-center cursor-pointer text-gray-500 rounded-full size-8"
-              >
-                👁
-              </span>
-            </div>
-            <p class="text-rose-500 text-left hidden">Error</p>
-          </div>
-
-          <div class="space-y-2 relative flex flex-col">
-            <label
-              for="confirm-password"
-              class="font-bold dark:text-white text-left w-full block"
-            >
-              Confirm Password
-            </label>
-            <div class="relative w-full">
-              <input
-                id="confirm-password"
-                class="p-4 rounded-xl bg-white w-full h-12 pr-12"
-                placeholder="Confirm Password"
-                type="password"
-                minlength="6"
-                required
-              />
-              <span
-                id="toggleConfirmPassword"
-                class="absolute inset-y-0 right-4 flex items-center cursor-pointer text-gray-500"
-              >
-                👁
-              </span>
-            </div>
-            <p class="text-rose-500 text-left hidden">Error</p>
-          </div>
-
-          <div class="text-right my-4">
-            <a href="/sign-in/index.html">
-              <p class="text-blue-400 hover:text-blue-500 transition">
-                Already have an account?
-              </p>
-            </a>
-          </div>
-
-          <button
-            id="submit"
-            type="submit"
-            class="p-3 bg-blue-500 hover:bg-blue-600 transition text-white rounded-full w-full h-12 disabled:bg-blue-400 disabled:cursor-not-allowed"
+        <!-- Username -->
+        <div class="flex flex-col gap-1">
+          <label
+            for="username"
+            class="font-semibold text-gray-700 dark:text-white"
+            >Username</label
           >
-            Register
-          </button>
-        </form>
-      </div>
+          <input
+            id="username"
+            placeholder="Choose a username"
+            required
+            class="h-12 px-4 rounded-xl bg-neutral-100 dark:bg-gray-800 text-black dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <p class="text-rose-500 text-sm hidden">Invalid username</p>
+        </div>
+
+        <!-- Password -->
+        <div class="flex flex-col gap-1 relative">
+          <label
+            for="password"
+            class="font-semibold text-gray-700 dark:text-white"
+            >Password</label
+          >
+          <input
+            id="password"
+            type="password"
+            placeholder="********"
+            minlength="6"
+            required
+            class="h-12 px-4 pr-12 rounded-xl bg-neutral-100 dark:bg-gray-00 text-black dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <span
+            id="togglePassword"
+            class="absolute right-4 top-10 text-gray-500 cursor-pointer"
+            >👁</span
+          >
+          <p class="text-rose-500 text-sm hidden">Password too short</p>
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="flex flex-col gap-1 relative">
+          <label
+            for="confirm-password"
+            class="font-semibold text-gray-700 dark:text-white"
+            >Confirm Password</label
+          >
+          <input
+            id="confirm-password"
+            type="password"
+            placeholder="********"
+            minlength="6"
+            required
+            class="h-12 px-4 pr-12 rounded-xl bg-neutral-100 dark:bg-gray-800 text-black dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <span
+            id="toggleConfirmPassword"
+            class="absolute right-4 top-10 text-gray-500 cursor-pointer"
+            >👁</span
+          >
+          <p class="text-rose-500 text-sm hidden">Passwords do not match</p>
+        </div>
+
+        <!-- Already have an account -->
+        <div class="text-right">
+          <a
+            href="/sign-in/index.html"
+            class="text-blue-500 hover:text-blue-600 text-sm"
+          >
+            Already have an account?
+          </a>
+        </div>
+
+        <!-- Submit Button -->
+        <button
+          type="submit"
+          id="submit"
+          class="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full transition disabled:bg-blue-400 disabled:cursor-not-allowed"
+        >
+          Register
+        </button>
+      </form>
     </div>
 
+    <!-- Scripts -->
     <script src="index.js" type="module"></script>
   </body>
 </html>
