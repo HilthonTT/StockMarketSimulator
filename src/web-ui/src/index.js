@@ -11,11 +11,14 @@ import {
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 
 import { config } from "./utils/config.js";
+import { getCurrentUser, clearTokens } from "./utils/auth.js";
 import {
   DARK_MODE,
   checkThemePreference,
   DARK_MODE_STORAGE_KEY,
 } from "./utils/theme.js";
+import { searchStocks } from "./services/stock-service.js";
+import { debounce } from "./utils/debounce.js";
 
 Chart.register(
   CategoryScale,
@@ -27,8 +30,25 @@ Chart.register(
   Legend
 );
 
+/**
+ * @constant {number}
+ */
 const FIVE_SECONDS_IN_MS = 5000;
+
+/**
+ * @constant {number}
+ */
 const MAX_TICKERS = 3;
+
+/**
+ * @typedef {Object} ChartColor
+ * @property {string} borderColor
+ * @property {string} backgroundColor
+ */
+
+/**
+ * @type {ChartColor[]}
+ */
 const COLORS = [
   {
     borderColor: "rgb(75, 192, 192)",
@@ -44,13 +64,35 @@ const COLORS = [
   }, // Blue
 ];
 
-document.addEventListener("DOMContentLoaded", () => {
+/**
+ * @typedef {Object} StockPriceUpdate
+ * @property {string} ticker
+ * @property {number} price
+ * @property {string} timestamp
+ */
+
+/**
+ * @typedef {Object} StockSearchResponse
+ * @property {string} ticker
+ * @property {string} name
+ * @property {string} type
+ * @property {string} region
+ * @property {string} marketOpen
+ * @property {string} timezone
+ * @property {string} currency
+ */
+
+document.addEventListener("DOMContentLoaded", async () => {
   const connection = new HubConnectionBuilder()
     .withUrl(`${config.baseApiUrl}/stocks-feed`)
     .configureLogging(LogLevel.Information)
     .withAutomaticReconnect()
     .build();
 
+  /**
+   * Receives stock price updates from SignalR.
+   * @param {StockPriceUpdate} stockUpdate
+   */
   connection.on("ReceiveStockPriceUpdate", (stockUpdate) => {
     console.log(stockUpdate);
   });
@@ -62,6 +104,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.addEventListener("beforeunload", () => connection.stop());
 
+  /**
+   * Starts the SignalR connection with automatic retries.
+   * @returns {Promise<void>}
+   */
   async function startSignalRConnection() {
     try {
       await connection.start();
@@ -83,6 +129,9 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   let chart;
 
+  /**
+   * Initializes the Chart.js chart.
+   */
   function createChart() {
     const chartElement = document.querySelector(".chart");
 
@@ -141,9 +190,21 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  /**
+   * A map of ticker symbols to their price histories.
+   * @type {Object.<string, number[]>}
+   */
   const tickers = {};
+
+  /** @type {string} */
   let selectedTicker = "";
 
+  /**
+   * Updates the chart with new price data.
+   *
+   * @param {number} price - The latest stock price.
+   * @param {string} ticker - The ticker symbol for the stock.
+   */
   function updateChart(price, ticker) {
     if (!chart) {
       console.error("Chart not initialized");
@@ -198,4 +259,90 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   checkThemePreference();
+
+  const user = await getCurrentUser();
+  console.log(user);
+
+  const logoutButton = document.getElementById("logout-button");
+  logoutButton.addEventListener("click", () => {
+    clearTokens();
+    window.location.href = "/sign-in/index.html";
+  });
+
+  const searchResults = document.getElementById("search-results");
+  const searchInput = document.getElementById("search-input");
+
+  searchInput.addEventListener("input", debounce(handleSearchInput, 500));
+  searchInput.addEventListener("focus", () =>
+    searchResults.classList.remove("hidden")
+  );
+  searchInput.addEventListener("blur", () =>
+    setTimeout(() => hideSearchResults(), 100)
+  );
+
+  /**
+   * Handles user input in the search field.
+   * @param {InputEvent} event
+   */
+  async function handleSearchInput(event) {
+    const input = /** @type {HTMLInputElement} */ (event.target);
+    const query = input.value.trim();
+    if (query.length > 0) {
+      const data = await searchStocks(query, 1);
+
+      displayResults(data.items);
+    } else {
+      searchResults.classList.add("hidden");
+    }
+  }
+
+  /**
+   * @param {StockSearchResponse[]} items
+   */
+  function displayResults(items) {
+    searchResults.innerHTML = "";
+
+    if (items.length === 0) {
+      searchResults.innerHTML =
+        "<div class='p-2 text-gray-400'>No results found.</div>";
+    } else {
+      searchResults.innerHTML =
+        items.length === 0
+          ? "<div class='p-2 text-gray-400'>No results found.</div>"
+          : items
+              .map(
+                (item) =>
+                  `<div class="p-2 text-gray-300 hover:bg-gray-700 cursor-pointer" data-ticker="${item.ticker}">${item.ticker}</div>`
+              )
+              .join("");
+    }
+
+    // Ensure the search results are visible
+    searchResults.classList.remove("hidden");
+
+    // Event delegation to handle clicks on dynamically generated result items
+    const resultItems = searchResults.querySelectorAll("div[data-ticker]");
+
+    resultItems.forEach((item) => {
+      if (!item) {
+        return;
+      }
+
+      // Ensure the clicked element is a valid result item
+      if (item.hasAttribute("data-ticker")) {
+        const ticker = item.getAttribute("data-ticker");
+
+        // TODO: Open modal and fetch price for the clicked ticker
+        item.addEventListener("click", () => {
+          console.log(`Clicked: ${ticker}`);
+        });
+      }
+    });
+  }
+
+  function hideSearchResults() {
+    if (searchResults.contains(document.activeElement)) {
+      searchResults.classList.add("hidden");
+    }
+  }
 });
