@@ -1,6 +1,6 @@
-﻿namespace Infrastructure.Emails;
+﻿namespace Infrastructure.Emails.Options;
 
-public sealed class EmailOptions
+internal sealed class EmailOptions
 {
     public const string SettingsKey = "Email";
 

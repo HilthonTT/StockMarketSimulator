@@ -10,6 +10,7 @@ using Infrastructure.Caching;
 using Infrastructure.Channels;
 using Infrastructure.Database;
 using Infrastructure.Emails;
+using Infrastructure.Emails.Options;
 using Infrastructure.Events;
 using Infrastructure.Notifications;
 using Infrastructure.Time;

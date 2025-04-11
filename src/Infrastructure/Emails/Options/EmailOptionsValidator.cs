@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace Infrastructure.Emails;
+namespace Infrastructure.Emails.Options;
 
 internal sealed class EmailOptionsValidator : AbstractValidator<EmailOptions>
 {

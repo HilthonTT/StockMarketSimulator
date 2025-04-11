@@ -1,5 +1,6 @@
 ﻿using Application.Abstractions.Emails;
 using Contracts.Emails;
+using Infrastructure.Emails.Options;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Options;
