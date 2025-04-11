@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Diagnostics;
 using Web.Api.Infrastructure;
 using Web.Api.Middleware;
@@ -14,6 +15,7 @@ public static class DependencyInjection
         services.AddCors();
         services.AddExceptionHandling();
         services.AddMiddlewares();
+        services.ConfigureRateLimiter();
 
         return services;
     }
@@ -49,6 +51,24 @@ public static class DependencyInjection
     private static IServiceCollection AddMiddlewares(this IServiceCollection services)
     {
         services.AddTransient<UserContextEnrichementMiddleware>();
+
+        return services;
+    }
+
+    private static IServiceCollection ConfigureRateLimiter(this IServiceCollection services)
+    {
+        services.AddRateLimiter(rateLimiterOptions =>
+        {
+            rateLimiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            rateLimiterOptions.AddTokenBucketLimiter("token", options =>
+            {
+                options.TokenLimit = 1000;
+                options.ReplenishmentPeriod = TimeSpan.FromHours(1);
+                options.TokensPerPeriod = 700;
+                options.AutoReplenishment = true;
+            });
+        });
 
         return services;
     }

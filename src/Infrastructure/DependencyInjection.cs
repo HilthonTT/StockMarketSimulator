@@ -2,6 +2,7 @@
 using Application.Abstractions.Caching;
 using Application.Abstractions.Data;
 using Application.Abstractions.Emails;
+using Application.Abstractions.Events;
 using Application.Abstractions.Notifications;
 using FluentValidation;
 using Infrastructure.Authentication;
@@ -9,6 +10,7 @@ using Infrastructure.Caching;
 using Infrastructure.Channels;
 using Infrastructure.Database;
 using Infrastructure.Emails;
+using Infrastructure.Events;
 using Infrastructure.Notifications;
 using Infrastructure.Time;
 using Infrastructure.Validation;
@@ -30,7 +32,8 @@ public static class DependencyInjection
             .AddEmail()
             .AddDatabase(configuration)
             .AddCaching(configuration)
-            .AddHealthChecks(configuration);
+            .AddHealthChecks(configuration)
+            .AddMessaging();
 
         return services;
     }
@@ -89,6 +92,14 @@ public static class DependencyInjection
             .AddHealthChecks()
             .AddNpgSql(configuration.GetConnectionString(ConfigurationNames.Database)!)
             .AddRedis(configuration.GetConnectionString(ConfigurationNames.Redis)!);
+
+        return services;
+    }
+
+    private static IServiceCollection AddMessaging(this IServiceCollection services)
+    {
+        services.AddSingleton<InMemoryMessageQueue>();
+        services.AddSingleton<IEventBus, EventBus>();
 
         return services;
     }

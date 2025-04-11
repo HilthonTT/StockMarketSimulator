@@ -84,6 +84,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Modules.Budgeting.Contracts
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Modules.Budgeting.Api", "src\Modules\Budgeting\Modules.Budgeting.Api\Modules.Budgeting.Api.csproj", "{9AE97DF1-D09E-471B-8D23-0C7AC326899E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Modules.Users.Events", "src\Modules\Users\Modules.Users.Events\Modules.Users.Events.csproj", "{F467A236-B8E7-4317-9D09-4E0EE495F265}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -206,6 +208,10 @@ Global
 		{9AE97DF1-D09E-471B-8D23-0C7AC326899E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9AE97DF1-D09E-471B-8D23-0C7AC326899E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9AE97DF1-D09E-471B-8D23-0C7AC326899E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F467A236-B8E7-4317-9D09-4E0EE495F265}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F467A236-B8E7-4317-9D09-4E0EE495F265}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F467A236-B8E7-4317-9D09-4E0EE495F265}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F467A236-B8E7-4317-9D09-4E0EE495F265}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -246,6 +252,7 @@ Global
 		{3374E08E-221D-4692-AA1F-3E3A26ADD833} = {0BA43F17-D161-4743-9E2C-2139AB05506F}
 		{C2F8F0D1-598C-4A70-82EE-13E95C4094EE} = {0BA43F17-D161-4743-9E2C-2139AB05506F}
 		{9AE97DF1-D09E-471B-8D23-0C7AC326899E} = {0BA43F17-D161-4743-9E2C-2139AB05506F}
+		{F467A236-B8E7-4317-9D09-4E0EE495F265} = {AC813423-1C62-4344-BC12-DEB73AA95038}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CD593C20-A8F4-4A5C-961C-E5BA7D03D2BF}

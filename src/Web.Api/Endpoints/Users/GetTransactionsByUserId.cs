@@ -29,6 +29,7 @@ internal sealed class GetTransactionsByUserId : IEndpoint
         })
        .WithOpenApi()
        .WithTags(Tags.Users)
-       .HasPermission(Permission.Read, Permission.Write);
+       .HasPermission(Permission.Read, Permission.Write)
+       .RequireRateLimiting("token");
     }
 }

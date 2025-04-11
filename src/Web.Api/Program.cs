@@ -11,6 +11,7 @@ using Modules.Stocks.Application;
 using Modules.Stocks.Infrastructure;
 using Modules.Stocks.Infrastructure.Realtime;
 using Modules.Users.Application;
+using Modules.Users.Events;
 using Modules.Users.Infrastructure;
 using Web.Api;
 using Web.Api.Extensions;
@@ -29,7 +30,8 @@ builder.Services
 
 builder.Services
     .AddUsersApplication()
-    .AddUsersInfrastructure(builder.Configuration);
+    .AddUsersInfrastructure(builder.Configuration)
+    .AddUsersEvents();
 
 builder.Services
     .AddStocksApplication()
@@ -89,6 +91,8 @@ app.UseAuthorization();
 app.UseUserContextEnrichment();
 
 app.UseStatusCodePages();
+
+app.UseRateLimiter();
 
 await app.RunAsync();
 

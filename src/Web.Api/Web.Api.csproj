@@ -39,6 +39,7 @@
     <ProjectReference Include="..\Modules\Users\Modules.Users.BackgroundJobs\Modules.Users.BackgroundJobs.csproj" />
     <ProjectReference Include="..\Modules\Users\Modules.Users.Contracts\Modules.Users.Contracts.csproj" />
     <ProjectReference Include="..\Modules\Users\Modules.Users.Domain\Modules.Users.Domain.csproj" />
+    <ProjectReference Include="..\Modules\Users\Modules.Users.Events\Modules.Users.Events.csproj" />
     <ProjectReference Include="..\Modules\Users\Modules.Users.Infrastructure\Modules.Users.Infrastructure.csproj" />
     <ProjectReference Include="..\SharedKernel\SharedKernel.csproj" />
     <ProjectReference Include="..\StockMarketSimulator.ServiceDefaults\StockMarketSimulator.ServiceDefaults.csproj" />
