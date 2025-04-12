@@ -92,6 +92,8 @@ app.UseAuthorization();
 // Add the user context enrichment middleware after authentication
 app.UseUserContextEnrichment();
 
+app.UseRequestContextLogging();
+
 app.UseStatusCodePages();
 
 app.UseRateLimiter();

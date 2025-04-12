@@ -51,6 +51,7 @@ public static class DependencyInjection
     private static IServiceCollection AddMiddlewares(this IServiceCollection services)
     {
         services.AddTransient<UserContextEnrichementMiddleware>();
+        services.AddTransient<RequestContextLoggingMiddleware>();
 
         return services;
     }
