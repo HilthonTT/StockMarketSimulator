@@ -91,7 +91,7 @@ public sealed class ProcessStockOutboxMessagesJob(
         return [.. outboxMessages];
     }
 
-    private Task UpdateOutboxMessageAsync(
+    private Task<int> UpdateOutboxMessageAsync(
         IDbConnection connection,
         IDbTransaction transaction,
         OutboxMessageResponse outboxMessage,
@@ -106,9 +106,9 @@ public sealed class ProcessStockOutboxMessagesJob(
             """;
 
         return connection.ExecuteAsync(
-        sql,
-        new
-        {
+            sql,
+            new
+            {
                 outboxMessage.Id,
                 ProcessedOnUtc = dateTimeProvider.UtcNow,
                 Error = exception?.ToString()

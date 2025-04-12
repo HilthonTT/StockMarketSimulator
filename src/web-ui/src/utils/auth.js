@@ -54,32 +54,36 @@ export function extractUserInfo() {
 }
 
 export async function getCurrentUser() {
-  const user = extractUserInfo();
-
-  if (!user || user?.isExpired) {
-    const apiUrl = `${config.baseApiUrl}/api/v1/users/refresh-tokens`;
-    const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
-
-    if (!storedRefreshToken) {
-      return null;
-    }
-
-    const response = await axios.post(apiUrl, {
-      refreshToken: storedRefreshToken,
-    });
-
-    if (response.status != 200) {
-      return null;
-    }
-
-    const { accessToken, refreshToken: newRefreshToken } = response.data;
-
-    saveTokensToLocalStorage(accessToken, newRefreshToken);
-
+  try {
     const user = extractUserInfo();
 
-    return user;
-  }
+    if (!user || user?.isExpired) {
+      const apiUrl = `${config.baseApiUrl}/api/v1/users/refresh-tokens`;
+      const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
 
-  return user;
+      if (!storedRefreshToken) {
+        return null;
+      }
+
+      const response = await axios.post(apiUrl, {
+        refreshToken: storedRefreshToken,
+      });
+
+      if (response.status != 200) {
+        return null;
+      }
+
+      const { accessToken, refreshToken: newRefreshToken } = response.data;
+
+      saveTokensToLocalStorage(accessToken, newRefreshToken);
+
+      const user = extractUserInfo();
+
+      return user;
+    }
+
+    return user;
+  } catch (error) {
+    return null;
+  }
 }

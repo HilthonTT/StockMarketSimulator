@@ -23,8 +23,10 @@ internal sealed class StockService(
     {
         try
         {
+            using IDbConnection connection = dbConnectionFactory.GetOpenConnection();
+
             // First, try to get the latest price from the database
-            StockPriceResponse? dbPrice = await GetLatestPriceFromDatabaseAsync(ticker);
+            StockPriceResponse? dbPrice = await GetLatestPriceFromDatabaseAsync(connection, ticker);
             if (dbPrice is not null)
             {
                 activeTickerManager.AddTicker(ticker);
@@ -41,7 +43,7 @@ internal sealed class StockService(
             }
 
             // Save the new price to the database
-            await SavePriceToDatabaseAsync(apiPrice);
+            await SavePriceToDatabaseAsync(connection, apiPrice);
 
             activeTickerManager.AddTicker(ticker);
 
@@ -54,7 +56,7 @@ internal sealed class StockService(
         }
     }
 
-    private async Task<StockPriceResponse?> GetLatestPriceFromDatabaseAsync(string ticker)
+    private static async Task<StockPriceResponse?> GetLatestPriceFromDatabaseAsync(IDbConnection connection, string ticker)
     {
         const string sql =
             """
@@ -68,8 +70,6 @@ internal sealed class StockService(
             ORDER BY created_on_utc DESC
             LIMIT 1;
             """;
-
-        using IDbConnection connection = dbConnectionFactory.GetOpenConnection();
 
         Stock? result = await connection.QueryFirstOrDefaultAsync<Stock>(
             sql,
@@ -86,15 +86,13 @@ internal sealed class StockService(
         return null;
     }
 
-    private Task<int> SavePriceToDatabaseAsync(StockPriceResponse price)
+    private Task<int> SavePriceToDatabaseAsync(IDbConnection connection, StockPriceResponse price)
     {
         const string sql =
             """
             INSERT INTO stocks.stocks (id, ticker, price, created_on_utc)
             VALUES (@Id, @Ticker, @Price, @CreatedOnUtc);
             """;
-
-        using IDbConnection connection = dbConnectionFactory.GetOpenConnection();
 
         return connection.ExecuteAsync(
             sql,

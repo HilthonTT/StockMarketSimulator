@@ -35,7 +35,9 @@ public sealed class StocksFeedUpdater(
 
         foreach (string ticker in activeTickerManager.GetAllTickers())
         {
-            Option<StockPriceResponse> optionCurrentPrice = await stockService.GetLatestStockPriceAsync(ticker, cancellationToken);
+            Option<StockPriceResponse> optionCurrentPrice = 
+                await stockService.GetLatestStockPriceAsync(ticker, cancellationToken);
+
             if (!optionCurrentPrice.IsSome)
             {
                 continue;

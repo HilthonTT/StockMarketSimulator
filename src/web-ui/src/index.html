@@ -147,11 +147,13 @@
           <div class="mb-4">
             <p class="text-[#8B8CA7] text-sm">Quantity</p>
             <input
+              id="transaction-form-quantity"
               required
               type="number"
               placeholder="Enter quantity"
               class="bg-[#2c2d39] text-white rounded-xl p-3 mt-2 w-full"
             />
+            <p class="text-rose-500 text-left hidden">Error</p>
           </div>
 
           <!-- Buying Power and MAX Button -->
@@ -338,6 +340,20 @@
               class="text-black dark:text-white"
             ></tbody>
           </table>
+        </div>
+
+        <div class="pt-20 flex items-center justify-between">
+          <button
+            class="flex items-center space-x-2 dark:bg-[#292B36] bg-neutral-200 hover:bg-neutral-300 px-4 py-2 rounded-md text-gray-300 dark:hover:bg-[#2C2E39] transition"
+          >
+            Previous
+          </button>
+          <p class="text-gray-300 px-4 py-2">1 of 10</p>
+          <button
+            class="flex items-center space-x-2 dark:bg-[#292B36] bg-neutral-200 hover:bg-neutral-300 px-4 py-2 rounded-md text-gray-300 dark:hover:bg-[#2C2E39] transition"
+          >
+            Next
+          </button>
         </div>
       </div>
     </div>

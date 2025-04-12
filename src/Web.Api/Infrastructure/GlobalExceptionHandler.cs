@@ -15,6 +15,7 @@ internal sealed class GlobalExceptionHandler(IProblemDetailsService problemDetai
             Status = exception switch
             {
                 ArgumentException => StatusCodes.Status400BadRequest,
+                ApplicationException => StatusCodes.Status400BadRequest,
                 _ => StatusCodes.Status500InternalServerError
             },
             Title = "An error occurred",

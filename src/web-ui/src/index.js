@@ -1,3 +1,4 @@
+import { z } from "zod";
 import {
   Chart,
   CategoryScale,
@@ -9,6 +10,7 @@ import {
   Legend,
 } from "chart.js";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import { Notyf } from "notyf";
 
 import { config } from "./utils/config.js";
 import { getCurrentUser, clearTokens } from "./utils/auth.js";
@@ -17,7 +19,7 @@ import {
   checkThemePreference,
   DARK_MODE_STORAGE_KEY,
 } from "./utils/theme.js";
-import { searchStocks } from "./services/stock-service.js";
+import { searchStocks, fetchStockPrice } from "./services/stock-service.js";
 import { debounce } from "./utils/debounce.js";
 
 Chart.register(
@@ -29,6 +31,24 @@ Chart.register(
   Tooltip,
   Legend
 );
+
+/**
+ * @typedef {Object} StockPriceUpdate
+ * @property {string} ticker
+ * @property {number} price
+ * @property {string} timestamp
+ */
+
+/**
+ * @typedef {Object} StockSearchResponse
+ * @property {string} ticker
+ * @property {string} name
+ * @property {string} type
+ * @property {string} region
+ * @property {string} marketOpen
+ * @property {string} timezone
+ * @property {string} currency
+ */
 
 /**
  * @constant {number}
@@ -64,25 +84,15 @@ const COLORS = [
   }, // Blue
 ];
 
-/**
- * @typedef {Object} StockPriceUpdate
- * @property {string} ticker
- * @property {number} price
- * @property {string} timestamp
- */
-
-/**
- * @typedef {Object} StockSearchResponse
- * @property {string} ticker
- * @property {string} name
- * @property {string} type
- * @property {string} region
- * @property {string} marketOpen
- * @property {string} timezone
- * @property {string} currency
- */
+const transactionSchema = z.object({
+  userId: z.string().uuid(),
+  ticker: z.string().max(10),
+  quantity: z.number().min(1),
+});
 
 document.addEventListener("DOMContentLoaded", async () => {
+  const notyf = new Notyf();
+
   const connection = new HubConnectionBuilder()
     .withUrl(`${config.baseApiUrl}/stocks-feed`)
     .configureLogging(LogLevel.Information)
@@ -261,7 +271,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   checkThemePreference();
 
   const user = await getCurrentUser();
-  console.log(user);
+  if (!user) {
+    window.location.href = "/sign-in/index.html";
+    return;
+  }
 
   const logoutButton = document.getElementById("logout-button");
   logoutButton.addEventListener("click", () => {
@@ -332,9 +345,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (item.hasAttribute("data-ticker")) {
         const ticker = item.getAttribute("data-ticker");
 
-        // TODO: Open modal and fetch price for the clicked ticker
-        item.addEventListener("click", () => {
-          console.log(`Clicked: ${ticker}`);
+        item.addEventListener("click", async () => {
+          const stockPrice = await fetchStockPrice(ticker);
+
+          openModal(ticker, stockPrice?.price || 0);
         });
       }
     });
@@ -344,5 +358,142 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (searchResults.contains(document.activeElement)) {
       searchResults.classList.add("hidden");
     }
+  }
+
+  let isBuying = true;
+
+  const modal = document.getElementById("modal");
+  const closeModal = document.getElementById("close-modal");
+  closeModal.addEventListener("click", () => {
+    modal.classList.add("hidden");
+  });
+
+  const buyButton = document.getElementById("buy-button");
+  const sellButton = document.getElementById("sell-button");
+
+  buyButton.addEventListener("click", () => toggleBuySell(true));
+  sellButton.addEventListener("click", () => toggleBuySell(false));
+
+  /**
+   * Toggles between buyin and selling stocks in the transaction form
+   *
+   * @param {boolean} isBuy - Is buying
+   * @returns {void}
+   */
+  function toggleBuySell(isBuy) {
+    const form = document.getElementById("transaction-form");
+    const buyRadioButton = form.querySelector("input[value='buy']");
+    const sellRadioButton = form.querySelector("input[value='sell']");
+
+    if (isBuy) {
+      isBuying = true;
+      buyRadioButton.checked = true;
+      sellRadioButton.checked = false;
+
+      buyButton.classList.add("bg-emerald-500");
+      buyButton.classList.remove("bg-[#2c2d39]");
+
+      sellButton.classList.remove("bg-rose-500");
+      sellButton.classList.add("bg-[#2c2d39]");
+    } else {
+      isBuying = false;
+      buyRadioButton.checked = false;
+      sellRadioButton.checked = true;
+
+      sellButton.classList.add("bg-rose-500");
+      sellButton.classList.remove("bg-[#2c2d39]");
+      buyButton.classList.remove("bg-emerald-500");
+      buyButton.classList.add("bg-[#2c2d39]");
+    }
+  }
+
+  /**
+   * Opens the buy/sell transaction modal
+   *
+   * @param {string} ticker - The ticker SYMBOL
+   * @param {number} price - The stock's price
+   * @returns {void}
+   */
+  function openModal(ticker, price) {
+    const modalTitle = document.getElementById("modal-title");
+    const stockName = modal.querySelector("p.font-bold.text-lg");
+    const priceInput = document.querySelector(
+      "#transaction-form input[readonly]"
+    );
+
+    if (modalTitle) {
+      modalTitle.textContent = `Place order for ${ticker}`;
+    }
+
+    if (stockName) {
+      stockName.textContent = ticker;
+    }
+
+    if (priceInput) {
+      priceInput.value = price;
+    }
+
+    modal.classList.remove("hidden");
+
+    const transactionForm = document.getElementById("transaction-form");
+    if (transactionForm) {
+      transactionForm.onsubmit = (e) => handleSubmit(e, ticker);
+    } else {
+      console.error("Transaction form not found!");
+    }
+  }
+
+  /**
+   * Handles the transaction form subit
+   * @param {Event} event
+   * @param {string} ticker
+   *
+   */
+  async function handleSubmit(event, ticker) {
+    event.preventDefault();
+
+    const quantityError = quantityInput.nextElementSibling;
+
+    // Clear previous errors
+    [quantityError].forEach((el) => el.classList.add("hidden"));
+
+    const quantityInput = document.getElementById("transaction-form-quantity");
+
+    if (!quantityInput) {
+      console.error("Quantity input element not found!");
+      return;
+    }
+
+    const quantity = parseInt(quantityInput.value);
+    if (!quantity) {
+      notyf.error("Please enter a valid quantity.");
+      return;
+    }
+
+    const formData = {
+      userId: user.id,
+      ticker: ticker.trim(),
+      quantity,
+    };
+
+    const result = await transactionSchema.safeParseAsync(formData);
+    if (!result.success) {
+      const formattedErrors = result.error.format();
+
+      if (formattedErrors.quantity?._errors) {
+        quantityError.textContent = formattedErrors.quantity._errors[0];
+        quantityError.classList.remove("hidden");
+      }
+
+      return;
+    }
+
+    if (isBuying) {
+      console.log("Buy");
+    } else {
+      console.log("Sell");
+    }
+
+    modal.classList.add("hidden");
   }
 });
