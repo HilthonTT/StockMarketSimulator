@@ -6,6 +6,7 @@ using HealthChecks.UI.Client;
 using Infrastructure;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Modules.Budgeting.Application;
+using Modules.Budgeting.Events;
 using Modules.Budgeting.Infrastructure;
 using Modules.Stocks.Application;
 using Modules.Stocks.Infrastructure;
@@ -39,7 +40,8 @@ builder.Services
 
 builder.Services
     .AddBudgetingApplication()
-    .AddBudgetingInfrastructure(builder.Configuration);
+    .AddBudgetingInfrastructure(builder.Configuration)
+    .AddBudgetingEvents();
 
 builder.Services.AddBackgroundJobs();
 builder.Services.AddVersioning();

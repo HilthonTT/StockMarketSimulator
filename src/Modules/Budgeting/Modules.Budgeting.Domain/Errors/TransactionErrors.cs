@@ -15,4 +15,8 @@ public static class TransactionErrors
     public static readonly Error InsufficientStock = Error.Problem(
         "Transactions.InsufficientStock",
         "You do not have enough stock to complete this sale transaction");
+
+    public static Error NotFound(Guid id) => Error.NotFound(
+        "Transactions.NotFound",
+        $"Transaction with the Id = '{id}' was not found");
 }

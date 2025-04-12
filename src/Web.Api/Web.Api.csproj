@@ -20,7 +20,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.2" />
-    <PackageReference Include="Scalar.AspNetCore" Version="2.1.10" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.1.13" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.1" />
     <PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="8.1.1" />
   </ItemGroup>
@@ -29,6 +29,7 @@
     <ProjectReference Include="..\Modules\Budgeting\Modules.Budgeting.Application\Modules.Budgeting.Application.csproj" />
     <ProjectReference Include="..\Modules\Budgeting\Modules.Budgeting.Contracts\Modules.Budgeting.Contracts.csproj" />
     <ProjectReference Include="..\Modules\Budgeting\Modules.Budgeting.Domain\Modules.Budgeting.Domain.csproj" />
+    <ProjectReference Include="..\Modules\Budgeting\Modules.Budgeting.Events\Modules.Budgeting.Events.csproj" />
     <ProjectReference Include="..\Modules\Budgeting\Modules.Budgeting.Infrastructure\Modules.Budgeting.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Stocks\Modules.Stocks.Application\Modules.Stocks.Application.csproj" />
     <ProjectReference Include="..\Modules\Stocks\Modules.Stocks.Contracts\Modules.Stocks.Contracts.csproj" />

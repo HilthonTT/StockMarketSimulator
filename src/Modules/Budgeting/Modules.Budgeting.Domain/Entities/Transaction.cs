@@ -87,7 +87,17 @@ public sealed class Transaction : Entity, IAuditable
 
         var transaction = new Transaction(Guid.CreateVersion7(), budget.UserId, ticker, limitPrice, type, quantity);
 
-        transaction.Raise(new TransactionCreatedDomainEvent(transaction.Id, transaction.Type));
+        switch (type)
+        {
+            case TransactionType.Buy:
+                transaction.Raise(new TransactionBoughtDomainEvent(transaction.Id));
+                break;
+            case TransactionType.Sell:
+                transaction.Raise(new TransactionSoldDomainEvent(transaction.Id));
+                break;
+            default:
+                break;
+        }
 
         return transaction;
     }

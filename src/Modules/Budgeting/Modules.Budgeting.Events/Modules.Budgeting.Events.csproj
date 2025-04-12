@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Transactions\Sold\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Modules.Budgeting.Application\Modules.Budgeting.Application.csproj" />
+    <ProjectReference Include="..\Modules.Budgeting.Domain\Modules.Budgeting.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Application\Application.csproj" />
     <ProjectReference Include="..\..\Stocks\Modules.Stocks.Api\Modules.Stocks.Api.csproj" />
+    <ProjectReference Include="..\Modules.Budgeting.BackgroundJobs\Modules.Budgeting.BackgroundJobs.csproj" />
     <ProjectReference Include="..\Modules.Budgeting.Contracts\Modules.Budgeting.Contracts.csproj" />
     <ProjectReference Include="..\Modules.Budgeting.Domain\Modules.Budgeting.Domain.csproj" />
   </ItemGroup>
