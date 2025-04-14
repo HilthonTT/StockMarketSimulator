@@ -11,8 +11,14 @@ internal sealed class EmailVerificationLinkFactory(
 {
     public string Create(Guid emailVerificationTokenId)
     {
+        HttpContext? httpContext = httpContextAccessor.HttpContext;
+        if (httpContext is null)
+        {
+            return $"https://test-host/verify-email?tokenId={emailVerificationTokenId}";
+        }
+
         string? verificationLink = linkGenerator.GetUriByName(
-            httpContextAccessor.HttpContext!,
+            httpContext,
             UserEndpoints.VerifyEmail,
             new { token = emailVerificationTokenId });
 

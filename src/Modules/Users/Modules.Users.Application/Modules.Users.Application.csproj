@@ -13,4 +13,8 @@
     <ProjectReference Include="..\Modules.Users.Domain\Modules.Users.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+   <InternalsVisibleTo Include="Application.UnitTests" />
+  </ItemGroup>
+
 </Project>
