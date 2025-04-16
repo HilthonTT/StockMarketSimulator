@@ -1,6 +1,9 @@
-﻿using System.Data;
+﻿using System.Collections.Concurrent;
+using System.Data;
+using System.Diagnostics;
 using Application.Abstractions.Data;
 using Dapper;
+using Infrastructure.Outbox;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -10,7 +13,7 @@ using SharedKernel;
 namespace Modules.Users.Infrastructure.Outbox;
 
 [DisallowConcurrentExecution]
-public sealed class ProcessUserOutboxMessagesJob(
+public sealed partial class ProcessUserOutboxMessagesJob(
     IDbConnectionFactory dbConnectionFactory,
     IPublisher publisher,
     IDateTimeProvider dateTimeProvider,
@@ -26,11 +29,15 @@ public sealed class ProcessUserOutboxMessagesJob(
 
     public async Task Execute(IJobExecutionContext context)
     {
+        var totalStopwatch = Stopwatch.StartNew();
+        var stepStopwatch = new Stopwatch();
+
         logger.LogInformation("Beginning to process outbox messages");
 
         using IDbConnection connection = dbConnectionFactory.GetOpenConnection();
         using IDbTransaction transaction = connection.BeginTransaction();
 
+        stepStopwatch.Restart();
         IReadOnlyList<OutboxMessageResponse> outboxMessages = await GetOutboxMessagesAsync(connection, transaction);
 
         if (!outboxMessages.Any())
@@ -39,37 +46,60 @@ public sealed class ProcessUserOutboxMessagesJob(
             return;
         }
 
-        foreach (OutboxMessageResponse outboxMessage in outboxMessages)
+        long queryTime = stepStopwatch.ElapsedMilliseconds;
+
+        var updateQueue = new ConcurrentQueue<OutboxUpdate>();
+
+        stepStopwatch.Restart();
+        List<Task> publishTasks =
+            [.. outboxMessages.Select(message => PublishMessage(message, updateQueue, context.CancellationToken))];
+
+        await Task.WhenAll(publishTasks);
+        long publishTime = stepStopwatch.ElapsedMilliseconds;
+
+        stepStopwatch.Restart();
+        if (!updateQueue.IsEmpty)
         {
-            Exception? exception = null;
+            const string updateSql =
+                """
+                UPDATE users.outbox_messages
+                SET processed_on_utc = v.processed_on_utc,
+                    error = v.error
+                FROM (VALUES
+                    {0}
+                ) AS v(id, processed_on_utc, error)
+                WHERE outbox_messages.id = v.id::uuid
+                """;
 
-            try
+            List<OutboxUpdate> updates = [.. updateQueue];
+            string valuesList = string.Join(",",
+                updateQueue.Select((_, i) => $"(@Id{i}, @ProcessedOn{i}, @Error{i})"));
+
+            var parameters = new DynamicParameters();
+
+            for (int i = 0; i < updateQueue.Count; i++)
             {
-                IDomainEvent domainEvent = JsonConvert.DeserializeObject<IDomainEvent>(
-                    outboxMessage.Content,
-                    JsonSerializerSettings)!;
-
-                await publisher.Publish(domainEvent);
-            }
-            catch (Exception caughtException)
-            {
-                logger.LogError(
-                    caughtException,
-                    "Exception while processing outbox message {MessageId}",
-                    outboxMessage.Id);
-
-                exception = caughtException;
+                parameters.Add($"Id{i}", updates[i].Id.ToString());
+                parameters.Add($"ProcessedOn{i}", updates[i].ProcessedOnUtc);
+                parameters.Add($"Error{i}", updates[i].Error);
             }
 
-            await UpdateOutboxMessageAsync(connection, transaction, outboxMessage, exception);
+            string formattedSql = string.Format(updateSql, valuesList);
+
+            await connection.ExecuteAsync(formattedSql, parameters, transaction: transaction);
         }
+
+        long updateTime = stepStopwatch.ElapsedMilliseconds;
 
         transaction.Commit();
 
-        logger.LogInformation("Completed processing outbox messages");
+        totalStopwatch.Stop();
+        var totalTime = totalStopwatch.ElapsedMilliseconds;
+
+        OutboxLoggers.LogProcessingPerformance(logger, totalTime, queryTime, publishTime, updateTime, outboxMessages.Count);
     }
 
-    private async Task<IReadOnlyList<OutboxMessageResponse>> GetOutboxMessagesAsync(
+    private static async Task<IReadOnlyList<OutboxMessageResponse>> GetOutboxMessagesAsync(
         IDbConnection connection,
         IDbTransaction transaction)
     {
@@ -91,29 +121,31 @@ public sealed class ProcessUserOutboxMessagesJob(
         return [.. outboxMessages];
     }
 
-    private Task<int> UpdateOutboxMessageAsync(
-        IDbConnection connection,
-        IDbTransaction transaction,
+    private async Task PublishMessage(
         OutboxMessageResponse outboxMessage,
-        Exception? exception)
+        ConcurrentQueue<OutboxUpdate> updateQueue,
+        CancellationToken cancellationToken)
     {
-        const string sql =
-            """
-            UPDATE users.outbox_messages
-            SET processed_on_utc = @ProcessedOnUtc,
-                error = @Error
-            WHERE id = @Id
-            """;
+        try
+        { 
+            IDomainEvent domainEvent = JsonConvert.DeserializeObject<IDomainEvent>(
+                outboxMessage.Content,
+                JsonSerializerSettings)!;
 
-        return connection.ExecuteAsync(
-            sql,
-            new
+            await publisher.Publish(domainEvent, cancellationToken);
+
+            updateQueue.Enqueue(new OutboxUpdate { Id = outboxMessage.Id, ProcessedOnUtc = dateTimeProvider.UtcNow });
+        }
+        catch (Exception ex)
+        {
+            var update = new OutboxUpdate
             {
-                outboxMessage.Id,
+                Id = outboxMessage.Id,
                 ProcessedOnUtc = dateTimeProvider.UtcNow,
-                Error = exception?.ToString()
-            },
-            transaction: transaction);
+                Error = ex.ToString()
+            };
+            updateQueue.Enqueue(update);
+        }
     }
 
     private sealed record OutboxMessageResponse(Guid Id, string Content);
