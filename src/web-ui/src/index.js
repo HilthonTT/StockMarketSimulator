@@ -21,6 +21,11 @@ import {
 } from "./utils/theme.js";
 import { searchStocks, fetchStockPrice } from "./services/stock-service.js";
 import { debounce } from "./utils/debounce.js";
+import {
+  buyTransaction,
+  sellTransaction,
+} from "./services/transaction-service.js";
+import { fetchBudget } from "./services/budget-service.js";
 
 Chart.register(
   CategoryScale,
@@ -385,6 +390,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const buyRadioButton = form.querySelector("input[value='buy']");
     const sellRadioButton = form.querySelector("input[value='sell']");
 
+    const submitButton = document.getElementById("transaction-form-submit");
+
     if (isBuy) {
       isBuying = true;
       buyRadioButton.checked = true;
@@ -395,6 +402,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       sellButton.classList.remove("bg-rose-500");
       sellButton.classList.add("bg-[#2c2d39]");
+
+      submitButton.textContent = "Buy";
+      submitButton.classList.add("bg-emerald-500");
+      submitButton.classList.remove("bg-rose-500");
     } else {
       isBuying = false;
       buyRadioButton.checked = false;
@@ -404,6 +415,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       sellButton.classList.remove("bg-[#2c2d39]");
       buyButton.classList.remove("bg-emerald-500");
       buyButton.classList.add("bg-[#2c2d39]");
+
+      submitButton.textContent = "Sell";
+      submitButton.classList.add("bg-rose-500");
+      submitButton.classList.remove("bg-emerald-500");
     }
   }
 
@@ -444,7 +459,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   /**
-   * Handles the transaction form subit
+   * Handles the transaction form submit
    * @param {Event} event
    * @param {string} ticker
    *
@@ -452,17 +467,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   async function handleSubmit(event, ticker) {
     event.preventDefault();
 
-    const quantityError = quantityInput.nextElementSibling;
-
-    // Clear previous errors
-    [quantityError].forEach((el) => el.classList.add("hidden"));
-
     const quantityInput = document.getElementById("transaction-form-quantity");
 
     if (!quantityInput) {
       console.error("Quantity input element not found!");
       return;
     }
+
+    const quantityError = quantityInput.nextElementSibling;
+
+    // Clear previous errors
+    [quantityError].forEach((el) => el.classList.add("hidden"));
 
     const quantity = parseInt(quantityInput.value);
     if (!quantity) {
@@ -489,11 +504,48 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     if (isBuying) {
-      console.log("Buy");
+      const { success, error } = await buyTransaction(formData);
+
+      if (success) {
+        notyf.success(success);
+      } else if (error) {
+        notyf.error(error);
+      }
     } else {
-      console.log("Sell");
+      const { success, error } = await sellTransaction(formData);
+
+      if (success) {
+        notyf.success(success);
+      } else if (error) {
+        notyf.error(error);
+      }
     }
 
     modal.classList.add("hidden");
   }
+
+  async function loadBudget() {
+    const budget = await fetchBudget();
+    if (!budget) {
+      return;
+    }
+
+    function updateElementText(id, text) {
+      const element = document.getElementById(id);
+      if (element) {
+        element.textContent = text;
+      }
+    }
+
+    const formattedBuyingPower = `$${budget.buyingPower}`;
+
+    updateElementText("current-balance", formattedBuyingPower);
+    updateElementText("buying-power", formattedBuyingPower);
+    updateElementText(
+      "buying-power-form",
+      `Buying Power: ${formattedBuyingPower}`
+    );
+  }
+
+  loadBudget();
 });
