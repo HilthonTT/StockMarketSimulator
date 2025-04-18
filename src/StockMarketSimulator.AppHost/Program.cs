@@ -9,13 +9,18 @@ IResourceBuilder<PostgresServerResource> postgres = builder.AddPostgres("stockma
 IResourceBuilder<RedisResource> redis = builder.AddRedis("stockmarketsimulator-redis")
     .WithDataVolume();
 
+IResourceBuilder<RabbitMQServerResource> rabbitMq = builder.AddRabbitMQ("stockmarketsimulator-rabbitmq")
+    .WithDataVolume();
+
 builder.AddProject<Projects.Web_Api>("web-api")
     .WithSwaggerUI()
     .WithScalar()
     .WithRedoc()
     .WithReference(postgres)
     .WithReference(redis)
+    .WithReference(rabbitMq)
     .WaitFor(postgres)
-    .WaitFor(redis);
+    .WaitFor(redis)
+    .WaitFor(rabbitMq);
 
 await builder.Build().RunAsync();

@@ -87,9 +87,10 @@ public static class BackgroundJobExtensions
     private static void ConfigureIntegrationEventProcessorJob(IServiceCollectionQuartzConfigurator configure)
     {
         JobKey jobKey = JobKey.Create(IntegrationEventProcessorJob.Name);
+
         configure
             .AddJob<IntegrationEventProcessorJob>(jobKey)
             .AddTrigger(trigger => trigger.ForJob(jobKey).WithSimpleSchedule(
-                schedule => schedule.WithIntervalInSeconds(20).RepeatForever()));
+                schedule => schedule.WithIntervalInSeconds(5).RepeatForever()));
     }
 }

@@ -12,6 +12,7 @@ using Infrastructure.Database;
 using Infrastructure.Emails;
 using Infrastructure.Emails.Options;
 using Infrastructure.Events;
+using Infrastructure.Events.Options;
 using Infrastructure.Notifications;
 using Infrastructure.Time;
 using Infrastructure.Validation;
@@ -99,8 +100,9 @@ public static class DependencyInjection
 
     private static IServiceCollection AddMessaging(this IServiceCollection services)
     {
-        services.AddSingleton<InMemoryMessageQueue>();
         services.AddSingleton<IEventBus, EventBus>();
+
+        services.AddOptionsWithFluentValidation<MessageBrokerOptions>(MessageBrokerOptions.SettingsKey);
 
         return services;
     }
