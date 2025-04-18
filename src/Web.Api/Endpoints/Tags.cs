@@ -9,4 +9,6 @@ public static class Tags
     public const string Budgets = "Budgets";
 
     public const string Transactions = "Transactions";
+
+    public const string Shorten = "Shorten";
 }

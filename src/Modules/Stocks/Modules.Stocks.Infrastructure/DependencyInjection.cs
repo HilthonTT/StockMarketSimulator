@@ -12,6 +12,7 @@ using Modules.Stocks.Api;
 using Modules.Stocks.Application.Abstractions.Data;
 using Modules.Stocks.Application.Abstractions.Http;
 using Modules.Stocks.Application.Abstractions.Realtime;
+using Modules.Stocks.Application.Abstractions.Url;
 using Modules.Stocks.Domain.Repositories;
 using Modules.Stocks.Infrastructure.Api;
 using Modules.Stocks.Infrastructure.Database;
@@ -19,6 +20,7 @@ using Modules.Stocks.Infrastructure.Http;
 using Modules.Stocks.Infrastructure.Realtime;
 using Modules.Stocks.Infrastructure.Realtime.Options;
 using Modules.Stocks.Infrastructure.Repositories;
+using Modules.Stocks.Infrastructure.Url;
 using SharedKernel;
 
 namespace Modules.Stocks.Infrastructure;
@@ -28,6 +30,8 @@ public static class DependencyInjection
     public static IServiceCollection AddStocksInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly, includeInternalTypes: true);
+
+        services.AddScoped<IUrlShorteningService, UrlShorteningService>();
 
         services
             .AddDatabase(configuration)
