@@ -24,13 +24,16 @@ internal sealed class GetTransactionsByUserIdQueryHandler(
 
         IQueryable<Transaction> transactionQuery = dbContext.Transactions.AsQueryable();
         IQueryable<TransactionResponse> transactionResponsesQuery = transactionQuery
+            .Where(t => t.UserId == request.UserId)
             .Select(t => new TransactionResponse(
                 t.Id,
                 t.UserId,
                 t.Ticker,
                 t.LimitPrice,
                 t.Type,
-                t.Quantity));
+                t.Quantity,
+                t.CreatedOnUtc,
+                t.ModifiedOnUtc));
 
         PagedList<TransactionResponse> response = await PagedList<TransactionResponse>.CreateAsync(
             transactionResponsesQuery,

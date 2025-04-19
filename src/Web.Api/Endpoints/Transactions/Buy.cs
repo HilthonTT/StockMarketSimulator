@@ -4,6 +4,7 @@ using Modules.Budgeting.Contracts.Transactions;
 using Modules.Users.Domain.Enums;
 using SharedKernel;
 using Web.Api.Extensions;
+using Web.Api.Idempotency;
 using Web.Api.Infrastructure;
 
 namespace Web.Api.Endpoints.Transactions;
@@ -25,6 +26,7 @@ internal sealed class Buy : IEndpoint
         })
         .WithOpenApi()
         .WithTags(Tags.Transactions)
-        .HasPermission(Permission.Read, Permission.Write);
+        .HasPermission(Permission.Read, Permission.Write)
+        .AddEndpointFilter<IdempotencyFilter>();
     }
 }

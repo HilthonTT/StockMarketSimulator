@@ -8,6 +8,7 @@ import {
   Title,
   Tooltip,
   Legend,
+  LineController,
 } from "chart.js";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import { Notyf } from "notyf";
@@ -23,9 +24,11 @@ import { searchStocks, fetchStockPrice } from "./services/stock-service.js";
 import { debounce } from "./utils/debounce.js";
 import {
   buyTransaction,
+  getTransactions,
   sellTransaction,
 } from "./services/transaction-service.js";
 import { fetchBudget } from "./services/budget-service.js";
+import { TransactionWidget } from "./models/transaction-widget.js";
 
 Chart.register(
   CategoryScale,
@@ -34,7 +37,8 @@ Chart.register(
   PointElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  LineController
 );
 
 /**
@@ -53,6 +57,16 @@ Chart.register(
  * @property {string} marketOpen
  * @property {string} timezone
  * @property {string} currency
+ */
+
+/**
+ * @typedef {Object} TransactionResponse
+ * @property {string} id
+ * @property {string} userId
+ * @property {string} ticker
+ * @property {number} limitPrice
+ * @property {number} type
+ * @property {number} quantity
  */
 
 /**
@@ -109,7 +123,7 @@ document.addEventListener("DOMContentLoaded", async () => {
    * @param {StockPriceUpdate} stockUpdate
    */
   connection.on("ReceiveStockPriceUpdate", (stockUpdate) => {
-    console.log(stockUpdate);
+    handleStockPriceUpdate(stockUpdate);
   });
 
   connection.onclose(async () => {
@@ -507,6 +521,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       const { success, error } = await buyTransaction(formData);
 
       if (success) {
+        loadBudget();
+        loadTransactions();
+
         notyf.success(success);
       } else if (error) {
         notyf.error(error);
@@ -515,6 +532,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       const { success, error } = await sellTransaction(formData);
 
       if (success) {
+        loadBudget();
+        loadTransactions();
+
         notyf.success(success);
       } else if (error) {
         notyf.error(error);
@@ -548,4 +568,129 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   loadBudget();
+
+  const transactionWidgets = [];
+
+  /**
+   *
+   * @param {TransactionResponse} transaction
+   * @returns
+   */
+  function createTransactionWidget(transaction) {
+    return new TransactionWidget(
+      transaction.id,
+      transaction.userId,
+      transaction.ticker,
+      transaction.limitPrice,
+      transaction.type,
+      transaction.quantity,
+      transaction.totalAmount,
+      transaction.createdOnUtc,
+      transaction.modifiedOnUtc,
+      connection
+    );
+  }
+
+  let currentPage = 1;
+  let hasPreviousPage = false;
+  let hasNextPage = false;
+
+  /**
+   * @type {HTMLButtonElement|null}
+   */
+  const previousButton = document.getElementById(
+    "transactions-previous-button"
+  );
+  previousButton.addEventListener("click", async () => {
+    if (hasPreviousPage) {
+      await loadTransactions(currentPage - 1);
+    }
+  });
+
+  /**
+   * @type {HTMLButtonElement|null}
+   */
+  const nextButton = document.getElementById("transactions-next-button");
+  nextButton.addEventListener("click", async () => {
+    if (hasNextPage) {
+      await loadTransactions(currentPage + 1);
+    }
+  });
+
+  async function loadTransactions(page = currentPage) {
+    const tbody = document.getElementById("trading-history-body");
+    if (!tbody) {
+      return;
+    }
+
+    const pagedTransactions = await getTransactions(page);
+    if (!pagedTransactions) {
+      return;
+    }
+
+    hasPreviousPage = pagedTransactions.hasPreviousPage;
+    hasNextPage = pagedTransactions.hasNextPage;
+
+    tbody.innerHTML = "";
+    const tickers = new Set();
+
+    pagedTransactions.items.forEach((transaction) => {
+      const widget = createTransactionWidget(transaction);
+      transactionWidgets.push(widget);
+      tbody.appendChild(widget.element);
+
+      tickers.add(transaction.ticker);
+    });
+
+    const firstTransaction = pagedTransactions.items[0];
+
+    if (firstTransaction) {
+      selectedTicker = firstTransaction.ticker;
+    }
+
+    if (previousButton) {
+      if (!pagedTransactions.hasPreviousPage) {
+        previousButton.disabled = true;
+        previousButton.classList.add("opacity-50", "cursor-not-allowed");
+      } else {
+        previousButton.disabled = false;
+        previousButton.classList.remove("opacity-50", "cursor-not-allowed");
+      }
+    }
+
+    if (nextButton) {
+      if (!pagedTransactions.hasNextPage) {
+        nextButton.disabled = true;
+        nextButton.classList.add("opacity-50", "cursor-not-allowed");
+      } else {
+        nextButton.disabled = false;
+        nextButton.classList.remove("opacity-50", "cursor-not-allowed");
+      }
+    }
+  }
+
+  function calculateTransactionChange(transactionWidget, newPrice) {
+    const oldPrice = transactionWidget.limitPrice;
+    const quantity = transactionWidget.quantity;
+    return (newPrice - oldPrice) * quantity;
+  }
+
+  async function handleStockPriceUpdate(stockUpdate) {
+    const transactions = transactionWidgets.filter(
+      (widget) => widget.ticker === stockUpdate.ticker
+    );
+
+    let totalGainOrLoss = 0;
+
+    transactions.forEach((widget) => {
+      const change = calculateTransactionChange(widget, stockUpdate.price);
+      totalGainOrLoss += change;
+      widget.updatePrice(stockUpdate.price);
+    });
+
+    // updateBalance(totalGainOrLoss);
+    updateChart(stockUpdate.price, stockUpdate.ticker);
+  }
+
+  loadTransactions();
 });

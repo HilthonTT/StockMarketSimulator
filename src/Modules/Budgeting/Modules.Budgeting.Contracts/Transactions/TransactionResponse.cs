@@ -8,4 +8,6 @@ public sealed record TransactionResponse(
     string Ticker, 
     decimal LimitPrice, 
     TransactionType Type, 
-    int Quantity);
+    int Quantity,
+    DateTime CreatedOnUtc,
+    DateTime? ModifiedOnUtc);

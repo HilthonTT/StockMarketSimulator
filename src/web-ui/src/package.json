@@ -16,6 +16,7 @@
     "chart.js": "^4.4.8",
     "jwt-decode": "^4.0.0",
     "notyf": "^3.10.0",
+    "uuid": "^11.1.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {

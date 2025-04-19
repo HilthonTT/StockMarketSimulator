@@ -1,7 +1,8 @@
 import axios from "axios";
+import { v4 as uuidv4 } from "uuid";
 
 import { config } from "../utils/config.js";
-import { extractJwt } from "../utils/auth.js";
+import { extractJwt, extractUserInfo } from "../utils/auth.js";
 
 /**
  * @typedef {Object} BuyTransactionRequest
@@ -15,6 +16,26 @@ import { extractJwt } from "../utils/auth.js";
  * @property {string} userId
  * @property {string} ticker
  * @property {number} quantity
+ */
+
+/**
+ * @typedef {Object} TransactionResponse
+ * @property {string} id
+ * @property {string} userId
+ * @property {string} ticker
+ * @property {number} limitPrice
+ * @property {number} type
+ * @property {number} quantity
+ */
+
+/**
+ * @typedef {Object} PagedTransactionResponse
+ * @property {TransactionResponse[]} items
+ * @property {number} page
+ * @property {number} pageSize
+ * @property {number} totalCount
+ * @property {boolean} hasNextPage
+ * @property {boolean} hasPreviousPage
  */
 
 /**
@@ -37,6 +58,7 @@ export async function buyTransaction(request) {
     await axios.post(url, request, {
       headers: {
         Authorization: `Bearer ${jwt}`,
+        "Idempotence-Key": uuidv4(),
       },
     });
 
@@ -67,6 +89,7 @@ export async function sellTransaction(request) {
     await axios.post(url, request, {
       headers: {
         Authorization: `Bearer ${jwt}`,
+        "Idempotence-Key": uuidv4(),
       },
     });
 
@@ -74,5 +97,43 @@ export async function sellTransaction(request) {
   } catch (error) {
     console.error(error);
     return { error: "Something went wrong!" };
+  }
+}
+
+/**
+ * Fetches paginated transactions for the current user.
+ *
+ * @param {number} [page=1] - The current page number
+ * @param {number} [pageSize=10] - Number of transactions per page
+ * @returns {Promise<PagedTransactionResponse|null>} The paginated transaction response or null on error
+ */
+export async function getTransactions(page = 1, pageSize = 10) {
+  try {
+    const jwt = extractJwt();
+    if (!jwt) {
+      return null;
+    }
+
+    const userInfo = extractUserInfo();
+    if (!userInfo) {
+      return null;
+    }
+
+    const url = new URL(
+      `${config.baseApiUrl}/api/v1/users/${userInfo.id}/transactions`
+    );
+    url.searchParams.set("page", page.toString());
+    url.searchParams.set("pageSize", pageSize.toString());
+
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    return null;
   }
 }
