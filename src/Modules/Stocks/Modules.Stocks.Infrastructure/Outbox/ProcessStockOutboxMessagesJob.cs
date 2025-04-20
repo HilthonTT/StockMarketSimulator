@@ -62,7 +62,7 @@ public sealed class ProcessStockOutboxMessagesJob(
         {
             const string updateSql =
                 """
-                UPDATE users.outbox_messages
+                UPDATE stocks.outbox_messages
                 SET processed_on_utc = v.processed_on_utc,
                     error = v.error
                 FROM (VALUES

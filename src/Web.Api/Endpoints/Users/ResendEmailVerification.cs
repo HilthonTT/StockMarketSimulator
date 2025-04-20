@@ -3,6 +3,7 @@ using Modules.Users.Application.Users.ResendEmailVerification;
 using Modules.Users.Contracts.Users;
 using SharedKernel;
 using Web.Api.Extensions;
+using Web.Api.Features;
 using Web.Api.Infrastructure;
 
 namespace Web.Api.Endpoints.Users;
@@ -22,6 +23,7 @@ internal sealed class ResendEmailVerification : IEndpoint
 
             return result.Match(Results.NoContent, CustomResults.Problem);
         })
-        .WithTags(Tags.Users);
+        .WithTags(Tags.Users)
+        .RequireFeature(FeatureFlags.UseV1UsersApi);
     }
 }

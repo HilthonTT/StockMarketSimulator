@@ -52,7 +52,11 @@ public static class ServiceCollectionExtensions
         {
             options.DefaultApiVersion = new ApiVersion(1);
             options.ApiVersionReader = new UrlSegmentApiVersionReader();
-        }).AddApiExplorer(options =>
+            options.AssumeDefaultVersionWhenUnspecified = true;
+            options.ReportApiVersions = true;
+        })
+        .AddMvc()
+        .AddApiExplorer(options =>
         {
             options.GroupNameFormat = "'v'V";
             options.SubstituteApiVersionInUrl = true;

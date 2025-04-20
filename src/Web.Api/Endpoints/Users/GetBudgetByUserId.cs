@@ -4,6 +4,7 @@ using Modules.Budgeting.Contracts.Budgets;
 using Modules.Users.Domain.Enums;
 using SharedKernel;
 using Web.Api.Extensions;
+using Web.Api.Features;
 using Web.Api.Infrastructure;
 
 namespace Web.Api.Endpoints.Users;
@@ -26,6 +27,7 @@ internal sealed class GetBudgetByUserId : IEndpoint
         .WithOpenApi()
         .WithTags(Tags.Users)
         .HasPermission(Permission.Read, Permission.Write)
-        .RequireRateLimiting("token");
+        .RequireRateLimiting("token")
+        .RequireFeature(FeatureFlags.UseV1UsersApi);
     }   
 }

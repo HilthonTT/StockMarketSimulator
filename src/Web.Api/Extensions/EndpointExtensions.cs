@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.FeatureManagement;
 using Modules.Users.Domain.Enums;
 using System.Reflection;
 using Web.Api.Endpoints;
@@ -41,5 +42,21 @@ public static class EndpointExtensions
         string[] permissionNames = [.. permissions.Select(p => p.ToString())];
 
         return app.RequireAuthorization(permissionNames);
+    }
+
+    public static RouteHandlerBuilder RequireFeature(this RouteHandlerBuilder app, string featureName)
+    {
+        return app.AddEndpointFilter(async (context, next) =>
+        {
+            IFeatureManager featureManager = 
+                context.HttpContext.RequestServices.GetRequiredService<IFeatureManager>();
+
+            if (!await featureManager.IsEnabledAsync(featureName, context))
+            {
+                return Results.NotFound($"Feature '{featureName}' is disabled");
+            }
+
+            return await next(context);
+        });
     }
 }

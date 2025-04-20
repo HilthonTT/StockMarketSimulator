@@ -11,4 +11,12 @@ internal sealed class UserContext(IHttpContextAccessor httpContextAccessor) : IU
             .User
             .GetUserId() ??
         throw new ApplicationException("User context is unavailable");
+
+    public bool IsAuthenticated =>
+        httpContextAccessor
+            .HttpContext?
+            .User
+            .Identity?
+            .IsAuthenticated ??
+        throw new ApplicationException("User context is unavailable");
 }

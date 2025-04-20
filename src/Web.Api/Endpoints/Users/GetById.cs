@@ -4,6 +4,7 @@ using Modules.Users.Contracts.Users;
 using Modules.Users.Domain.Enums;
 using SharedKernel;
 using Web.Api.Extensions;
+using Web.Api.Features;
 using Web.Api.Infrastructure;
 
 namespace Web.Api.Endpoints.Users;
@@ -25,6 +26,7 @@ internal sealed class GetById : IEndpoint
         })
         .WithOpenApi()
         .WithTags(Tags.Users)
-        .HasPermission(Permission.Write, Permission.Read);
+        .HasPermission(Permission.Write, Permission.Read)
+        .RequireFeature(FeatureFlags.UseV1UsersApi);
     }
 }

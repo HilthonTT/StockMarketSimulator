@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.FeatureManagement;
 using System.Diagnostics;
+using Web.Api.Features;
 using Web.Api.Infrastructure;
 using Web.Api.Middleware;
 
@@ -16,6 +18,9 @@ public static class DependencyInjection
         services.AddExceptionHandling();
         services.AddMiddlewares();
         services.ConfigureRateLimiter();
+
+        services.AddFeatureManagement()
+            .WithTargeting<UserTargetingContext>();
 
         return services;
     }

@@ -3,6 +3,7 @@ using Modules.Users.Application.Users;
 using Modules.Users.Application.Users.VerifyEmail;
 using SharedKernel;
 using Web.Api.Extensions;
+using Web.Api.Features;
 using Web.Api.Infrastructure;
 
 namespace Web.Api.Endpoints.Users;
@@ -24,6 +25,7 @@ internal sealed class VerifyEmail : IEndpoint
         })
         .WithOpenApi()
         .WithTags(Tags.Users)
-        .WithName(UserEndpoints.VerifyEmail);
+        .WithName(UserEndpoints.VerifyEmail)
+        .RequireFeature(FeatureFlags.UseV1UsersApi);
     }
 }

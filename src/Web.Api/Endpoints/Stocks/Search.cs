@@ -6,6 +6,7 @@ using Modules.Stocks.Contracts.Stocks;
 using Modules.Users.Domain.Enums;
 using SharedKernel;
 using Web.Api.Extensions;
+using Web.Api.Features;
 using Web.Api.Infrastructure;
 
 namespace Web.Api.Endpoints.Stocks;
@@ -30,6 +31,7 @@ internal sealed class Search : IEndpoint
         .WithOpenApi()
         .WithTags(Tags.Stocks)
         .HasPermission(Permission.Read)
-        .RequireRateLimiting("token");
+        .RequireRateLimiting("token")
+        .RequireFeature(FeatureFlags.UseV1StocksApi);
     }
 }

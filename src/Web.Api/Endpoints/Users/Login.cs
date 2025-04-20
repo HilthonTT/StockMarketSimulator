@@ -3,6 +3,7 @@ using Modules.Users.Application.Users.Login;
 using Modules.Users.Contracts.Users;
 using SharedKernel;
 using Web.Api.Extensions;
+using Web.Api.Features;
 using Web.Api.Infrastructure;
 
 namespace Web.Api.Endpoints.Users;
@@ -23,6 +24,7 @@ internal sealed class Login : IEndpoint
             return result.Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()
-        .WithTags(Tags.Users);
+        .WithTags(Tags.Users)
+        .RequireFeature(FeatureFlags.UseV1UsersApi);
     }
 }
