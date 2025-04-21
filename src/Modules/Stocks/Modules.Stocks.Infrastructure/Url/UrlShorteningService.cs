@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Security.Cryptography;
 using Application.Abstractions.Caching;
 using Application.Abstractions.Data;
 using Dapper;
@@ -6,6 +7,8 @@ using Microsoft.Extensions.Logging;
 using Modules.Stocks.Application.Abstractions.Url;
 using Modules.Stocks.Domain.Entities;
 using Npgsql;
+using Polly;
+using Polly.Retry;
 using SharedKernel;
 
 namespace Modules.Stocks.Infrastructure.Url;
@@ -17,6 +20,14 @@ internal sealed class UrlShorteningService(
     IDateTimeProvider dateTimeProvider) : IUrlShorteningService
 {
     private const int MaxRetries = 3;
+
+    private readonly AsyncRetryPolicy<string> _retryPolicy = Policy<string>
+        .Handle<PostgresException>(ex => ex.SqlState == PostgresErrorCodes.UniqueViolation)
+        .RetryAsync(MaxRetries, onRetry: (exception, retryCount, context) =>
+        {
+            logger.LogWarning("Short code collision occurred. Retrying... (Attempt {Attempt} of {MaxRetries})",
+                retryCount, MaxRetries);
+        });
 
     public async Task<string?> GetOriginalUrlAsync(string shortCode, CancellationToken cancellationToken = default)
     {
@@ -44,56 +55,35 @@ internal sealed class UrlShorteningService(
         return originalUrl;
     }
 
-    public async Task<string> ShortenUrlAsync(string originalUrl, CancellationToken cancellationToken = default)
+    public Task<string> ShortenUrlAsync(string originalUrl, CancellationToken cancellationToken = default)
     {
         using IDbConnection connection = dbConnectionFactory.GetOpenConnection();
 
-        for (int attempt = 0; attempt < MaxRetries; attempt++)
+        return _retryPolicy.ExecuteAsync(async () =>
         {
-            try
-            {
-                string shortCode = GenerateShortCode();
+            string shortCode = GenerateShortCode();
 
-                const string sql =
-                    """
-                    INSERT INTO stocks.shortened_urls (id, short_code, original_url, created_on_utc)
-                    VALUES (@Id, @ShortCode, @OriginalUrl, @CreatedOnUtc)
-                    RETURNING short_code;
-                    """;
+            const string sql =
+                """
+                INSERT INTO stocks.shortened_urls (id, short_code, original_url, created_on_utc)
+                VALUES (@Id, @ShortCode, @OriginalUrl, @CreatedOnUtc)
+                RETURNING short_code;
+                """;
 
-                string result = await connection.QuerySingleAsync<string>(
-                    sql,
-                    new 
-                    { 
-                        Id = Guid.CreateVersion7(), 
-                        ShortCode = shortCode,
-                        OriginalUrl = originalUrl,
-                        CreatedOnUtc = dateTimeProvider.UtcNow,
-                    });
-
-                await cacheService.SetAsync(shortCode, originalUrl, cancellationToken: cancellationToken);
-
-                return result;
-            }
-            catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.UniqueViolation)
-            {
-                if (attempt == MaxRetries)
+            string result = await connection.QuerySingleAsync<string>(
+                sql,
+                new
                 {
-                    logger.LogError(
-                        ex,
-                        "Failed to generate unique short code after {MaxRetries} attempts",
-                        MaxRetries);
+                    Id = Guid.CreateVersion7(),
+                    ShortCode = shortCode,
+                    OriginalUrl = originalUrl,
+                    CreatedOnUtc = dateTimeProvider.UtcNow,
+                });
 
-                    throw new InvalidOperationException("Failed to generate unique short code", ex);
-                }
+            await cacheService.SetAsync(shortCode, originalUrl, cancellationToken: cancellationToken);
 
-                logger.LogWarning("Short code collision occured. Retrying... (Attempt {Attempt} of {MaxRetries})",
-                    attempt + 1,
-                    MaxRetries);
-            }
-        }
-
-        throw new InvalidOperationException("Failed to generate unique short code");
+            return result;
+        });
     }
 
     public Task<IEnumerable<ShortenedUrl>> GetAllUrlsAsync(CancellationToken cancellationToken = default)
@@ -120,7 +110,15 @@ internal sealed class UrlShorteningService(
         const int length = 8;
         const string alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-        char[] chars = [.. Enumerable.Range(0, length).Select(_ => alphabet[Random.Shared.Next(alphabet.Length)])];
+        var bytes = new byte[length];
+        RandomNumberGenerator.Fill(bytes);
+
+        char[] chars = new char[length];
+
+        for (int i = 0; i < length; i++)
+        {
+            chars[i] = alphabet[bytes[i] % alphabet.Length];
+        }
 
         return new string(chars);
     }

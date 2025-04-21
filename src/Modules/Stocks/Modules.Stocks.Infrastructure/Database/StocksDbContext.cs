@@ -1,5 +1,7 @@
-﻿using Infrastructure.Database.Configurations;
+﻿using System.Data;
+using Infrastructure.Database.Configurations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Modules.Stocks.Application.Abstractions.Data;
 using Modules.Stocks.Domain.Entities;
 
@@ -18,5 +20,10 @@ public sealed class StocksDbContext(DbContextOptions<StocksDbContext> options)
         modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
 
         modelBuilder.HasDefaultSchema(Schemas.Stocks);
+    }
+
+    public async Task<IDbTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        return (await Database.BeginTransactionAsync(cancellationToken)).GetDbTransaction();
     }
 }

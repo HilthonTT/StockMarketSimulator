@@ -92,6 +92,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.IntegrationTest
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Api.FunctionalTests", "tests\Api.FunctionalTests\Api.FunctionalTests.csproj", "{6C69D554-D688-4440-AF36-4B437E236FF8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Modules.Stocks.BackgroundJobs", "src\Modules\Stocks\Modules.Stocks.BackgroundJobs\Modules.Stocks.BackgroundJobs.csproj", "{827409C5-6A0A-4820-A12A-5935875DE10E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -230,6 +232,10 @@ Global
 		{6C69D554-D688-4440-AF36-4B437E236FF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6C69D554-D688-4440-AF36-4B437E236FF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6C69D554-D688-4440-AF36-4B437E236FF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{827409C5-6A0A-4820-A12A-5935875DE10E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{827409C5-6A0A-4820-A12A-5935875DE10E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{827409C5-6A0A-4820-A12A-5935875DE10E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{827409C5-6A0A-4820-A12A-5935875DE10E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -274,6 +280,7 @@ Global
 		{A6D5B9B6-DBDB-4AE1-ADAE-CCED688D1E8C} = {7B1C7E13-1007-4A2E-B520-EEC97C976A73}
 		{A7066DAE-E2EF-4257-B646-4A1D1218FD28} = {7B1C7E13-1007-4A2E-B520-EEC97C976A73}
 		{6C69D554-D688-4440-AF36-4B437E236FF8} = {7B1C7E13-1007-4A2E-B520-EEC97C976A73}
+		{827409C5-6A0A-4820-A12A-5935875DE10E} = {116DFD56-9731-4B98-B843-865D9F7CF53C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CD593C20-A8F4-4A5C-961C-E5BA7D03D2BF}

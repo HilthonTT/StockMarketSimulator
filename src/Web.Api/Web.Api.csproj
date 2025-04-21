@@ -33,6 +33,7 @@
     <ProjectReference Include="..\Modules\Budgeting\Modules.Budgeting.Events\Modules.Budgeting.Events.csproj" />
     <ProjectReference Include="..\Modules\Budgeting\Modules.Budgeting.Infrastructure\Modules.Budgeting.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Stocks\Modules.Stocks.Application\Modules.Stocks.Application.csproj" />
+    <ProjectReference Include="..\Modules\Stocks\Modules.Stocks.BackgroundJobs\Modules.Stocks.BackgroundJobs.csproj" />
     <ProjectReference Include="..\Modules\Stocks\Modules.Stocks.Contracts\Modules.Stocks.Contracts.csproj" />
     <ProjectReference Include="..\Modules\Stocks\Modules.Stocks.Domain\Modules.Stocks.Domain.csproj" />
     <ProjectReference Include="..\Modules\Stocks\Modules.Stocks.Infrastructure\Modules.Stocks.Infrastructure.csproj" />

@@ -1,6 +1,7 @@
 ﻿using Infrastructure.Events;
 using Microsoft.Extensions.Options;
 using Modules.Budgeting.Infrastructure.Outbox;
+using Modules.Stocks.BackgroundJobs.Stocks;
 using Modules.Stocks.Infrastructure.Outbox;
 using Modules.Stocks.Infrastructure.Realtime;
 using Modules.Stocks.Infrastructure.Realtime.Options;
@@ -22,6 +23,7 @@ public static class BackgroundJobExtensions
             ConfigureRevokeExpiredTokensJob(configure);
             ConfigureStocksFeedUpdaterJob(configure, services);
             ConfigureIntegrationEventProcessorJob(configure);
+            ConfigureUpdateLatestStockPriceJob(configure);
         });
 
         services.AddQuartzHostedService(options =>
@@ -92,5 +94,15 @@ public static class BackgroundJobExtensions
             .AddJob<IntegrationEventProcessorJob>(jobKey)
             .AddTrigger(trigger => trigger.ForJob(jobKey).WithSimpleSchedule(
                 schedule => schedule.WithIntervalInSeconds(5).RepeatForever()));
+    }
+
+    private static void ConfigureUpdateLatestStockPriceJob(IServiceCollectionQuartzConfigurator configure)
+    {
+        JobKey jobKey = JobKey.Create(UpdateLatestStockPriceJob.Name);
+
+        configure
+            .AddJob<UpdateLatestStockPriceJob>(jobKey)
+            .AddTrigger(trigger => trigger.ForJob(jobKey).WithSimpleSchedule(
+                schedule => schedule.WithIntervalInMinutes(1).RepeatForever()));
     }
 }
