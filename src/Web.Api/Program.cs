@@ -17,6 +17,8 @@ using Modules.Users.Infrastructure;
 using Web.Api;
 using Web.Api.Extensions;
 
+const int apiVersion = 1;
+
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
@@ -51,7 +53,7 @@ builder.Services.AddEndpoints(Assembly.GetExecutingAssembly());
 WebApplication app = builder.Build();
 
 ApiVersionSet apiVersionSet = app.NewApiVersionSet()
-    .HasApiVersion(new ApiVersion(1))
+    .HasApiVersion(new ApiVersion(apiVersion))
     .ReportApiVersions()
     .Build();
 
@@ -98,6 +100,9 @@ app.UseStatusCodePages();
 
 app.UseRateLimiter();
 
+app.UseResponseCompression();
+
 await app.RunAsync();
 
+// REMARK: Required for functional and integration tests to work.
 public partial class Program;

@@ -6,7 +6,7 @@ namespace Web.Api.Idempotency;
 
 internal sealed class IdempotencyFilter : IEndpointFilter
 {
-    private const int CacheTimeInMinutes = 60;
+    private const int DefaultCacheTimeInMinutes = 60;
 
     public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
     {
@@ -40,7 +40,7 @@ internal sealed class IdempotencyFilter : IEndpointFilter
                 JsonSerializer.Serialize(response),
                 new DistributedCacheEntryOptions
                 {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(CacheTimeInMinutes)
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(DefaultCacheTimeInMinutes)
                 }
             );
         }

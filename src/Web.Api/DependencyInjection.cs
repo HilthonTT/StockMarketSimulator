@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.FeatureManagement;
 using System.Diagnostics;
+using System.IO.Compression;
 using Web.Api.Features;
 using Web.Api.Infrastructure;
 using Web.Api.Middleware;
@@ -21,6 +23,18 @@ public static class DependencyInjection
 
         services.AddFeatureManagement()
             .WithTargeting<UserTargetingContext>();
+
+        services.AddResponseCompression(options =>
+        {
+            options.EnableForHttps = true;
+            options.Providers.Add<BrotliCompressionProvider>();
+            options.MimeTypes = ResponseCompressionDefaults.MimeTypes;
+        });
+
+        services.Configure<BrotliCompressionProviderOptions>(options =>
+        {
+            options.Level = CompressionLevel.Fastest;
+        });
 
         return services;
     }

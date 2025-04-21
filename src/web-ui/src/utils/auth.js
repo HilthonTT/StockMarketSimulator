@@ -16,6 +16,11 @@ export function clearTokens() {
   localStorage.removeItem(REFRESH_TOKEN_KEY);
 }
 
+export function getJwt() {
+  const jwt = localStorage.getItem(ACCESS_TOKEN_KEY);
+  return jwt;
+}
+
 export function extractJwt() {
   const jwt = localStorage.getItem(ACCESS_TOKEN_KEY);
   if (!jwt) {

@@ -1,5 +1,6 @@
 ﻿using Application.Abstractions.Authentication;
 using Microsoft.AspNetCore.Http;
+using SharedKernel;
 
 namespace Infrastructure.Authentication;
 
@@ -10,7 +11,7 @@ internal sealed class UserContext(IHttpContextAccessor httpContextAccessor) : IU
             .HttpContext?
             .User
             .GetUserId() ??
-        throw new ApplicationException("User context is unavailable");
+        throw new UnauthorizedException("User context is unavailable");
 
     public bool IsAuthenticated =>
         httpContextAccessor
@@ -18,5 +19,5 @@ internal sealed class UserContext(IHttpContextAccessor httpContextAccessor) : IU
             .User
             .Identity?
             .IsAuthenticated ??
-        throw new ApplicationException("User context is unavailable");
+        throw new UnauthorizedException("User context is unavailable");
 }

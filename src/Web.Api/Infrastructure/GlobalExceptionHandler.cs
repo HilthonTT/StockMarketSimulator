@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using SharedKernel;
 
 namespace Web.Api.Infrastructure;
 
@@ -16,6 +17,7 @@ internal sealed class GlobalExceptionHandler(IProblemDetailsService problemDetai
             {
                 ArgumentException => StatusCodes.Status400BadRequest,
                 ApplicationException => StatusCodes.Status400BadRequest,
+                UnauthorizedException => StatusCodes.Status401Unauthorized,
                 _ => StatusCodes.Status500InternalServerError
             },
             Title = "An error occurred",

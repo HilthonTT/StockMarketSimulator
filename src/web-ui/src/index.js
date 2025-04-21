@@ -15,7 +15,7 @@ import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import { Notyf } from "notyf";
 
 import { config } from "./utils/config.js";
-import { getCurrentUser, clearTokens } from "./utils/auth.js";
+import { getCurrentUser, clearTokens, getJwt } from "./utils/auth.js";
 import {
   DARK_MODE,
   checkThemePreference,
@@ -119,7 +119,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   const notyf = new Notyf();
 
   const connection = new HubConnectionBuilder()
-    .withUrl(`${config.baseApiUrl}/stocks-feed`)
+    .withUrl(`${config.baseApiUrl}/stocks-feed`, {
+      accessTokenFactory: () => {
+        return getJwt();
+      },
+    })
     .configureLogging(LogLevel.Information)
     .withAutomaticReconnect()
     .build();
