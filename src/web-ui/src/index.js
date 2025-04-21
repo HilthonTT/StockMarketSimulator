@@ -1,3 +1,4 @@
+import flatpickr from "flatpickr";
 import { z } from "zod";
 import {
   Chart,
@@ -73,6 +74,11 @@ Chart.register(
  * @constant {number}
  */
 const FIVE_SECONDS_IN_MS = 5000;
+
+/**
+ * @constant {number}
+ */
+const PAGE_SIZE = 20;
 
 /**
  * @constant {number}
@@ -617,13 +623,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  async function loadTransactions(page = currentPage) {
+  /**
+   *
+   * @param {*} page
+   * @param {Object} [filters] - Optional filters for transactions
+   * @param {string} [filters.searchTerm] - A search string to filter results
+   * @param {Date} [filters.startDate] - Minimum transaction date
+   * @param {Date} [filters.endDate] - Maximum transaction date
+   * @returns {Promise<void>}
+   */
+  async function loadTransactions(page = currentPage, filters = {}) {
     const tbody = document.getElementById("trading-history-body");
     if (!tbody) {
       return;
     }
 
-    const pagedTransactions = await getTransactions(page);
+    const pagedTransactions = await getTransactions(page, PAGE_SIZE, filters);
     if (!pagedTransactions) {
       return;
     }
@@ -690,6 +705,82 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // updateBalance(totalGainOrLoss);
     updateChart(stockUpdate.price, stockUpdate.ticker);
+  }
+
+  let query;
+  let startDate;
+  let endDate;
+
+  flatpickr("#datePicker1", {
+    mode: "range",
+    onChange: async (selectedDates, dateStr, instance) => {
+      const [start, end] = selectedDates;
+
+      if (start) {
+        startDate = start;
+
+        document.getElementById("selectedDate1").textContent =
+          start.toDateString();
+      }
+
+      if (end) {
+        endDate = end;
+
+        document.getElementById("selectedDate2").textContent =
+          end.toDateString();
+      }
+
+      await loadTransactions(currentPage, {
+        searchTerm: query,
+        startDate,
+        endDate,
+      });
+    },
+  });
+
+  flatpickr("#datePicker2", {
+    mode: "range",
+    onChange: (selectedDates, dateStr, instance) => {
+      const [start, end] = selectedDates;
+
+      if (start) {
+        startDate = start;
+
+        document.getElementById("selectedDate1").textContent =
+          start.toDateString();
+      }
+
+      if (end) {
+        endDate = end;
+
+        document.getElementById("selectedDate2").textContent =
+          end.toDateString();
+      }
+    },
+  });
+
+  const transactionSearchInput = document.getElementById(
+    "transaction-search-input"
+  );
+
+  transactionSearchInput.addEventListener(
+    "input",
+    debounce(handleTransactionSearchInput, 500)
+  );
+
+  /**
+   * Handles user input in the search field.
+   * @param {InputEvent} event
+   */
+  async function handleTransactionSearchInput(event) {
+    const input = /** @type {HTMLInputElement} */ (event.target);
+    query = input.value.trim();
+
+    await loadTransactions(currentPage, {
+      searchTerm: query,
+      startDate,
+      endDate,
+    });
   }
 
   loadTransactions();

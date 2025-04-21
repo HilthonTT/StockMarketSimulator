@@ -14,6 +14,7 @@
     "@microsoft/signalr": "^8.0.7",
     "axios": "^1.8.4",
     "chart.js": "^4.4.8",
+    "flatpickr": "^4.6.13",
     "jwt-decode": "^4.0.0",
     "notyf": "^3.10.0",
     "uuid": "^11.1.0",

@@ -6,7 +6,7 @@ namespace Web.Api.Middleware;
 internal sealed class UserContextEnrichementMiddleware(ILogger<UserContextEnrichementMiddleware> logger) 
     : IMiddleware
 {
-    public async Task InvokeAsync(HttpContext context, RequestDelegate next)
+    public Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
         string? userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!string.IsNullOrWhiteSpace(userId))
@@ -20,12 +20,12 @@ internal sealed class UserContextEnrichementMiddleware(ILogger<UserContextEnrich
 
             using (logger.BeginScope(data))
             {
-                await next(context);
+                return next(context);
             }
         }
         else
         {
-            await next(context);
+            return next(context);
         }
     }
 }

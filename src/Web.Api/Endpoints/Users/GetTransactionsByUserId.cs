@@ -19,10 +19,13 @@ internal sealed class GetTransactionsByUserId : IEndpoint
            Guid userId,
            [FromQuery] int page,
            [FromQuery] int pageSize,
+           [FromQuery] string? searchTerm,
+           [FromQuery] DateTime? StartDate,
+           [FromQuery] DateTime? EndDate,
            ISender sender,
            CancellationToken cancellationToken = default) =>
         {
-            var query = new GetTransactionsByUserIdQuery(userId, page, pageSize);
+            var query = new GetTransactionsByUserIdQuery(userId, page, pageSize, searchTerm, StartDate, EndDate);
 
             Result<PagedList<TransactionResponse>> result = await sender.Send(query, cancellationToken);
 

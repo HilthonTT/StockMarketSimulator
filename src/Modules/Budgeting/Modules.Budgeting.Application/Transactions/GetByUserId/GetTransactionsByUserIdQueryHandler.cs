@@ -23,8 +23,25 @@ internal sealed class GetTransactionsByUserIdQueryHandler(
         }
 
         IQueryable<Transaction> transactionQuery = dbContext.Transactions.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+        {
+            transactionQuery = transactionQuery.Where(t => t.Ticker.ToLower().Contains(request.SearchTerm.ToLower()));
+        }
+
+        if (request.StartDate is not null)
+        {
+            transactionQuery = transactionQuery.Where(t => t.CreatedOnUtc >= request.StartDate);
+        }
+
+        if (request.EndDate is not null)
+        {
+            transactionQuery = transactionQuery.Where(t => t.CreatedOnUtc <= request.EndDate);
+        }
+
         IQueryable<TransactionResponse> transactionResponsesQuery = transactionQuery
             .Where(t => t.UserId == request.UserId)
+            .OrderByDescending(t => t.CreatedOnUtc)
             .Select(t => new TransactionResponse(
                 t.Id,
                 t.UserId,

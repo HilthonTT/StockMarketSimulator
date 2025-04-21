@@ -105,9 +105,13 @@ export async function sellTransaction(request) {
  *
  * @param {number} [page=1] - The current page number
  * @param {number} [pageSize=10] - Number of transactions per page
+ * @param {Object} [filters] - Optional filters for transactions
+ * @param {string} [filters.searchTerm] - A search string to filter results
+ * @param {Date} [filters.startDate] - Minimum transaction date
+ * @param {Date} [filters.endDate] - Maximum transaction date
  * @returns {Promise<PagedTransactionResponse|null>} The paginated transaction response or null on error
  */
-export async function getTransactions(page = 1, pageSize = 10) {
+export async function getTransactions(page = 1, pageSize = 10, filters = {}) {
   try {
     const jwt = extractJwt();
     if (!jwt) {
@@ -124,6 +128,18 @@ export async function getTransactions(page = 1, pageSize = 10) {
     );
     url.searchParams.set("page", page.toString());
     url.searchParams.set("pageSize", pageSize.toString());
+
+    if (filters.searchTerm) {
+      url.searchParams.set("searchTerm", filters.searchTerm);
+    }
+
+    if (filters.startDate instanceof Date) {
+      url.searchParams.set("startDate", filters.startDate.toISOString());
+    }
+
+    if (filters.endDate instanceof Date) {
+      url.searchParams.set("endDate", filters.endDate.toISOString());
+    }
 
     const response = await axios.get(url, {
       headers: {
