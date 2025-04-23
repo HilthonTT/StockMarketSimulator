@@ -10,6 +10,10 @@ public sealed class ShortenedUrl : Entity, IAuditable
 
     private ShortenedUrl(Guid id, string shortCode, string originalUrl)
     {
+        Ensure.NotNullOrEmpty(id, nameof(id));
+        Ensure.NotNullOrEmpty(shortCode, nameof(shortCode));
+        Ensure.NotNullOrEmpty(originalUrl, nameof(originalUrl));
+
         Id = id;
         ShortCode = shortCode;
         OriginalUrl = originalUrl;

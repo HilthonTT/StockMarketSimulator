@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Modules.Budgeting.Infrastructure.Database;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Modules.Budgeting.Infrastructure.Database.Migrations
 {
     [DbContext(typeof(BudgetingDbContext))]
-    partial class BudgetingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250423141227_Add_AuditLogs")]
+    partial class Add_AuditLogs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -111,7 +114,7 @@ namespace Modules.Budgeting.Infrastructure.Database.Migrations
 
                     b.HasIndex("IsDeleted")
                         .HasDatabaseName("ix_audit_logs_is_deleted")
-                        .HasFilter("is_deleted = true");
+                        .HasFilter("is_deleted = 0");
 
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_audit_logs_user_id");

@@ -8,4 +8,6 @@ public interface IDbContext
     DbSet<Transaction> Transactions { get; }
 
     DbSet<Budget> Budgets { get; }
+
+    DbSet<AuditLog> AuditLogs { get; }
 }

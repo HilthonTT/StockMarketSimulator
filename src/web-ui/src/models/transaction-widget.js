@@ -89,6 +89,8 @@ export class TransactionWidget {
     widget.className =
       "even:bg-gray-100 dark:even:bg-[#292B36] text-black dark:text-white hover:bg-gray-200 dark:hover:bg-[#2C2E39] transition";
 
+    const totalPrice = this.limitPrice * this.quantity;
+
     widget.innerHTML = `
         <td class="py-3 px-4">
         ${this.createdOnUtc.toLocaleString("en-US", {
@@ -111,7 +113,7 @@ export class TransactionWidget {
         </td>
         <td class="py-3 px-4">$${this.limitPrice.toFixed(2)}</td>
         <td class="py-3 px-4">${this.quantity}</td>
-        <td class="py-3 px-4">${this.limitPrice.toFixed(2)}</td>
+        <td class="py-3 px-4">${totalPrice.toFixed(2)}</td>
         <td class="py-3 px-4 stock-price">Loading...</td>
         `;
 

@@ -703,6 +703,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         nextButton.classList.remove("opacity-50", "cursor-not-allowed");
       }
     }
+
+    const paginationInfo = document.getElementById("pagination-info");
+    if (paginationInfo) {
+      const totalPages = Math.ceil(
+        pagedTransactions.totalCount / pagedTransactions.pageSize
+      );
+      paginationInfo.innerHTML = `${pagedTransactions.page} of ${totalPages}`;
+    }
   }
 
   function calculateTransactionChange(transactionWidget, newPrice) {

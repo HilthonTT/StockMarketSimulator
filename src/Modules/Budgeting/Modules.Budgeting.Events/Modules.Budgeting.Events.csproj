@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Modules.Budgeting.Application\Modules.Budgeting.Application.csproj" />
+    <ProjectReference Include="..\Modules.Budgeting.BackgroundJobs\Modules.Budgeting.BackgroundJobs.csproj" />
     <ProjectReference Include="..\Modules.Budgeting.Domain\Modules.Budgeting.Domain.csproj" />
   </ItemGroup>
 

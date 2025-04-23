@@ -33,6 +33,7 @@ public static class DependencyInjection
     {
         services.TryAddSingleton<InsertOutboxMessagesInterceptor>();
         services.TryAddSingleton<UpdateAuditableInterceptor>();
+        services.TryAddSingleton<SoftDeleteInterceptor>();
 
         string? connectionString = configuration.GetConnectionString(ConfigurationNames.Database);
         Ensure.NotNullOrEmpty(connectionString, nameof(connectionString));
@@ -44,7 +45,8 @@ public static class DependencyInjection
                .UseSnakeCaseNamingConvention()
                .AddInterceptors(
                    sp.GetRequiredService<InsertOutboxMessagesInterceptor>(),
-                   sp.GetRequiredService<UpdateAuditableInterceptor>()));
+                   sp.GetRequiredService<UpdateAuditableInterceptor>(),
+                   sp.GetRequiredService<SoftDeleteInterceptor>()));
 
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<BudgetingDbContext>());
 
@@ -52,6 +54,7 @@ public static class DependencyInjection
 
         services.AddScoped<IBudgetRepository, BudgetRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
+        services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 
         return services;
     }
