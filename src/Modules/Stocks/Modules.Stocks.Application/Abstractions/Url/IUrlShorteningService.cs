@@ -9,4 +9,6 @@ public interface IUrlShorteningService
     Task<string?> GetOriginalUrlAsync(string shortCode, CancellationToken cancellationToken = default);
 
     Task<IEnumerable<ShortenedUrl>> GetAllUrlsAsync(CancellationToken cancellationToken = default);
+
+    Task<string> ShortenUrlAsync(string shortCode, string originalUrl, CancellationToken cancellationToken = default);
 }

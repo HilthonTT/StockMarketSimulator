@@ -236,7 +236,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const tickers = {};
 
   /** @type {string} */
-  let selectedTicker = "";
+  let firstTickerInTransactions = "";
+
+  /** @type {string} */
+  let selectedTickerInSearchResults = "";
 
   /**
    * Updates the chart with new price data.
@@ -268,7 +271,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     chart.data.labels = Array.from({ length: 30 }, (_, i) => i + 1); // Keep x-axis consistent
 
     chart.data.datasets = Object.entries(tickers)
-      .filter(([name]) => name === selectedTicker) // Keep only selected ticker
+      .filter(([name]) => name === firstTickerInTransactions) // Keep only selected ticker
       .map(([name, prices], index) => {
         const color = COLORS[index % COLORS.length]; // Cycle colors if needed
         return {
@@ -377,6 +380,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         item.addEventListener("click", async () => {
           const stockPrice = await fetchStockPrice(ticker);
 
+          selectedTickerInSearchResults = ticker;
+
           openModal(ticker, stockPrice?.price || 0);
         });
       }
@@ -388,6 +393,18 @@ document.addEventListener("DOMContentLoaded", async () => {
       searchResults.classList.add("hidden");
     }
   }
+
+  const tickerMoreInfoButton = document.getElementById(
+    "ticker-more-info-button"
+  );
+  tickerMoreInfoButton.addEventListener("click", async () => {
+    if (!selectedTickerInSearchResults) {
+      return;
+    }
+
+    const urlToOpen = `${config.baseApiUrl}/api/v1/shorten/ticker/${selectedTickerInSearchResults}`;
+    window.open(urlToOpen, "_blank");
+  });
 
   let isBuying = true;
 
@@ -664,7 +681,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const firstTransaction = pagedTransactions.items[0];
 
     if (firstTransaction) {
-      selectedTicker = firstTransaction.ticker;
+      firstTickerInTransactions = firstTransaction.ticker;
     }
 
     if (previousButton) {
