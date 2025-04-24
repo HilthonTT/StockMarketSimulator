@@ -11,6 +11,4 @@ public interface INotificationService
     Task SendWelcomeAsync(WelcomeEmail request, CancellationToken cancellationToken = default);
 
     Task SendPasswordChangedAsync(PasswordChangedEmail request, CancellationToken cancellationToken = default);
-
-    Task SendSellConfirmedAsync(SellConfirmedEmail request, CancellationToken cancellationToken = default);
 }

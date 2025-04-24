@@ -1,7 +1,7 @@
 ﻿using Application.Abstractions.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using Modules.Budgeting.Application.Transactions.Buy;
-using Modules.Budgeting.BackgroundJobs.Transactions.Bought;
+using Modules.Budgeting.BackgroundJobs.Transactions;
 using Modules.Budgeting.Domain.Entities;
 using Modules.Budgeting.Domain.Errors;
 using Modules.Budgeting.Domain.Repositories;

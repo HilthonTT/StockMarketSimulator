@@ -58,27 +58,6 @@ internal sealed class NotificationService(IEmailService emailService) : INotific
         return emailService.SendEmailAsync(mailRequest, true, cancellationToken);
     }
 
-    public Task SendSellConfirmedAsync(SellConfirmedEmail request, CancellationToken cancellationToken = default)
-    {
-        var mailRequest = new MailRequest(
-            request.EmailTo,
-            "Your Item Has Been Sold!",
-            $"""
-        <p>Dear {request.EmailTo},</p>
-        <p>Great news! Your item has been successfully sold.</p>
-        <p><strong>Sale Details:</strong></p>
-        <ul>
-            <li>Ticker: {request.Ticker}</li>
-            <li>Amount Earned: {request.TotalAmountEarned:C}</li>
-            <li>Date of Sale: {request.SaleDate:MMMM dd, yyyy}</li>
-        </ul>
-        <p>The earnings have been added to your account.</p>
-        <p>Thank you for using our platform!<br>The Team</p>
-        """);
-
-        return emailService.SendEmailAsync(mailRequest, true, cancellationToken);
-    }
-
     public Task SendWelcomeAsync(WelcomeEmail request, CancellationToken cancellationToken = default)
     {
         var mailRequest = new MailRequest(

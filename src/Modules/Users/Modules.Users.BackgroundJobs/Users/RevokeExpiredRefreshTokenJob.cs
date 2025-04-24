@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Quartz;
 using SharedKernel;
 
-namespace Modules.Users.BackgroundJobs.Users.RevokeExpiredRefreshTokens;
+namespace Modules.Users.BackgroundJobs.Users;
 
 [DisallowConcurrentExecution]
 public sealed class RevokeExpiredRefreshTokenJob(
