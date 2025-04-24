@@ -6,12 +6,14 @@ using HealthChecks.UI.Client;
 using Infrastructure;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Modules.Budgeting.Application;
+using Modules.Budgeting.BackgroundJobs;
 using Modules.Budgeting.Events;
 using Modules.Budgeting.Infrastructure;
 using Modules.Stocks.Application;
 using Modules.Stocks.Infrastructure;
 using Modules.Stocks.Infrastructure.Realtime;
 using Modules.Users.Application;
+using Modules.Users.BackgroundJobs;
 using Modules.Users.Events;
 using Modules.Users.Infrastructure;
 using Web.Api;
@@ -34,7 +36,8 @@ builder.Services
 builder.Services
     .AddUsersApplication()
     .AddUsersInfrastructure(builder.Configuration)
-    .AddUsersEvents();
+    .AddUsersEvents()
+    .AddUsersBackgroundJobs();
 
 builder.Services
     .AddStocksApplication()
@@ -43,7 +46,8 @@ builder.Services
 builder.Services
     .AddBudgetingApplication()
     .AddBudgetingInfrastructure(builder.Configuration)
-    .AddBudgetingEvents();
+    .AddBudgetingEvents()
+    .AddBudgetingBackgroundJobs();
 
 builder.Services.AddBackgroundJobs();
 builder.Services.AddVersioning();
