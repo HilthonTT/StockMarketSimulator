@@ -5,7 +5,7 @@ using Modules.Stocks.BackgroundJobs.Stocks;
 using Modules.Stocks.Infrastructure.Outbox;
 using Modules.Stocks.Infrastructure.Realtime;
 using Modules.Stocks.Infrastructure.Realtime.Options;
-using Modules.Users.BackgroundJobs.Users;
+using Modules.Users.BackgroundJobs.Users.RevokeExpiredRefreshTokens;
 using Modules.Users.Infrastructure.Outbox;
 using Quartz;
 

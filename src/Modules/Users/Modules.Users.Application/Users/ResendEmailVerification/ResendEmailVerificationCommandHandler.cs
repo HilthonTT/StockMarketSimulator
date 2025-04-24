@@ -1,7 +1,7 @@
 ﻿using Application.Abstractions.Messaging;
 using Modules.Users.Application.Abstractions.Authentication;
 using Modules.Users.Application.Abstractions.Data;
-using Modules.Users.BackgroundJobs.Users;
+using Modules.Users.BackgroundJobs.Users.EmailVerification;
 using Modules.Users.Domain.Entities;
 using Modules.Users.Domain.Errors;
 using Modules.Users.Domain.Repositories;

@@ -1,7 +1,7 @@
 ﻿using Application.Abstractions.Messaging;
 using Microsoft.Extensions.DependencyInjection;
-using Modules.Budgeting.Application.Transactions.Buy;
-using Modules.Budgeting.BackgroundJobs.Transactions.Bought;
+using Modules.Budgeting.Application.Transactions.Sell;
+using Modules.Budgeting.BackgroundJobs.Transactions.Sold;
 using Modules.Budgeting.Domain.Entities;
 using Modules.Budgeting.Domain.Errors;
 using Modules.Budgeting.Domain.Repositories;
@@ -9,19 +9,20 @@ using Modules.Users.Api;
 using Quartz;
 using SharedKernel;
 
-namespace Modules.Budgeting.Events.Transactions.Bought;
+namespace Modules.Budgeting.Events.Transactions.Sold;
 
-internal sealed class TransactionBoughtIntegrationEventHandler(
+internal sealed class TransactionSoldIntegrationEventHandler(
     IServiceScopeFactory serviceScopeFactory,
-    ISchedulerFactory schedulerFactory) : IIntegrationEventHandler<TransactionBoughtIntegrationEvent>
+    ISchedulerFactory schedulerFactory) : IIntegrationEventHandler<TransactionSoldIntegrationEvent>
 {
-    public async Task Handle(TransactionBoughtIntegrationEvent notification, CancellationToken cancellationToken)
+    public async Task Handle(TransactionSoldIntegrationEvent notification, CancellationToken cancellationToken)
     {
         using IServiceScope scope = serviceScopeFactory.CreateScope();
+
         var transactionRepository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
         var usersApi = scope.ServiceProvider.GetRequiredService<IUsersApi>();
 
-        Option<Transaction> optionTransaction = 
+        Option<Transaction> optionTransaction =
             await transactionRepository.GetByIdAsync(notification.TransactionId, cancellationToken);
 
         if (!optionTransaction.IsSome)
@@ -41,6 +42,7 @@ internal sealed class TransactionBoughtIntegrationEventHandler(
 
         var jobData = new JobDataMap
         {
+            { "ticker", transaction.Ticker },
             { "transaction-id", notification.TransactionId },
             { "total-amount", transaction.TotalAmount },
             { "quantity", transaction.Quantity },
@@ -50,10 +52,10 @@ internal sealed class TransactionBoughtIntegrationEventHandler(
             { "user-id", user.Id },
         };
 
-        IJobDetail job = JobBuilder.Create<TransactionBoughtJob>()
-            .WithIdentity($"notifier-{Guid.CreateVersion7()}", "email-notifier")
-            .SetJobData(jobData)
-            .Build();
+        IJobDetail job = JobBuilder.Create<TransactionSoldJob>()
+           .WithIdentity($"notifier-{Guid.CreateVersion7()}", "email-notifier")
+           .SetJobData(jobData)
+           .Build();
 
         ITrigger trigger = TriggerBuilder.Create()
             .WithIdentity($"trigger-{Guid.CreateVersion7()}", "email-notifier")
