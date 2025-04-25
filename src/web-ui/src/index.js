@@ -490,6 +490,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     modal.classList.remove("hidden");
+    modal.classList.add("flex");
 
     const transactionForm = document.getElementById("transaction-form");
     if (transactionForm) {

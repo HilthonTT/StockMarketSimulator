@@ -8,6 +8,7 @@ import {
   checkThemePreference,
 } from "../utils/theme.js";
 import { config } from "../utils/config.js";
+import { getCurrentUser } from "../utils/auth.js";
 
 const DELAY_MS = 1000; // 1s
 
@@ -23,7 +24,7 @@ const registrationSchema = z
     path: ["confirmPassword"],
   });
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const notyf = new Notyf();
 
   const form = document.querySelector("form");
@@ -156,4 +157,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   checkThemePreference();
+
+  const currentUser = await getCurrentUser();
+  if (currentUser) {
+    window.location.href = "/";
+  }
 });

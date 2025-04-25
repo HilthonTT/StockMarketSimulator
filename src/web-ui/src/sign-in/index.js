@@ -8,7 +8,7 @@ import {
   checkThemePreference,
 } from "../utils/theme.js";
 import { config } from "../utils/config.js";
-import { saveTokensToLocalStorage } from "../utils/auth.js";
+import { getCurrentUser, saveTokensToLocalStorage } from "../utils/auth.js";
 
 const DELAY_MS = 1000; // 1s
 
@@ -17,7 +17,7 @@ const loginSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const form = document.querySelector("form");
 
   const darkModeToggle = document.getElementById("dark-mode-toggle");
@@ -134,4 +134,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   checkThemePreference();
+
+  const currentUser = await getCurrentUser();
+  if (currentUser) {
+    window.location.href = "/";
+  }
 });

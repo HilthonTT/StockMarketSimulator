@@ -4,12 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Home</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        darkMode: "class",
-      };
-    </script>
+    <link href="./globals.css" rel="stylesheet" />
     <link
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet"
@@ -96,7 +91,7 @@
       <!-- Modal -->
       <div
         id="modal"
-        class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center w-full z-50"
+        class="hidden fixed inset-0 bg-black/50 justify-center items-center w-full z-50"
       >
         <form
           class="p-6 rounded-xl shadow-lg w-[450px] bg-[#23242f] text-white"
