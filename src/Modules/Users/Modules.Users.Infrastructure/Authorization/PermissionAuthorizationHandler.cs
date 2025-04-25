@@ -1,6 +1,7 @@
 ﻿using Infrastructure.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
+using SharedKernel;
 
 namespace Modules.Users.Infrastructure.Authorization;
 
@@ -11,17 +12,24 @@ internal sealed class PermissionAuthorizationHandler(IServiceScopeFactory servic
         AuthorizationHandlerContext context,
         PermissionRequirement requirement)
     {
-        using IServiceScope scope = serviceScopeFactory.CreateScope();
-
-        PermissionProvider permissionProvider = scope.ServiceProvider.GetRequiredService<PermissionProvider>();
-
-        Guid userId = context.User.GetUserId();
-
-        HashSet<string> permissions = await permissionProvider.GetForUserIdAsync(userId);
-
-        if (permissions.Contains(requirement.Permission))
+        try
         {
-            context.Succeed(requirement);
+            using IServiceScope scope = serviceScopeFactory.CreateScope();
+
+            PermissionProvider permissionProvider = scope.ServiceProvider.GetRequiredService<PermissionProvider>();
+
+            Guid userId = context.User.GetUserId();
+
+            HashSet<string> permissions = await permissionProvider.GetForUserIdAsync(userId);
+
+            if (permissions.Contains(requirement.Permission))
+            {
+                context.Succeed(requirement);
+            }
+        }
+        catch (UnauthorizedException)
+        {
+            context.Fail();
         }
     }
 }
