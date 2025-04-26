@@ -91,4 +91,11 @@ public sealed class User : Entity, IAuditable
 
         _roles.Add(role);
     }
+
+    public void ChangeUsername(Username username)
+    {
+        Username = username;
+
+        Raise(new UserNameChangedDomainEvent(Id));
+    }
 }

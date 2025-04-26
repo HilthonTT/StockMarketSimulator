@@ -116,6 +116,8 @@ const transactionSchema = z.object({
 });
 
 document.addEventListener("DOMContentLoaded", async () => {
+  let budget;
+
   const notyf = new Notyf();
 
   const connection = new HubConnectionBuilder()
@@ -611,7 +613,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   async function loadBudget() {
-    const budget = await fetchBudget();
+    budget = await fetchBudget();
     if (!budget) {
       return;
     }
@@ -758,7 +760,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     return (newPrice - oldPrice) * quantity;
   }
 
-  async function handleStockPriceUpdate(stockUpdate) {
+  function handleStockPriceUpdate(stockUpdate) {
     const transactions = transactionWidgets.filter(
       (widget) => widget.ticker === stockUpdate.ticker
     );
@@ -767,12 +769,62 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     transactions.forEach((widget) => {
       const change = calculateTransactionChange(widget, stockUpdate.price);
-      totalGainOrLoss += change;
+
+      const soldStocks = widget.type === 0;
+      const boughtStocks = widget.type === 1;
+
+      if (soldStocks) {
+        totalGainOrLoss -= change;
+      } else if (boughtStocks) {
+        totalGainOrLoss += change;
+      }
+
       widget.updatePrice(stockUpdate.price);
     });
 
+    if (budget) {
+      updateBudgetBalance(totalGainOrLoss);
+    }
+
     // updateBalance(totalGainOrLoss);
     updateChart(stockUpdate.price, stockUpdate.ticker);
+  }
+
+  function updateElementText(id, text) {
+    const element = document.getElementById(id);
+    if (element) {
+      element.textContent = text;
+    }
+  }
+
+  function updateBudgetBalance(gainOrLoss) {
+    budget.buyingPower += gainOrLoss;
+
+    const formattedBuyingPower = `$${budget.buyingPower.toFixed(2)}`;
+
+    // Update main budget elements
+    updateElementText("current-balance", formattedBuyingPower);
+    updateElementText("buying-power", formattedBuyingPower);
+    updateElementText(
+      "buying-power-form",
+      `Buying Power: ${formattedBuyingPower}`
+    );
+
+    // Update the balance-change element
+    const balanceChangeElement = document.getElementById("balance-change");
+    if (balanceChangeElement) {
+      const changePercent =
+        (gainOrLoss / (budget.buyingPower - gainOrLoss)) * 100;
+      const sign = gainOrLoss >= 0 ? "+" : "-";
+      const colorClass = gainOrLoss >= 0 ? "text-emerald-500" : "text-red-500";
+
+      balanceChangeElement.textContent = `${sign}$${Math.abs(
+        gainOrLoss
+      ).toFixed(2)} (${sign}${Math.abs(changePercent).toFixed(2)}%)`;
+
+      // Update color
+      balanceChangeElement.className = `font-semibold ${colorClass}`;
+    }
   }
 
   let query;
