@@ -178,11 +178,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
+    const themeColors = {
+      primary: "rgb(59, 130, 246)", // Tailwind blue-500
+      secondary: "rgb(37, 99, 235)", // Tailwind blue-600
+      gray: "rgb(156, 163, 175)", // Tailwind gray-400
+      white: "rgb(255, 255, 255)", // Tailwind white
+      black: "rgb(0, 0, 0)", // Tailwind black
+    };
+
     chart = new Chart(chartElement, {
       type: "line",
       data: {
-        labels: [],
-        datasets: [],
+        labels: [], // Set your labels dynamically
+        datasets: [], // Set your datasets dynamically
       },
       options: {
         responsive: true,
@@ -190,9 +198,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         plugins: {
           legend: {
             display: true,
+            labels: {
+              color: themeColors.gray, // Customize legend text color to match theme
+              font: { size: 12 }, // Adjust font size for the legend
+            },
           },
           tooltip: {
             enabled: true,
+            backgroundColor: themeColors.primary, // Tooltip background color
+            titleColor: themeColors.white, // Tooltip title color
+            bodyColor: themeColors.white, // Tooltip body color
+            borderColor: themeColors.secondary, // Tooltip border color
+            borderWidth: 1, // Tooltip border width
           },
         },
         scales: {
@@ -202,29 +219,50 @@ document.addEventListener("DOMContentLoaded", async () => {
               display: false,
             },
             ticks: {
-              color: "rgb(156, 163, 175)", // Gray-400 in Tailwind
+              color: themeColors.gray, // Color for X axis ticks
               font: { size: 12 },
             },
           },
           y: {
             display: true,
             position: "right",
-            grid: { display: true, color: "rgba(156, 163, 175, 0.2)" },
+            grid: {
+              display: true,
+              color: "rgba(156, 163, 175, 0.2)", // Grid color for Y axis
+            },
             ticks: {
-              color: "rgb(156, 163, 175)", // Gray-400 in Tailwind
+              color: themeColors.gray, // Color for Y axis ticks
               font: { size: 10 },
               callback: function (value, index, values) {
+                // Format Y-axis tick values with dollar sign
                 if (index === 0 || index === values.length - 1) {
                   return "$" + value.toFixed(2);
                 }
-
                 return "";
               },
             },
           },
         },
-        // False to avoid funky animation updates in real time.
-        animation: false,
+        animation: false, // Disable animation to avoid performance issues
+        elements: {
+          line: {
+            borderColor: themeColors.primary, // Set line border color to match theme
+            borderWidth: 2, // Line border width
+            tension: 0.4, // Line tension for smooth curves
+          },
+          point: {
+            backgroundColor: themeColors.secondary, // Point color on the line
+            radius: 5, // Point size
+          },
+        },
+        layout: {
+          padding: {
+            top: 20,
+            right: 20,
+            bottom: 20,
+            left: 20,
+          },
+        },
       },
     });
   }
@@ -349,15 +387,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (items.length === 0) {
       searchResults.innerHTML =
-        "<div class='p-2 text-gray-400'>No results found.</div>";
+        "<div class='p-2 text-black'>No results found.</div>";
     } else {
       searchResults.innerHTML =
         items.length === 0
-          ? "<div class='p-2 text-gray-400'>No results found.</div>"
+          ? "<div class='p-2 text-black'>No results found.</div>"
           : items
               .map(
                 (item) =>
-                  `<div class="p-2 text-gray-300 hover:bg-gray-700 cursor-pointer" data-ticker="${item.ticker}">${item.ticker}</div>`
+                  `<div class="w-full text-left p-4 hover:bg-black transition-colors cursor-pointer hover:text-white flex items-center text-base font-medium" data-ticker="${item.ticker}">${item.ticker}</div>`
               )
               .join("");
     }

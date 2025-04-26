@@ -87,7 +87,7 @@ export class TransactionWidget {
     const widget = document.createElement("tr");
 
     widget.className =
-      "even:bg-gray-100 dark:even:bg-[#292B36] text-black dark:text-white hover:bg-gray-200 dark:hover:bg-[#2C2E39] transition";
+      "even:bg-gray-100 dark:even:bg-black text-black dark:text-white hover:bg-gray-200 dark:hover:bg-black/20 transition";
 
     const totalPrice = this.limitPrice * this.quantity;
 

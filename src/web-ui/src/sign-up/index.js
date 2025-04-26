@@ -38,33 +38,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
   });
 
-  const togglePassword = document.getElementById("togglePassword");
-  const passwordInput = document.getElementById("password");
   const submitButton = document.getElementById("submit");
-
-  togglePassword.addEventListener("click", () => {
-    if (passwordInput.type === "password") {
-      passwordInput.type = "text";
-      togglePassword.textContent = "🙈";
-    } else {
-      passwordInput.type = "password";
-      togglePassword.textContent = "👁";
-    }
-  });
-
-  const confirmPasswordInput = document.getElementById("confirm-password");
-  const toggleConfirmPassword = document.getElementById(
-    "toggleConfirmPassword"
-  );
-  toggleConfirmPassword.addEventListener("click", () => {
-    if (confirmPasswordInput.type === "password") {
-      confirmPasswordInput.type = "text";
-      toggleConfirmPassword.textContent = "🙈";
-    } else {
-      confirmPasswordInput.type = "password";
-      toggleConfirmPassword.textContent = "👁";
-    }
-  });
 
   form.addEventListener("submit", handleSubmit);
 
@@ -140,7 +114,32 @@ document.addEventListener("DOMContentLoaded", async () => {
         window.location.href = "/verify/index.html";
       }, DELAY_MS);
     } catch (error) {
-      alert("Something went wrong!");
+      if (axios.isAxiosError(error)) {
+        // Handle specific server validation error
+        const errorResponse = error.response?.data;
+
+        if (errorResponse?.errors) {
+          // Iterate through errors and display each one
+          errorResponse.errors.forEach((errorDetail) => {
+            if (
+              errorDetail.code === "EmailValidator" &&
+              errorDetail.description.includes("Email")
+            ) {
+              emailError.textContent = errorDetail.description;
+              emailError.classList.remove("hidden");
+            }
+            if (
+              errorDetail.code === "MinimumLengthValidator" &&
+              errorDetail.description.includes("Password")
+            ) {
+              passwordError.textContent = errorDetail.description;
+              passwordError.classList.remove("hidden");
+            }
+          });
+        }
+      } else {
+        notyf.error("An unexpected error occurred.");
+      }
     } finally {
       enableLoginButton();
     }

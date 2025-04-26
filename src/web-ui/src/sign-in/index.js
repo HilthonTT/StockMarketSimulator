@@ -18,7 +18,10 @@ const loginSchema = z.object({
 });
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const form = document.querySelector("form");
+  const notyf = new Notyf();
+
+  const form = document.getElementById("signin-form");
+  const submitButton = document.getElementById("submit");
 
   const darkModeToggle = document.getElementById("dark-mode-toggle");
   darkModeToggle.addEventListener("click", () => {
@@ -28,20 +31,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       DARK_MODE_STORAGE_KEY,
       document.documentElement.classList.contains(DARK_MODE)
     );
-  });
-
-  const togglePassword = document.getElementById("togglePassword");
-  const passwordInput = document.getElementById("password");
-  const submitButton = document.getElementById("submit");
-
-  togglePassword.addEventListener("click", () => {
-    if (passwordInput.type === "password") {
-      passwordInput.type = "text";
-      togglePassword.textContent = "🙈";
-    } else {
-      passwordInput.type = "password";
-      togglePassword.textContent = "👁";
-    }
   });
 
   form.addEventListener("submit", handleSubmit);
@@ -96,8 +85,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       const { accessToken, refreshToken } = response.data;
 
       if (accessToken && refreshToken) {
-        const notyf = new Notyf();
-
         saveTokensToLocalStorage(accessToken, refreshToken);
 
         notyf.success("You've logged in!");
@@ -107,16 +94,27 @@ document.addEventListener("DOMContentLoaded", async () => {
           window.location.href = "/index.html";
         }, DELAY_MS);
       } else {
-        alert("Missing tokens in response!");
+        notyf.error("Missing tokens in response!");
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        // You can customize this based on `error.response?.status`
-        alert(
-          "Login failed: " + (error.response?.data?.message || "Unknown error")
-        );
+        // Handle specific server error for User Not Found (404)
+        if (
+          error.response?.status === 404 &&
+          error.response?.data?.type ===
+            "https://tools.ietf.org/html/rfc7231#section-6.5.4" &&
+          error.response?.data?.title === "Users.NotFoundByEmail"
+        ) {
+          notyf.error("The user with the specified email was not found.");
+        } else {
+          // Generic error handling
+          notyf.error(
+            "Login failed: " +
+              (error.response?.data?.message || "Unknown error")
+          );
+        }
       } else {
-        alert("An unexpected error occurred.");
+        notyf.error("An unexpected error occurred.");
       }
     } finally {
       enableLoginButton();
