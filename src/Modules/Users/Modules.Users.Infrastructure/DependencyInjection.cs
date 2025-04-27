@@ -4,6 +4,7 @@ using Infrastructure;
 using Infrastructure.Database.Interceptors;
 using Infrastructure.Outbox;
 using Infrastructure.Validation;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -106,6 +107,8 @@ public static class DependencyInjection
         services.AddAuthorization();
 
         services.AddScoped<PermissionProvider>();
+
+        services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();
 
         services.AddTransient<IAuthorizationHandler, PermissionAuthorizationHandler>();
 

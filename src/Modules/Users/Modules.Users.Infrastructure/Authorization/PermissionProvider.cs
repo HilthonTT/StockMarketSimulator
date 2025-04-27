@@ -1,10 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Application.Abstractions.Caching;
+using Microsoft.EntityFrameworkCore;
 using Modules.Users.Domain.Entities;
 using Modules.Users.Infrastructure.Database;
 
 namespace Modules.Users.Infrastructure.Authorization;
 
-internal sealed class PermissionProvider(UsersDbContext context)
+internal sealed class PermissionProvider(UsersDbContext context, ICacheService cacheService)
 {
     public async Task<HashSet<string>> GetForUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
@@ -19,5 +20,32 @@ internal sealed class PermissionProvider(UsersDbContext context)
             .SelectMany(x => x)
             .SelectMany(x => x.Permissions)
             .Select(x => x.Name)];
+    }
+
+    public async Task<UserRolesResponse> GetRolesForUserAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        string cacheKey = $"auth:roles-{userId}";
+
+        UserRolesResponse? cachedRoles = 
+            await cacheService.GetAsync<UserRolesResponse>(cacheKey, cancellationToken);
+
+        if (cachedRoles is not null)
+        {
+            return cachedRoles;
+        }
+
+        UserRolesResponse roles = await context.Users
+            .AsNoTracking()
+            .Where(user => user.Id == userId)
+            .Select(user => new UserRolesResponse
+            {
+                Id = user.Id,
+                Roles = user.Roles.ToList()
+            })
+            .FirstAsync(cancellationToken);
+
+        await cacheService.SetAsync(cacheKey, roles, cancellationToken: cancellationToken);
+
+        return roles;
     }
 }
