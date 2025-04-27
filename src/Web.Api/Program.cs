@@ -77,7 +77,7 @@ if (app.Environment.IsDevelopment())
 
     app.ApplyMigrations();
 
-    app.UseCorsConfiguration(builder.Configuration);
+    // app.UseCorsConfiguration(builder.Configuration);
 }
 
 app.UseHttpsRedirection();
