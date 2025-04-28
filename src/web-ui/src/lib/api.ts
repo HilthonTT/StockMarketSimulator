@@ -1,0 +1,56 @@
+import fetch from "node-fetch";
+
+import { agent } from "@/trpc/init";
+import { SERVER_URL } from "@/constants";
+import { ProblemDetails } from "@/types";
+import { TRPCError } from "@trpc/server";
+
+interface FetchFromApiOptions {
+  accessToken?: string;
+  path: string;
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  body?: unknown;
+  queryParams?: Record<string, string | number | boolean>;
+}
+
+export async function fetchFromApi<T>({
+  accessToken,
+  path,
+  method = "GET",
+  body,
+  queryParams,
+}: FetchFromApiOptions): Promise<T | null> {
+  let url = `${SERVER_URL}${path}`;
+
+  if (queryParams) {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(queryParams)) {
+      params.append(key, value.toString());
+    }
+    url += `?${params.toString()}`;
+  }
+
+  const response = await fetch(url, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: body ? JSON.stringify(body) : undefined,
+    agent,
+  });
+
+  if (!response.ok) {
+    const problemDetails = (await response.json()) as ProblemDetails;
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: `Error: ${problemDetails.title} - ${problemDetails.detail}`,
+    });
+  }
+
+  if (response.status !== 204) {
+    return response.json() as Promise<T>;
+  }
+
+  return null;
+}

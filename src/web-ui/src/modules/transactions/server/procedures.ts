@@ -1,10 +1,9 @@
-import fetch from "node-fetch";
 import { z } from "zod";
-
-import { createTRPCRouter, protectedProcedure, agent } from "@/trpc/init";
-import { SERVER_URL } from "@/constants";
 import { TRPCError } from "@trpc/server";
-import { PagedList, ProblemDetails } from "@/types";
+
+import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { fetchFromApi } from "@/lib/api";
+import { PagedList } from "@/types";
 
 import { TransactionResponse } from "../types";
 
@@ -20,30 +19,20 @@ export const transactionsRouter = createTRPCRouter({
       const { userId, accessToken } = ctx;
       const { page, pageSize } = input;
 
-      const url = new URL(`${SERVER_URL}/api/v1/users/${userId}/transactions`);
-      url.searchParams.append("page", page.toString());
-      url.searchParams.append("pageSize", pageSize.toString());
-
-      const response = await fetch(url.toString(), {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
+      const pagedTransactions = await fetchFromApi<
+        PagedList<TransactionResponse>
+      >({
+        accessToken,
+        path: `/api/v1/users/${userId}/transactions`,
+        queryParams: {
+          page,
+          pageSize,
         },
-        agent,
       });
 
-      if (!response.ok) {
-        const problemDetails = (await response.json()) as ProblemDetails;
-
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: `Error: ${problemDetails.title} - ${problemDetails.detail}`,
-        });
+      if (!pagedTransactions) {
+        throw new TRPCError({ code: "NOT_FOUND" });
       }
-
-      const pagedTransactions =
-        (await response.json()) as PagedList<TransactionResponse>;
 
       return pagedTransactions;
     }),
