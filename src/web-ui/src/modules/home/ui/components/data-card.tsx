@@ -48,6 +48,7 @@ interface DataCardProps extends BoxVariants, IconVariants {
   value?: number | string;
   dateRange: string;
   percentageChange?: number;
+  dollarPrefix?: boolean;
 }
 
 export const DataCard = ({
@@ -57,9 +58,10 @@ export const DataCard = ({
   dateRange,
   percentageChange = 0,
   variant = "default",
+  dollarPrefix,
 }: DataCardProps) => {
   return (
-    <Card className="border-none drop-shadow-sm">
+    <Card className="border-none drop-shadow-sm dark:bg-black">
       <CardHeader className="flex flex-row items-center justify-between gap-x-4">
         <div className="space-y-2">
           <CardTitle className="text-2xl line-clmap-1">{title}</CardTitle>
@@ -93,7 +95,7 @@ export const DataCard = ({
               end={value}
               decimal="2"
               decimalPlaces={2}
-              formattingFn={formatCurrency}
+              formattingFn={dollarPrefix ? formatCurrency : undefined}
             />
           )}
           {typeof value === "string" && value}

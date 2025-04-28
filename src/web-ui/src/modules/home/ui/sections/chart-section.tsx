@@ -108,7 +108,7 @@ const chartData = [
 
 export function ChartSection() {
   return (
-    <Card>
+    <Card className="dark:bg-black">
       <CardContent className="px-2 sm:p-6">
         <ResponsiveContainer width="100%" height={350}>
           <LineChart data={chartData}>

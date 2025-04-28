@@ -6,3 +6,5 @@ export const REFRESH_TOKEN = "refresh_token_key";
 
 export const SERVER_URL =
   process.env.NEXT_PUBLIC_SERVER_URL || "https://localhost:7081";
+
+export const PAGE_SIZE = 25;

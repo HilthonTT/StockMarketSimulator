@@ -9,6 +9,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ModeToggle } from "@/components/mode-toggle";
 
 import { NavbarItemProps } from "./navbar-item";
 
@@ -25,7 +26,7 @@ export const HomeNavbarSidebar = ({
 }: HomeNavbarSidebarProps) => {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="left" className="p-0 transition-none">
+      <SheetContent side="left" className="p-0 transition-none h-full">
         <SheetHeader className="p-4 border-b">
           <SheetTitle>Menu</SheetTitle>
         </SheetHeader>
@@ -42,7 +43,7 @@ export const HomeNavbarSidebar = ({
             </Link>
           ))}
 
-          <div className="border-t">
+          <div className="border-t h-full">
             <Link
               href="/login"
               className="w-full text-left p-4 hover:bg-black hover:text-white flex items-center text-base font-medium"
@@ -57,6 +58,8 @@ export const HomeNavbarSidebar = ({
             >
               Start Gambling!
             </Link>
+
+            <ModeToggle className="mx-3" />
           </div>
         </ScrollArea>
       </SheetContent>

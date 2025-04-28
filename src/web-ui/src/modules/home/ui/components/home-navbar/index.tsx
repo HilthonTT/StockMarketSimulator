@@ -4,7 +4,8 @@ import Link from "next/link";
 import { Poppins } from "next/font/google";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { MenuIcon } from "lucide-react";
+import { MenuIcon, MoonIcon, SunIcon } from "lucide-react";
+import { useTheme } from "next-themes";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -26,11 +27,12 @@ const navbarItems = [
 
 export const HomeNavbar = () => {
   const pathname = usePathname();
+  const { setTheme, theme } = useTheme();
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <nav className="h-20 flex border-b justify-between font-medium bg-white">
+    <nav className="h-20 flex border-b justify-between font-medium bg-white dark:bg-black">
       <Link href="/" className="pl-6 flex items-center">
         <span
           className={cn(
@@ -64,7 +66,7 @@ export const HomeNavbar = () => {
         <Button
           asChild
           variant="secondary"
-          className="border-l border-t-0 border-b-0 border-r-0 px-12 h-full rounded-none bg-white hover:bg-pink-400 transition-colors text-lg"
+          className="border-l border-t-0 border-b-0 border-r-0 px-12 h-full rounded-none bg-white dark:bg-black hover:bg-pink-400 transition-colors text-lg"
         >
           <Link href="/login">Log in</Link>
         </Button>
@@ -75,12 +77,31 @@ export const HomeNavbar = () => {
         >
           <Link href="/register">Start Gambling!</Link>
         </Button>
+
+        <Button
+          variant="secondary"
+          className="relative border-l border-t-0 border-b-0 border-r-0 px-12 size-24 h-full rounded-none bg-black text-white hover:bg-pink-400  hover:text-black transition-colors text-lg"
+        >
+          <div
+            onClick={() => {
+              if (theme === "dark") {
+                setTheme("light");
+              } else {
+                setTheme("dark");
+              }
+            }}
+            className="absolute inset-0 flex items-center justify-center"
+          >
+            <MoonIcon className="hidden dark:block size-6" />
+            <SunIcon className="block dark:hidden size-6" />
+          </div>
+        </Button>
       </div>
 
       <div className="flex lg:hidden items-center justify-center">
         <Button
           variant="ghost"
-          className="size-12 border-transparent bg-white"
+          className="size-12 border-transparent bg-white dark:bg-black"
           onClick={() => setIsSidebarOpen(true)}
         >
           <MenuIcon />

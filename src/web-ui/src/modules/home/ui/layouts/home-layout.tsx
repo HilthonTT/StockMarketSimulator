@@ -9,7 +9,7 @@ export const HomeLayout = ({ children }: HomeLayoutProps) => {
     <div className="flex flex-col min-h-screen">
       <HomeNavbar />
 
-      <div className="flex-1 bg-[#F4F4F0]">{children}</div>
+      <div className="flex-1 bg-[#F4F4F0] dark:bg-[#272727]">{children}</div>
     </div>
   );
 };

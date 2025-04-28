@@ -10,6 +10,10 @@ import { TokenResponse, UserResponse } from "@/modules/auth/types";
 import { initTRPC, TRPCError } from "@trpc/server";
 import { ACCESS_TOKEN, REFRESH_TOKEN, SERVER_URL } from "@/constants";
 
+export const agent = new https.Agent({
+  rejectUnauthorized: false,
+});
+
 export const createTRPCContext = cache(async () => {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get(ACCESS_TOKEN)?.value;
@@ -36,6 +40,7 @@ export const createTRPCContext = cache(async () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ refreshToken }),
+          agent,
         }
       );
 
@@ -89,10 +94,6 @@ const t = initTRPC.context<Context>().create({
 export const createTRPCRouter = t.router;
 export const createCallerFactory = t.createCallerFactory;
 export const baseProcedure = t.procedure;
-
-export const agent = new https.Agent({
-  rejectUnauthorized: false,
-});
 
 export const protectedProcedure = t.procedure.use(async function isAuthed(
   opts
