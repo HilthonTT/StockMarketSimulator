@@ -1,4 +1,6 @@
-﻿using FluentValidation;
+﻿using Application.Core.Extensions;
+using FluentValidation;
+using Modules.Stocks.Application.Core.Errors;
 
 namespace Modules.Stocks.Application.Stocks.GetByTicker;
 
@@ -6,6 +8,8 @@ internal sealed class GetStockByTickerQueryValidator : AbstractValidator<GetStoc
 {
     public GetStockByTickerQueryValidator()
     {
-        RuleFor(x => x.Ticker).NotEmpty().MaximumLength(10);
+        RuleFor(x => x.Ticker)
+             .NotEmpty().WithError(ValidationErrors.GetStockByTicker.TickerIsRequired)
+             .MaximumLength(10).WithError(ValidationErrors.GetStockByTicker.TickerInvalidFormat);
     }
 }

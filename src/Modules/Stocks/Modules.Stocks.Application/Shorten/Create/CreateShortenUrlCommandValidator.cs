@@ -1,4 +1,6 @@
-﻿using FluentValidation;
+﻿using Application.Core.Extensions;
+using FluentValidation;
+using Modules.Stocks.Application.Core.Errors;
 
 namespace Modules.Stocks.Application.Shorten.Create;
 
@@ -7,14 +9,13 @@ internal sealed class CreateShortenUrlCommandValidator : AbstractValidator<Creat
     public CreateShortenUrlCommandValidator()
     {
         RuleFor(x => x.Url)
-            .NotEmpty()
-            .Must(BeAValidUri)
-            .WithMessage("'{PropertyName}' must be a valid URI.");
+            .NotEmpty().WithError(ValidationErrors.CreateShortenUrl.UrlIsRequired)
+            .Must(BeAValidUri).WithError(ValidationErrors.CreateShortenUrl.UrlMustBeValidUrl);
     }
 
     private static bool BeAValidUri(string url)
     {
-        return Uri.TryCreate(url, UriKind.Absolute, out var uriResult)
+        return Uri.TryCreate(url, UriKind.Absolute, out Uri? uriResult)
                && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
     }
 }

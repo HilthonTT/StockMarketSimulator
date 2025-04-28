@@ -1,4 +1,6 @@
-﻿using FluentValidation;
+﻿using Application.Core.Extensions;
+using FluentValidation;
+using Modules.Users.Application.Core.Errors;
 
 namespace Modules.Users.Application.Users.LoginWithRefreshToken;
 
@@ -6,6 +8,7 @@ internal sealed class LoginUserWithRefreshTokenCommandValidator : AbstractValida
 {
     public LoginUserWithRefreshTokenCommandValidator()
     {
-        RuleFor(x => x.RefreshToken).NotEmpty();
+        RuleFor(x => x.RefreshToken)
+            .NotEmpty().WithError(ValidationErrors.LoginUserWithRefreshToken.RefreshTokenIsRequired);
     }
 }

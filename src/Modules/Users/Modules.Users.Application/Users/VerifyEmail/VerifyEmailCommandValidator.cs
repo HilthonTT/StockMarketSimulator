@@ -1,4 +1,6 @@
-﻿using FluentValidation;
+﻿using Application.Core.Extensions;
+using FluentValidation;
+using Modules.Users.Application.Core.Errors;
 
 namespace Modules.Users.Application.Users.VerifyEmail;
 
@@ -6,6 +8,7 @@ internal sealed class VerifyEmailCommandValidator : AbstractValidator<VerifyEmai
 {
     public VerifyEmailCommandValidator()
     {
-        RuleFor(x => x.TokenId).NotEmpty();
+        RuleFor(x => x.TokenId)
+            .NotEmpty().WithError(ValidationErrors.VerifyEmail.TokenIdIsRequired);
     }
 }

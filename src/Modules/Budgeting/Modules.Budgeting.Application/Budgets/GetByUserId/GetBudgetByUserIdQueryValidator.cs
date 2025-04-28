@@ -1,4 +1,6 @@
-﻿using FluentValidation;
+﻿using Application.Core.Extensions;
+using FluentValidation;
+using Modules.Budgeting.Application.Core.Errors;
 
 namespace Modules.Budgeting.Application.Budgets.GetByUserId;
 
@@ -6,6 +8,7 @@ internal sealed class GetBudgetByUserIdQueryValidator : AbstractValidator<GetBud
 {
     public GetBudgetByUserIdQueryValidator()
     {
-        RuleFor(x => x.UserId).NotEmpty();
+        RuleFor(x => x.UserId)
+            .NotEmpty().WithError(ValidationErrors.GetBudgetByUserId.UserIdIsRequired);
     }
 }
