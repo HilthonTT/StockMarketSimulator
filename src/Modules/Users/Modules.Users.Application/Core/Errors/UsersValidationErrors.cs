@@ -1,4 +1,5 @@
-﻿using SharedKernel;
+﻿using Modules.Users.Domain.ValueObjects;
+using SharedKernel;
 
 namespace Modules.Users.Application.Core.Errors;
 
@@ -20,7 +21,7 @@ internal static class UsersValidationErrors
 
         public static readonly Error NewPasswordIsTooShort = Error.Problem(
             "ChangePassword.NewPasswordIsTooShort",
-            "The new password must be at least 8 characters.");
+            $"The new password must be at least {Password.MinimumLength} characters.");
     }
 
     public static class GetUserById
@@ -54,6 +55,10 @@ internal static class UsersValidationErrors
 
     public static class RegisterUser
     {
+        public static readonly Error EmailIsTooLong = Error.Problem(
+            "RegisterUser.EmailIsTooLong",
+            $"The email must be at most {Email.MaxLength} characters."); 
+
         public static readonly Error EmailIsRequired = Error.Problem(
            "RegisterUser.EmailIsRequired",
            "The email is required.");
@@ -72,7 +77,7 @@ internal static class UsersValidationErrors
 
         public static readonly Error PasswordIsTooShort = Error.Problem(
            "RegisterUser.PasswordIsTooShort",
-           "The password must be at least 8 characters.");
+           $"The password must be at least {Password.MinimumLength} characters.");
     }
 
     public static class ResendEmailVerification

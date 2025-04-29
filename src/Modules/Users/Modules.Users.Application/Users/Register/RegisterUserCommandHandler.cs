@@ -21,7 +21,8 @@ internal sealed class RegisterUserCommandHandler(
         // Step 1: Validate Email & Username
         Result<Email> emailResult = Email.Create(request.Email);
         Result<Username> usernameResult = Username.Create(request.Username);
-        Result validationResult = Result.FirstFailureOrSuccess(emailResult, usernameResult);
+        Result<Password> passwordResult = Password.Create(request.Password);
+        Result validationResult = Result.FirstFailureOrSuccess(emailResult, usernameResult, passwordResult);
 
         if (validationResult.IsFailure)
         {

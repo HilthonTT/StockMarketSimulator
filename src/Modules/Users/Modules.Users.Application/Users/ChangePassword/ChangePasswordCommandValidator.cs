@@ -1,6 +1,7 @@
 ﻿using Application.Core.Extensions;
 using FluentValidation;
 using Modules.Users.Application.Core.Errors;
+using Modules.Users.Domain.ValueObjects;
 
 namespace Modules.Users.Application.Users.ChangePassword;
 
@@ -16,6 +17,6 @@ internal sealed class ChangePasswordCommandValidator : AbstractValidator<ChangeP
 
         RuleFor(x => x.NewPassword)
             .NotEmpty().WithError(UsersValidationErrors.ChangePassword.NewPasswordRequired)
-            .MinimumLength(8).WithError(UsersValidationErrors.ChangePassword.NewPasswordIsTooShort);
+            .MinimumLength(Password.MinimumLength).WithError(UsersValidationErrors.ChangePassword.NewPasswordIsTooShort);
     }
 }

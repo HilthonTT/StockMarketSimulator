@@ -5,6 +5,7 @@ using Modules.Users.Application.Abstractions.Data;
 using Modules.Users.Domain.Entities;
 using Modules.Users.Domain.Errors;
 using Modules.Users.Domain.Repositories;
+using Modules.Users.Domain.ValueObjects;
 using SharedKernel;
 
 namespace Modules.Users.Application.Users.ChangePassword;
@@ -20,6 +21,12 @@ internal sealed class ChangePasswordCommandHandler(
         if (request.UserId != userContext.UserId)
         {
             return Result.Failure(UserErrors.Unauthorized);
+        }
+
+        Result<Password> passwordResult = Password.Create(request.NewPassword);
+        if (passwordResult.IsFailure)
+        {
+            return passwordResult;
         }
 
         Option<User> optionUser = await userRepository.GetByIdAsync(request.UserId, cancellationToken);
