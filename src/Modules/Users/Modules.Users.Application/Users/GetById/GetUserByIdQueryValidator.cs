@@ -8,6 +8,6 @@ internal sealed class GetUserByIdQueryValidator : AbstractValidator<GetUserByIdQ
 {
     public GetUserByIdQueryValidator()
     {
-        RuleFor(x => x.UserId).NotEmpty().WithError(ValidationErrors.GetUserById.UserIdIsRequired);
+        RuleFor(x => x.UserId).NotEmpty().WithError(UsersValidationErrors.GetUserById.UserIdIsRequired);
     }
 }

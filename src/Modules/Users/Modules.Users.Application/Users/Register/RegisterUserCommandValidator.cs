@@ -9,14 +9,14 @@ internal sealed class RegisterUserCommandValidator : AbstractValidator<RegisterU
     public RegisterUserCommandValidator()
     {
         RuleFor(x => x.Email)
-            .NotEmpty().WithError(ValidationErrors.RegisterUser.EmailIsRequired)
-            .EmailAddress().WithError(ValidationErrors.RegisterUser.EmailFormatIsInvalid);
+            .NotEmpty().WithError(UsersValidationErrors.RegisterUser.EmailIsRequired)
+            .EmailAddress().WithError(UsersValidationErrors.RegisterUser.EmailFormatIsInvalid);
 
         RuleFor(x => x.Password)
-            .NotEmpty().WithError(ValidationErrors.RegisterUser.PasswordIsRequired)
-            .MinimumLength(8).WithError(ValidationErrors.RegisterUser.PasswordIsTooShort);
+            .NotEmpty().WithError(UsersValidationErrors.RegisterUser.PasswordIsRequired)
+            .MinimumLength(8).WithError(UsersValidationErrors.RegisterUser.PasswordIsTooShort);
 
         RuleFor(x => x.Username)
-            .NotEmpty().WithError(ValidationErrors.RegisterUser.UsernameIsRequired);
+            .NotEmpty().WithError(UsersValidationErrors.RegisterUser.UsernameIsRequired);
     }
 }

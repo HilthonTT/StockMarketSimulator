@@ -4,9 +4,8 @@ import { jwtDecode } from "jwt-decode";
 
 import { TokenResponse } from "@/modules/auth/types";
 
-import { SERVER_URL } from "@/constants";
 import { agent } from "@/trpc/init";
-import { ACCESS_TOKEN, REFRESH_TOKEN } from "@/constants";
+import { ACCESS_TOKEN, REFRESH_TOKEN, SERVER_URL } from "@/constants";
 
 export async function refreshAccessTokenIfNeeded(): Promise<string | null> {
   const cookieStore = await cookies();

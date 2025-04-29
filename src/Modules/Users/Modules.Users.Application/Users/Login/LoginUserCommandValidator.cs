@@ -9,9 +9,9 @@ internal sealed class LoginUserCommandValidator : AbstractValidator<LoginUserCom
     public LoginUserCommandValidator()
     {
         RuleFor(x => x.Email)
-            .NotEmpty().WithError(ValidationErrors.LoginUser.EmailIsRequired)
-            .EmailAddress().WithError(ValidationErrors.LoginUser.EmailFormatIsInvalid);
+            .NotEmpty().WithError(UsersValidationErrors.LoginUser.EmailIsRequired)
+            .EmailAddress().WithError(UsersValidationErrors.LoginUser.EmailFormatIsInvalid);
 
-        RuleFor(x => x.Password).NotEmpty().WithError(ValidationErrors.LoginUser.PasswordIsRequired);
+        RuleFor(x => x.Password).NotEmpty().WithError(UsersValidationErrors.LoginUser.PasswordIsRequired);
     }
 }

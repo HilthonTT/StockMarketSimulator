@@ -9,6 +9,6 @@ internal sealed class RevokeRefreshTokensCommandValidator : AbstractValidator<Re
     public RevokeRefreshTokensCommandValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithError(ValidationErrors.RevokeRefreshTokens.UserIdIsRequired);
+            .NotEmpty().WithError(UsersValidationErrors.RevokeRefreshTokens.UserIdIsRequired);
     }
 }

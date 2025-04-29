@@ -9,9 +9,9 @@ internal sealed class UpdateUserCommandValidator : AbstractValidator<UpdateUserC
     public UpdateUserCommandValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithError(ValidationErrors.UpdateUser.UserIdIsRequired);
+            .NotEmpty().WithError(UsersValidationErrors.UpdateUser.UserIdIsRequired);
 
         RuleFor(x => x.Username)
-            .NotEmpty().WithError(ValidationErrors.UpdateUser.UsernameIsRequired);
+            .NotEmpty().WithError(UsersValidationErrors.UpdateUser.UsernameIsRequired);
     }
 }

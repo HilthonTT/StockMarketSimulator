@@ -9,7 +9,7 @@ internal sealed class GetStockByTickerQueryValidator : AbstractValidator<GetStoc
     public GetStockByTickerQueryValidator()
     {
         RuleFor(x => x.Ticker)
-             .NotEmpty().WithError(ValidationErrors.GetStockByTicker.TickerIsRequired)
-             .MaximumLength(10).WithError(ValidationErrors.GetStockByTicker.TickerInvalidFormat);
+             .NotEmpty().WithError(StocksValidationErrors.GetStockByTicker.TickerIsRequired)
+             .MaximumLength(10).WithError(StocksValidationErrors.GetStockByTicker.TickerInvalidFormat);
     }
 }

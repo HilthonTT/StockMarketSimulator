@@ -26,7 +26,7 @@ const HomeViewSuspense = ({ page }: HomeViewProps) => {
     <div className="max-w-[2400px] mx-auto mb-10 px-4 pt-2.5 flex flex-col gap-y-6 pb-24">
       <ChartSection />
       <DataSection page={page} />
-      <TransactionSection />
+      <TransactionSection page={page} />
     </div>
   );
 };

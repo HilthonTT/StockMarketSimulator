@@ -9,13 +9,13 @@ internal sealed class BuyTransactionCommandValidator : AbstractValidator<BuyTran
     public BuyTransactionCommandValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithError(ValidationErrors.BuyTransaction.UserIdIsRequired);
+            .NotEmpty().WithError(BudgetingValidationErrors.BuyTransaction.UserIdIsRequired);
 
         RuleFor(x => x.Ticker)
-            .NotEmpty().WithError(ValidationErrors.BuyTransaction.TickerIsRequired)
-            .MaximumLength(10).WithError(ValidationErrors.BuyTransaction.TickerInvalidFormat);
+            .NotEmpty().WithError(BudgetingValidationErrors.BuyTransaction.TickerIsRequired)
+            .MaximumLength(10).WithError(BudgetingValidationErrors.BuyTransaction.TickerInvalidFormat);
 
         RuleFor(x => x.Quantity)
-            .GreaterThanOrEqualTo(1).WithError(ValidationErrors.BuyTransaction.QuantityMustBeAtleastOne);
+            .GreaterThanOrEqualTo(1).WithError(BudgetingValidationErrors.BuyTransaction.QuantityMustBeAtleastOne);
     }
 }

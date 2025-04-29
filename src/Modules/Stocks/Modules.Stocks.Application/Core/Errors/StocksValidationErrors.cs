@@ -2,7 +2,7 @@
 
 namespace Modules.Stocks.Application.Core.Errors;
 
-public static class ValidationErrors
+internal static class StocksValidationErrors
 {
     public static class CreateShortenUrl
     {

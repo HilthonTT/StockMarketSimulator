@@ -9,6 +9,6 @@ internal sealed class GetTransactionsByUserIdQueryValidator : AbstractValidator<
     public GetTransactionsByUserIdQueryValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithError(ValidationErrors.GetTransactionsByUserId.UserIdIsRequired);
+            .NotEmpty().WithError(BudgetingValidationErrors.GetTransactionsByUserId.UserIdIsRequired);
     }
 }

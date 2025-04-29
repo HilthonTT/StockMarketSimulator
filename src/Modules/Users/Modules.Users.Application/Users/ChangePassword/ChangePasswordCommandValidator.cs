@@ -9,13 +9,13 @@ internal sealed class ChangePasswordCommandValidator : AbstractValidator<ChangeP
     public ChangePasswordCommandValidator()
     {
         RuleFor(x => x.UserId).
-            NotEmpty().WithError(ValidationErrors.ChangePassword.UserIdIsRequired);
+            NotEmpty().WithError(UsersValidationErrors.ChangePassword.UserIdIsRequired);
 
         RuleFor(x => x.CurrentPassword)
-            .NotEmpty().WithError(ValidationErrors.ChangePassword.CurrentPasswordIsRequired);
+            .NotEmpty().WithError(UsersValidationErrors.ChangePassword.CurrentPasswordIsRequired);
 
         RuleFor(x => x.NewPassword)
-            .NotEmpty().WithError(ValidationErrors.ChangePassword.NewPasswordRequired)
-            .MinimumLength(8).WithError(ValidationErrors.ChangePassword.NewPasswordIsTooShort);
+            .NotEmpty().WithError(UsersValidationErrors.ChangePassword.NewPasswordRequired)
+            .MinimumLength(8).WithError(UsersValidationErrors.ChangePassword.NewPasswordIsTooShort);
     }
 }

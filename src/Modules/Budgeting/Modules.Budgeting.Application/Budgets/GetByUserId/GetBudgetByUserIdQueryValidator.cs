@@ -9,6 +9,6 @@ internal sealed class GetBudgetByUserIdQueryValidator : AbstractValidator<GetBud
     public GetBudgetByUserIdQueryValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithError(ValidationErrors.GetBudgetByUserId.UserIdIsRequired);
+            .NotEmpty().WithError(BudgetingValidationErrors.GetBudgetByUserId.UserIdIsRequired);
     }
 }

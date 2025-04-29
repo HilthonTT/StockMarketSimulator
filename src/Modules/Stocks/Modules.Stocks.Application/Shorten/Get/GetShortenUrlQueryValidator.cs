@@ -9,6 +9,6 @@ internal sealed class GetShortenUrlQueryValidator : AbstractValidator<GetShorten
     public GetShortenUrlQueryValidator()
     {
         RuleFor(x => x.ShortCode)
-            .NotEmpty().WithError(ValidationErrors.GetShortenUrlByShortCode.ShortCodeIsRequired);
+            .NotEmpty().WithError(StocksValidationErrors.GetShortenUrlByShortCode.ShortCodeIsRequired);
     }
 }

@@ -9,13 +9,13 @@ internal sealed class SellTransactionCommandValidator : AbstractValidator<SellTr
     public SellTransactionCommandValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithError(ValidationErrors.SellTransaction.UserIdIsRequired);
+            .NotEmpty().WithError(BudgetingValidationErrors.SellTransaction.UserIdIsRequired);
 
         RuleFor(x => x.Ticker)
-            .NotEmpty().WithError(ValidationErrors.SellTransaction.TickerIsRequired)
-            .MaximumLength(10).WithError(ValidationErrors.SellTransaction.TickerInvalidFormat);
+            .NotEmpty().WithError(BudgetingValidationErrors.SellTransaction.TickerIsRequired)
+            .MaximumLength(10).WithError(BudgetingValidationErrors.SellTransaction.TickerInvalidFormat);
 
         RuleFor(x => x.Quantity)
-            .GreaterThanOrEqualTo(1).WithError(ValidationErrors.SellTransaction.QuantityMustBeAtleastOne);
+            .GreaterThanOrEqualTo(1).WithError(BudgetingValidationErrors.SellTransaction.QuantityMustBeAtleastOne);
     }
 }

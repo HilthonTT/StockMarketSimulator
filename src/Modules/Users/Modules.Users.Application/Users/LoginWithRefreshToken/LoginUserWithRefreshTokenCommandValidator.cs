@@ -9,6 +9,6 @@ internal sealed class LoginUserWithRefreshTokenCommandValidator : AbstractValida
     public LoginUserWithRefreshTokenCommandValidator()
     {
         RuleFor(x => x.RefreshToken)
-            .NotEmpty().WithError(ValidationErrors.LoginUserWithRefreshToken.RefreshTokenIsRequired);
+            .NotEmpty().WithError(UsersValidationErrors.LoginUserWithRefreshToken.RefreshTokenIsRequired);
     }
 }

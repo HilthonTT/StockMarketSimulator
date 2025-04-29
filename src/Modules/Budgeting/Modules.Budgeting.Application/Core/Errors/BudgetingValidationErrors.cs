@@ -2,7 +2,7 @@
 
 namespace Modules.Budgeting.Application.Core.Errors;
 
-internal static class ValidationErrors
+internal static class BudgetingValidationErrors
 {
     public static class GetBudgetByUserId
     {

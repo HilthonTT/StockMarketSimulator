@@ -13,4 +13,11 @@ public static class ClaimsPrincipalExtensions
             parsedUserId :
             throw new UnauthorizedException("User id is unavailable");
     }
+
+    public static bool TryGetUserId(this ClaimsPrincipal? principal, out Guid parsedUserId)
+    {
+        string? userId = principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        return Guid.TryParse(userId, out parsedUserId);
+    }
 }

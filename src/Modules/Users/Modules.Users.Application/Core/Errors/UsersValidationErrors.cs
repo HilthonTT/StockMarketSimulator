@@ -2,7 +2,7 @@
 
 namespace Modules.Users.Application.Core.Errors;
 
-internal static class ValidationErrors
+internal static class UsersValidationErrors
 {
     public static class ChangePassword
     {

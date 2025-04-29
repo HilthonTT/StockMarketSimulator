@@ -1,13 +1,30 @@
+import { fetchFromApi } from "@/lib/api";
+import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 
-export const stocksRouter = createTRPCRouter({
-  getMany: protectedProcedure.query(() => {
-    const data = [
-      {
-        ticker: "TSLA",
-      },
-    ];
+import { StockPriceResponse } from "../types";
+import { TRPCError } from "@trpc/server";
 
-    return data;
-  }),
+export const stocksRouter = createTRPCRouter({
+  getOne: protectedProcedure
+    .input(
+      z.object({
+        ticker: z.string().max(10),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { accessToken } = ctx;
+      const { ticker } = input;
+
+      const stockPriceResponse = await fetchFromApi<StockPriceResponse>({
+        path: `/api/v1/stocks/${ticker}`,
+        accessToken,
+      });
+
+      if (!stockPriceResponse) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      return stockPriceResponse;
+    }),
 });

@@ -12,4 +12,9 @@
     <ProjectReference Include="..\Modules.Stocks.Domain\Modules.Stocks.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+     <InternalsVisibleTo Include="Application.UnitTests" />
+     <InternalsVisibleTo Include="Api.FunctionalTests" />
+  </ItemGroup>
+
 </Project>

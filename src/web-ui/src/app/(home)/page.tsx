@@ -19,7 +19,7 @@ const Page = async ({ searchParams }: PageProps) => {
 
   const { page } = await searchParams;
 
-  void trpc.stocks.getMany.prefetch();
+  void trpc.auth.getJwt.prefetch();
   void trpc.budgets.getOne.prefetch();
   void trpc.transactions.getMany.prefetch({
     page: page || 1,

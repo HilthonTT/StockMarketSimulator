@@ -9,7 +9,7 @@ internal sealed class GetShortenUrlByTickerQueryValidator : AbstractValidator<Ge
     public GetShortenUrlByTickerQueryValidator()
     {
         RuleFor(x => x.Ticker)
-            .NotEmpty().WithError(ValidationErrors.GetShortenUrlByTicker.TickerIsRequired)
-            .MaximumLength(10).WithError(ValidationErrors.GetShortenUrlByTicker.TickerInvalidFormat);
+            .NotEmpty().WithError(StocksValidationErrors.GetShortenUrlByTicker.TickerIsRequired)
+            .MaximumLength(10).WithError(StocksValidationErrors.GetShortenUrlByTicker.TickerInvalidFormat);
     }
 }

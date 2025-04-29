@@ -32,6 +32,9 @@ export const authRouter = createTRPCRouter({
       return null;
     }
   }),
+  getJwt: protectedProcedure.query(async ({ ctx }) => {
+    return ctx.accessToken;
+  }),
   login: baseProcedure.input(LoginSchema).mutation(async ({ input }) => {
     const tokenResponse = await fetchFromApi<TokenResponse>({
       path: "/api/v1/users/login",

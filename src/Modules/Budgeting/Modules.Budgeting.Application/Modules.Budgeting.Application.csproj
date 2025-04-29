@@ -13,4 +13,9 @@
     <ProjectReference Include="..\Modules.Budgeting.Domain\Modules.Budgeting.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Application.UnitTests" />
+    <InternalsVisibleTo Include="Api.FunctionalTests" />
+  </ItemGroup>
+
 </Project>

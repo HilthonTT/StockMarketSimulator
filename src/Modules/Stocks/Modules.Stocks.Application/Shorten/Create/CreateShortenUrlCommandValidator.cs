@@ -9,8 +9,8 @@ internal sealed class CreateShortenUrlCommandValidator : AbstractValidator<Creat
     public CreateShortenUrlCommandValidator()
     {
         RuleFor(x => x.Url)
-            .NotEmpty().WithError(ValidationErrors.CreateShortenUrl.UrlIsRequired)
-            .Must(BeAValidUri).WithError(ValidationErrors.CreateShortenUrl.UrlMustBeValidUrl);
+            .NotEmpty().WithError(StocksValidationErrors.CreateShortenUrl.UrlIsRequired)
+            .Must(BeAValidUri).WithError(StocksValidationErrors.CreateShortenUrl.UrlMustBeValidUrl);
     }
 
     private static bool BeAValidUri(string url)
