@@ -1,11 +1,10 @@
 import { redirect } from "next/navigation";
 
 import { RegisterView } from "@/modules/auth/ui/views/register-view";
-
-import { trpc } from "@/trpc/server";
+import { fetchUser } from "@/modules/auth/server/caller";
 
 const Page = async () => {
-  const user = await trpc.auth.isAuthenticated();
+  const user = await fetchUser();
   if (user) {
     return redirect("/");
   }

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { HomeView } from "@/modules/home/ui/views/home-view";
+import { fetchUser } from "@/modules/auth/server/caller";
 
 import { HydrateClient, trpc } from "@/trpc/server";
 import { PAGE_SIZE } from "@/constants";
@@ -13,7 +14,7 @@ interface PageProps {
 }
 
 const Page = async ({ searchParams }: PageProps) => {
-  const user = await trpc.auth.isAuthenticated();
+  const user = await fetchUser();
   if (!user) {
     return redirect("/login");
   }

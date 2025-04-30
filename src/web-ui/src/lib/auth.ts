@@ -91,3 +91,18 @@ export async function clearAuthCookies(): Promise<void> {
   cookieStore.delete(ACCESS_TOKEN);
   cookieStore.delete(REFRESH_TOKEN);
 }
+
+export async function getDecodedTokenFromCookies() {
+  const cookieStore = await cookies();
+
+  const accessToken = cookieStore.get(ACCESS_TOKEN)?.value;
+  const refreshToken = cookieStore.get(REFRESH_TOKEN)?.value;
+
+  if (!accessToken || !refreshToken) {
+    return { accessToken: "", refreshToken: "", userId: "" };
+  }
+
+  const decoded = jwtDecode<{ sub: string; exp: number }>(accessToken);
+
+  return { accessToken, refreshToken, userId: decoded.sub };
+}

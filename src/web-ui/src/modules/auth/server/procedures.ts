@@ -14,6 +14,24 @@ import { LoginSchema, RegisterSchema } from "../schemas";
 import { TokenResponse, UserResponse } from "../types";
 
 export const authRouter = createTRPCRouter({
+  refreshTokens: baseProcedure.mutation(async () => {
+    const accessToken = await refreshAccessTokenIfNeeded();
+
+    if (!accessToken) {
+      return null;
+    }
+
+    try {
+      const user = await fetchFromApi<UserResponse>({
+        accessToken,
+        path: "/api/v1/users/me",
+      });
+
+      return user;
+    } catch {
+      return null;
+    }
+  }),
   isAuthenticated: baseProcedure.query(async () => {
     const accessToken = await refreshAccessTokenIfNeeded();
 

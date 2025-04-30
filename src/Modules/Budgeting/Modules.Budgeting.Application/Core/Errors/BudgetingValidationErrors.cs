@@ -4,6 +4,29 @@ namespace Modules.Budgeting.Application.Core.Errors;
 
 internal static class BudgetingValidationErrors
 {
+    public static class GetAuditlogsByUserId
+    {
+        public static readonly Error UserIdIsRequired = Error.Problem(
+            "GetAuditlogsByUserId.UserIdIsRequired",
+            "The user identifier is required.");
+
+        public static readonly Error PageIsRequired = Error.Problem(
+            "GetAuditlogsByUserId.PageIsRequired",
+            "The page is required.");
+
+        public static readonly Error PageMustBePositive = Error.Problem(
+            "GetAuditlogsByUserId.PageMustBePositive",
+            "The page must be a positive number.");
+
+        public static readonly Error PageSizeIsRequired = Error.Problem(
+            "GetAuditlogsByUserId.PageSizeIsRequired",
+            "The page size is required.");
+
+        public static readonly Error PageSizeMustBeAtMostOneHundred = Error.Problem(
+            "GetAuditlogsByUserId.PageSizeMustBeAtMostOneHundred",
+            "The page size must be at most 100.");
+    }
+
     public static class GetBudgetByUserId
     {
         public static readonly Error UserIdIsRequired = Error.Problem(
@@ -35,6 +58,22 @@ internal static class BudgetingValidationErrors
         public static readonly Error UserIdIsRequired = Error.Problem(
            "GetTransactionsByUserId.UserIdIsRequired",
            "The user identifier is required.");
+
+        public static readonly Error PageIsRequired = Error.Problem(
+           "GetTransactionsByUserId.PageIsRequired",
+           "The page is required.");
+
+        public static readonly Error PageMustBePositive = Error.Problem(
+            "GetTransactionsByUserId.PageMustBePositive",
+            "The page must be a positive number.");
+
+        public static readonly Error PageSizeIsRequired = Error.Problem(
+            "GetTransactionsByUserId.PageSizeIsRequired",
+            "The page size is required.");
+
+        public static readonly Error PageSizeMustBeAtMostOneHundred = Error.Problem(
+            "GetTransactionsByUserId.PageSizeMustBeAtMostOneHundred",
+            "The page size must be at most 100.");
     }
 
     public static class SellTransaction
