@@ -10,7 +10,7 @@ interface FetchFromApiOptions {
   path: string;
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
-  queryParams?: Record<string, string | number | boolean>;
+  queryParams?: Record<string, string | number | boolean | undefined | Date>;
 }
 
 export async function fetchFromApi<T>({
@@ -25,7 +25,12 @@ export async function fetchFromApi<T>({
   if (queryParams) {
     const params = new URLSearchParams();
     for (const [key, value] of Object.entries(queryParams)) {
-      params.append(key, value.toString());
+      if (value !== undefined && value !== null) {
+        const formattedValue =
+          value instanceof Date ? value.toISOString() : value.toString();
+
+        params.append(key, formattedValue);
+      }
     }
     url += `?${params.toString()}`;
   }

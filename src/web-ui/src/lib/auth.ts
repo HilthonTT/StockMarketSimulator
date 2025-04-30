@@ -42,12 +42,6 @@ export async function refreshAccessTokenIfNeeded(): Promise<string | null> {
     return null;
   }
 
-  if (!response.ok) {
-    cookieStore.set(ACCESS_TOKEN, "", { maxAge: -1, path: "/" });
-    cookieStore.set(REFRESH_TOKEN, "", { maxAge: -1, path: "/" });
-    return null;
-  }
-
   const tokenResponse = (await response.json()) as TokenResponse;
 
   cookieStore.set(ACCESS_TOKEN, tokenResponse.accessToken, {

@@ -7,7 +7,8 @@ import { PAGE_SIZE } from "@/constants";
 
 interface PageProps {
   searchParams: Promise<{
-    page?: number;
+    page?: string;
+    search?: string;
   }>;
 }
 
@@ -17,18 +18,21 @@ const Page = async ({ searchParams }: PageProps) => {
     return redirect("/login");
   }
 
-  const { page } = await searchParams;
+  const { page, search } = await searchParams;
+
+  const parsedPage = page ? parseInt(page, 10) : 1;
 
   void trpc.auth.getJwt.prefetch();
   void trpc.budgets.getOne.prefetch();
   void trpc.transactions.getMany.prefetch({
-    page: page || 1,
+    page: parsedPage,
     pageSize: PAGE_SIZE,
+    searchTerm: search,
   });
 
   return (
     <HydrateClient>
-      <HomeView page={page || 1} />
+      <HomeView page={parsedPage || 1} />
     </HydrateClient>
   );
 };

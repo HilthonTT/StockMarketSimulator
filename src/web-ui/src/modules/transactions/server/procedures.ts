@@ -11,13 +11,16 @@ export const transactionsRouter = createTRPCRouter({
   getMany: protectedProcedure
     .input(
       z.object({
+        searchTerm: z.string().optional(),
+        startDate: z.date().optional(),
+        endDate: z.date().optional(),
         page: z.number().min(1),
         pageSize: z.number().max(100),
       })
     )
     .query(async ({ ctx, input }) => {
       const { userId, accessToken } = ctx;
-      const { page, pageSize } = input;
+      const { page, pageSize, searchTerm, startDate, endDate } = input;
 
       const pagedTransactions = await fetchFromApi<
         PagedList<TransactionResponse>
@@ -27,6 +30,9 @@ export const transactionsRouter = createTRPCRouter({
         queryParams: {
           page,
           pageSize,
+          searchTerm,
+          startDate,
+          endDate,
         },
       });
 
