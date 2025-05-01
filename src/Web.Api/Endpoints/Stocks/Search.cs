@@ -1,8 +1,6 @@
-﻿using Contracts.Common;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Modules.Stocks.Application.Stocks.Search;
-using Modules.Stocks.Contracts.Stocks;
 using Modules.Users.Domain.Enums;
 using SharedKernel;
 using Web.Api.Extensions;
@@ -22,11 +20,9 @@ internal sealed class Search : IEndpoint
             ISender sender,
             CancellationToken cancellationToken = default) =>
         {
-            var query = new SearchStocksQuery(searchTerm, page, pageSize);
-
-            Result<PagedList<StockSearchResponse>> result = await sender.Send(query, cancellationToken);
-
-            return result.Match(Results.Ok, CustomResults.Problem);
+            return await Result.Success(new SearchStocksQuery(searchTerm, page, pageSize))
+                .Bind(query => sender.Send(query, cancellationToken))
+                .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()
         .WithTags(Tags.Stocks)

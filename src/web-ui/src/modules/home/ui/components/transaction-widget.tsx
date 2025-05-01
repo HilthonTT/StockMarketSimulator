@@ -1,6 +1,6 @@
 "use client";
 
-import { HubConnection } from "@microsoft/signalr";
+import { HubConnection, HubConnectionState } from "@microsoft/signalr";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -60,10 +60,12 @@ export const TransactionWidget = ({
     connection.on(SIGNALR_STOCK_UPDATE_EVENT, handler);
 
     return () => {
-      connection.off(SIGNALR_STOCK_UPDATE_EVENT, handler);
-      connection
-        .invoke(SIGNALR_LEAVE_GROUP, transaction.ticker)
-        .catch(console.error);
+      if (connection.state === HubConnectionState.Connected) {
+        connection.off(SIGNALR_STOCK_UPDATE_EVENT, handler);
+        connection
+          .invoke(SIGNALR_LEAVE_GROUP, transaction.ticker)
+          .catch(console.error);
+      }
     };
   }, [
     connection,

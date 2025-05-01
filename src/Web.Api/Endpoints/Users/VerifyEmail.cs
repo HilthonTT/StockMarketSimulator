@@ -17,11 +17,9 @@ internal sealed class VerifyEmail : IEndpoint
             ISender sender,
             CancellationToken cancellationToken = default) =>
         {
-            var command = new VerifyEmailCommand(token);
-
-            Result result = await sender.Send(command, cancellationToken);
-
-            return result.Match(Results.NoContent, CustomResults.Problem);
+            return await Result.Success(new VerifyEmailCommand(token))
+                .Bind(command => sender.Send(command, cancellationToken))
+                .Match(Results.NoContent, CustomResults.Problem);
         })
         .WithOpenApi()
         .WithTags(Tags.Users)

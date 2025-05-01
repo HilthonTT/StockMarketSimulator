@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using Modules.Users.Application.Users.Me;
-using Modules.Users.Contracts.Users;
 using Modules.Users.Domain.Enums;
 using SharedKernel;
 using Web.Api.Extensions;
@@ -14,14 +13,12 @@ internal sealed class Me : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapGet("users/me", async (
-            ISender sender, 
+        ISender sender, 
             CancellationToken cancellationToken = default) =>
         {
-            var query = new GetMeQuery();
-
-            Result<UserResponse> result = await sender.Send(query, cancellationToken);
-
-            return result.Match(Results.Ok, CustomResults.Problem);
+            return await Result.Success(new GetMeQuery())
+                .Bind(query => sender.Send(query, cancellationToken))
+                .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()
         .WithTags(Tags.Users)

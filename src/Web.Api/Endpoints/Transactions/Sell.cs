@@ -19,11 +19,10 @@ internal sealed class Sell : IEndpoint
             ISender sender,
             CancellationToken cancellationToken = default) =>
         {
-            var command = new SellTransactionCommand(request.UserId, request.Ticker, request.Quantity);
-
-            Result<Guid> result = await sender.Send(command, cancellationToken);
-
-            return result.Match(Results.Ok, CustomResults.Problem);
+            return await Result.Create(request, GeneralErrors.UnprocessableRequest)
+                .Map(request => new SellTransactionCommand(request.UserId, request.Ticker, request.Quantity))
+                .Bind(command => sender.Send(command, cancellationToken))
+                .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()
         .WithTags(Tags.Transactions)

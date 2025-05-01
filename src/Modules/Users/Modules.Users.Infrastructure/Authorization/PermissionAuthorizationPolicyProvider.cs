@@ -5,6 +5,8 @@ namespace Modules.Users.Infrastructure.Authorization;
 
 internal sealed class PermissionAuthorizationPolicyProvider : DefaultAuthorizationPolicyProvider
 {
+    private static readonly SemaphoreSlim _semaphore = new(1, 1);
+
     private readonly AuthorizationOptions _authorizationOptions;
 
     public PermissionAuthorizationPolicyProvider(IOptions<AuthorizationOptions> options)
@@ -22,12 +24,21 @@ internal sealed class PermissionAuthorizationPolicyProvider : DefaultAuthorizati
             return policy;
         }
 
-        AuthorizationPolicy permissionPolicy = new AuthorizationPolicyBuilder()
-            .AddRequirements(new PermissionRequirement(policyName))
-            .Build();
+        await _semaphore.WaitAsync();
 
-        _authorizationOptions.AddPolicy(policyName, permissionPolicy);
+        try
+        {
+            AuthorizationPolicy permissionPolicy = new AuthorizationPolicyBuilder()
+                .AddRequirements(new PermissionRequirement(policyName))
+                .Build();
 
-        return permissionPolicy;
+            _authorizationOptions.AddPolicy(policyName, permissionPolicy);
+
+            return permissionPolicy;
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 }

@@ -17,11 +17,10 @@ internal sealed class Register : IEndpoint
             ISender sender,
             CancellationToken cancellationToken) =>
         {
-            var command = new RegisterUserCommand(request.Email, request.Username, request.Password);
-
-            Result<Guid> result = await sender.Send(command, cancellationToken);
-
-            return result.Match(Results.Ok, CustomResults.Problem);
+            return await Result.Create(request, GeneralErrors.UnprocessableRequest)
+                .Map(request => new RegisterUserCommand(request.Email, request.Username, request.Password))
+                .Bind(command => sender.Send(command, cancellationToken))
+                .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()
         .WithTags(Tags.Users)

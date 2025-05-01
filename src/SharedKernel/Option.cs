@@ -16,7 +16,14 @@ public sealed class Option<T> where T : class
         _value is not null ? Option<TOut>.Some(map(_value)) : Option<TOut>.None();
 
     public Option<TOut> Bind<TOut>(Func<T, Option<TOut>> bind) where TOut : class =>
-        _value is not null ? bind(_value) : Option<TOut>.None();
+       _value is not null ? bind(_value) : Option<TOut>.None();
+
+    public async Task<Option<TOut>> Bind<TIn, TOut>(Func<TIn, Task<Option<TOut>>> func)
+        where TOut : class 
+        where TIn : class 
+    {
+        return _value is not null ? await func((TIn)(object)_value) : Option<TOut>.None(); 
+    }
 
     public TOut Match<TOut>(Func<T, TOut> some, Func<TOut> none) =>
         _value is not null ? some(_value) : none();

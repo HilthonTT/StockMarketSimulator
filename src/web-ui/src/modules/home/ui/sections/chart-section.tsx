@@ -1,5 +1,6 @@
 "use client";
 
+import { HubConnectionState } from "@microsoft/signalr";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import {
@@ -103,22 +104,6 @@ const ChartSectionSuspense = ({ page }: ChartSectionProps) => {
     [selectedTicker, index]
   );
 
-  useEffect(() => {
-    if (!connection || !selectedTicker) {
-      return;
-    }
-
-    connection.invoke(SIGNALR_JOIN_GROUP, selectedTicker).catch(console.error);
-    connection.on(SIGNALR_STOCK_UPDATE_EVENT, handleStockUpdate);
-
-    return () => {
-      connection.off(SIGNALR_STOCK_UPDATE_EVENT, handleStockUpdate);
-      connection
-        .invoke(SIGNALR_LEAVE_GROUP, selectedTicker)
-        .catch(console.error);
-    };
-  }, [connection, selectedTicker, handleStockUpdate]);
-
   const onChangeTicker = useCallback(
     async (ticker: string) => {
       if (!connection || ticker === selectedTicker || pending) {
@@ -141,6 +126,24 @@ const ChartSectionSuspense = ({ page }: ChartSectionProps) => {
     },
     [connection, selectedTicker, resetChart, pending]
   );
+
+  useEffect(() => {
+    if (!connection || !selectedTicker) {
+      return;
+    }
+
+    connection.invoke(SIGNALR_JOIN_GROUP, selectedTicker).catch(console.error);
+    connection.on(SIGNALR_STOCK_UPDATE_EVENT, handleStockUpdate);
+
+    return () => {
+      if (connection.state === HubConnectionState.Connected) {
+        connection.off(SIGNALR_STOCK_UPDATE_EVENT, handleStockUpdate);
+        connection
+          .invoke(SIGNALR_LEAVE_GROUP, selectedTicker)
+          .catch(console.error);
+      }
+    };
+  }, [connection, selectedTicker, handleStockUpdate]);
 
   if (isLoading) {
     return <div>Loading...</div>;

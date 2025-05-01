@@ -15,13 +15,13 @@ import { TokenResponse, UserResponse } from "../types";
 
 export const authRouter = createTRPCRouter({
   refreshTokens: baseProcedure.mutation(async () => {
-    const accessToken = await refreshAccessTokenIfNeeded();
-
-    if (!accessToken) {
-      return null;
-    }
-
     try {
+      const accessToken = await refreshAccessTokenIfNeeded();
+
+      if (!accessToken) {
+        return null;
+      }
+
       const user = await fetchFromApi<UserResponse>({
         accessToken,
         path: "/api/v1/users/me",

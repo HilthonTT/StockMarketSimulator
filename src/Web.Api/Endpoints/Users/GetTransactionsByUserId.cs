@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Modules.Budgeting.Application.Transactions.GetByUserId;
 using Modules.Budgeting.Contracts.Transactions;
+using Modules.Users.Application.Users.GetById;
 using Modules.Users.Domain.Enums;
 using SharedKernel;
 using Web.Api.Extensions;
@@ -25,11 +26,9 @@ internal sealed class GetTransactionsByUserId : IEndpoint
            ISender sender,
            CancellationToken cancellationToken = default) =>
         {
-            var query = new GetTransactionsByUserIdQuery(userId, page, pageSize, searchTerm, StartDate, EndDate);
-
-            Result<PagedList<TransactionResponse>> result = await sender.Send(query, cancellationToken);
-
-            return result.Match(Results.Ok, CustomResults.Problem);
+            return await Result.Success(new GetTransactionsByUserIdQuery(userId, page, pageSize, searchTerm, StartDate, EndDate))
+                  .Bind(query => sender.Send(query, cancellationToken))
+                  .Match(Results.Ok, CustomResults.Problem);
         })
        .WithOpenApi()
        .WithTags(Tags.Users)

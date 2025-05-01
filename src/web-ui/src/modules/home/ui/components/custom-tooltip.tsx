@@ -1,13 +1,23 @@
+import type { TooltipProps } from "recharts";
+
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency } from "@/lib/utils";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const CustomToolTip = ({ active, payload }: any) => {
-  if (!active) {
+type PayloadItem = {
+  payload?: {
+    price?: number;
+  };
+};
+
+export const CustomToolTip = ({
+  active,
+  payload,
+}: TooltipProps<number, string>) => {
+  if (!active || !payload || payload.length === 0 || !payload[0].payload) {
     return null;
   }
 
-  const price = payload[0].payload.price as number;
+  const price = (payload[0] as PayloadItem).payload?.price || 0;
 
   return (
     <div className="rounded-sm bg-background shadow-sm border overflow-hidden">

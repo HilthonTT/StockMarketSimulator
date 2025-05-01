@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using Modules.Stocks.Application.Stocks.GetByTicker;
-using Modules.Stocks.Contracts.Stocks;
 using Modules.Users.Domain.Enums;
 using SharedKernel;
 using Web.Api.Extensions;
@@ -18,11 +17,9 @@ internal sealed class GetByTicker : IEndpoint
             ISender sender,
             CancellationToken cancellationToken = default) =>
         {
-            var query = new GetStockByTickerQuery(ticker);
-
-            Result<StockPriceResponse> result = await sender.Send(query, cancellationToken);
-
-            return result.Match(Results.Ok, CustomResults.Problem);
+            return await Result.Success(new GetStockByTickerQuery(ticker))
+               .Bind(query => sender.Send(query, cancellationToken))
+               .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()
         .WithTags(Tags.Stocks)

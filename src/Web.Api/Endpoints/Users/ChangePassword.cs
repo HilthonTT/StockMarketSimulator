@@ -4,6 +4,7 @@ using Modules.Users.Contracts.Users;
 using Modules.Users.Domain.Enums;
 using SharedKernel;
 using Web.Api.Extensions;
+using Web.Api.Features;
 using Web.Api.Infrastructure;
 
 namespace Web.Api.Endpoints.Users;
@@ -18,14 +19,14 @@ internal sealed class ChangePassword : IEndpoint
             ISender sender,
             CancellationToken cancellationToken) =>
         {
-            var command = new ChangePasswordCommand(userId, request.CurrentPassword, request.NewPassword);
-
-            Result result = await sender.Send(command, cancellationToken);
-
-            return result.Match(Results.NoContent, CustomResults.Problem);
+            return await Result.Create(request, GeneralErrors.UnprocessableRequest)
+                .Map(request => new ChangePasswordCommand(userId, request.CurrentPassword, request.NewPassword))
+                .Bind(command => sender.Send(command, cancellationToken))
+                .Match(Results.NoContent, CustomResults.Problem);
         })
         .WithOpenApi()
         .WithTags(Tags.Users)
-        .HasPermission(Permission.Read, Permission.Write);
+        .HasPermission(Permission.Read, Permission.Write)
+        .RequireFeature(FeatureFlags.UseV1UsersApi);
     }
 }

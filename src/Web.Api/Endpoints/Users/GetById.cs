@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using Modules.Users.Application.Users.GetById;
-using Modules.Users.Contracts.Users;
 using Modules.Users.Domain.Enums;
 using SharedKernel;
 using Web.Api.Extensions;
@@ -18,11 +17,9 @@ internal sealed class GetById : IEndpoint
             ISender sender,
             CancellationToken cancellationToken = default) =>
         {
-            var query = new GetUserByIdQuery(userId);
-
-            Result<UserResponse> result = await sender.Send(query, cancellationToken);
-
-            return result.Match(Results.Ok, CustomResults.Problem);
+            return await Result.Success(new GetUserByIdQuery(userId))
+               .Bind(query => sender.Send(query, cancellationToken))
+               .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()
         .WithTags(Tags.Users)

@@ -17,11 +17,9 @@ internal sealed class RevokeRefreshTokens : IEndpoint
             ISender sender,
             CancellationToken cancellationToken = default) =>
         {
-            var command = new RevokeRefreshTokensCommand(userId);
-
-            Result result = await sender.Send(command, cancellationToken);
-
-            return result.Match(Results.NoContent, CustomResults.Problem);
+            return await Result.Success(new RevokeRefreshTokensCommand(userId))
+                .Bind(command => sender.Send(command, cancellationToken))
+                .Match(Results.NoContent, CustomResults.Problem);
         })
         .WithOpenApi()
         .WithTags(Tags.Users)

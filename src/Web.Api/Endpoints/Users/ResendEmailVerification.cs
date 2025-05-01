@@ -17,11 +17,10 @@ internal sealed class ResendEmailVerification : IEndpoint
             ISender sender,
             CancellationToken cancellationToken = default) =>
         {
-            var command = new ResendEmailVerificationCommand(request.Email);
-
-            Result result = await sender.Send(command, cancellationToken);
-
-            return result.Match(Results.NoContent, CustomResults.Problem);
+            return await Result.Create(request, GeneralErrors.UnprocessableRequest)
+                .Map(request => new ResendEmailVerificationCommand(request.Email))
+                .Bind(command => sender.Send(command, cancellationToken))
+                .Match(Results.NoContent, CustomResults.Problem);
         })
         .WithTags(Tags.Users)
         .RequireFeature(FeatureFlags.UseV1UsersApi);

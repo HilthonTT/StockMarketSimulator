@@ -17,11 +17,10 @@ internal sealed class Login : IEndpoint
             ISender sender,
             CancellationToken cancellationToken = default) =>
         {
-            var command = new LoginUserCommand(request.Email, request.Password);
-
-            Result<TokenResponse> result = await sender.Send(command, cancellationToken);
-
-            return result.Match(Results.Ok, CustomResults.Problem);
+            return await Result.Create(request, GeneralErrors.UnprocessableRequest)
+                .Map(request => new LoginUserCommand(request.Email, request.Password))
+                .Bind(command => sender.Send(command, cancellationToken))
+                .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()
         .WithTags(Tags.Users)

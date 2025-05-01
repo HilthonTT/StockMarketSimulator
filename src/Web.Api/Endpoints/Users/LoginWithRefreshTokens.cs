@@ -17,11 +17,10 @@ internal sealed class LoginWithRefreshTokens : IEndpoint
             ISender sender,
             CancellationToken cancellationToken) =>
         {
-            var command = new LoginUserWithRefreshTokenCommand(request.RefreshToken);
-
-            Result<TokenResponse> result = await sender.Send(command, cancellationToken);
-
-            return result.Match(Results.Ok, CustomResults.Problem);
+            return await Result.Create(request, GeneralErrors.UnprocessableRequest)
+                .Map(request => new LoginUserWithRefreshTokenCommand(request.RefreshToken))
+                .Bind(command => sender.Send(command, cancellationToken))
+                .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()
         .WithTags(Tags.Users)
