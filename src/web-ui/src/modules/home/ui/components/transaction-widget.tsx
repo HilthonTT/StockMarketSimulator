@@ -4,12 +4,17 @@ import { HubConnection } from "@microsoft/signalr";
 import { useEffect, useState } from "react";
 
 import { TransactionResponse } from "@/modules/transactions/types";
-
 import { StockPriceResponse } from "@/modules/stocks/types";
 
 import { TableCell, TableRow } from "@/components/ui/table";
 import { trpc } from "@/trpc/client";
 import { cn } from "@/lib/utils";
+
+import {
+  SIGNALR_JOIN_GROUP,
+  SIGNALR_LEAVE_GROUP,
+  SIGNALR_STOCK_UPDATE_EVENT,
+} from "../../hooks/use-signalr";
 
 interface TransactionWidgetProps {
   connection: HubConnection | null;
@@ -33,7 +38,9 @@ export const TransactionWidget = ({
       return;
     }
 
-    connection.invoke("JoinGroup", transaction.ticker).catch(console.error);
+    connection
+      .invoke(SIGNALR_JOIN_GROUP, transaction.ticker)
+      .catch(console.error);
 
     const handler = (stockUpdate: StockPriceResponse) => {
       if (stockUpdate.ticker !== transaction.ticker) {
@@ -45,11 +52,13 @@ export const TransactionWidget = ({
       setChange(stockUpdate.price - transaction.limitPrice);
     };
 
-    connection.on("ReceiveStockPriceUpdate", handler);
+    connection.on(SIGNALR_STOCK_UPDATE_EVENT, handler);
 
     return () => {
-      connection.off("ReceiveStockPriceUpdate", handler);
-      connection.invoke("LeaveGroup", transaction.ticker).catch(console.error);
+      connection.off(SIGNALR_STOCK_UPDATE_EVENT, handler);
+      connection
+        .invoke(SIGNALR_LEAVE_GROUP, transaction.ticker)
+        .catch(console.error);
     };
   }, [
     connection,

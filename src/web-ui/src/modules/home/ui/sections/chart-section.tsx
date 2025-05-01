@@ -1,144 +1,193 @@
 "use client";
 
-import * as React from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import {
   CartesianGrid,
   Line,
   LineChart,
   ResponsiveContainer,
+  Tooltip,
   XAxis,
+  YAxis,
 } from "recharts";
-import { format } from "date-fns";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { StockPriceResponse } from "@/modules/stocks/types";
 
-const chartData = [
-  { date: "2024-04-01", desktop: 222, mobile: 150 },
-  { date: "2024-04-02", desktop: 97, mobile: 180 },
-  { date: "2024-04-03", desktop: 167, mobile: 120 },
-  { date: "2024-04-04", desktop: 242, mobile: 260 },
-  { date: "2024-04-05", desktop: 373, mobile: 290 },
-  { date: "2024-04-06", desktop: 301, mobile: 340 },
-  { date: "2024-04-07", desktop: 245, mobile: 180 },
-  { date: "2024-04-08", desktop: 409, mobile: 320 },
-  { date: "2024-04-09", desktop: 59, mobile: 110 },
-  { date: "2024-04-10", desktop: 261, mobile: 190 },
-  { date: "2024-04-11", desktop: 327, mobile: 350 },
-  { date: "2024-04-12", desktop: 292, mobile: 210 },
-  { date: "2024-04-13", desktop: 342, mobile: 380 },
-  { date: "2024-04-14", desktop: 137, mobile: 220 },
-  { date: "2024-04-15", desktop: 120, mobile: 170 },
-  { date: "2024-04-16", desktop: 138, mobile: 190 },
-  { date: "2024-04-17", desktop: 446, mobile: 360 },
-  { date: "2024-04-18", desktop: 364, mobile: 410 },
-  { date: "2024-04-19", desktop: 243, mobile: 180 },
-  { date: "2024-04-20", desktop: 89, mobile: 150 },
-  { date: "2024-04-21", desktop: 137, mobile: 200 },
-  { date: "2024-04-22", desktop: 224, mobile: 170 },
-  { date: "2024-04-23", desktop: 138, mobile: 230 },
-  { date: "2024-04-24", desktop: 387, mobile: 290 },
-  { date: "2024-04-25", desktop: 215, mobile: 250 },
-  { date: "2024-04-26", desktop: 75, mobile: 130 },
-  { date: "2024-04-27", desktop: 383, mobile: 420 },
-  { date: "2024-04-28", desktop: 122, mobile: 180 },
-  { date: "2024-04-29", desktop: 315, mobile: 240 },
-  { date: "2024-04-30", desktop: 454, mobile: 380 },
-  { date: "2024-05-01", desktop: 165, mobile: 220 },
-  { date: "2024-05-02", desktop: 293, mobile: 310 },
-  { date: "2024-05-03", desktop: 247, mobile: 190 },
-  { date: "2024-05-04", desktop: 385, mobile: 420 },
-  { date: "2024-05-05", desktop: 481, mobile: 390 },
-  { date: "2024-05-06", desktop: 498, mobile: 520 },
-  { date: "2024-05-07", desktop: 388, mobile: 300 },
-  { date: "2024-05-08", desktop: 149, mobile: 210 },
-  { date: "2024-05-09", desktop: 227, mobile: 180 },
-  { date: "2024-05-10", desktop: 293, mobile: 330 },
-  { date: "2024-05-11", desktop: 335, mobile: 270 },
-  { date: "2024-05-12", desktop: 197, mobile: 240 },
-  { date: "2024-05-13", desktop: 197, mobile: 160 },
-  { date: "2024-05-14", desktop: 448, mobile: 490 },
-  { date: "2024-05-15", desktop: 473, mobile: 380 },
-  { date: "2024-05-16", desktop: 338, mobile: 400 },
-  { date: "2024-05-17", desktop: 499, mobile: 420 },
-  { date: "2024-05-18", desktop: 315, mobile: 350 },
-  { date: "2024-05-19", desktop: 235, mobile: 180 },
-  { date: "2024-05-20", desktop: 177, mobile: 230 },
-  { date: "2024-05-21", desktop: 82, mobile: 140 },
-  { date: "2024-05-22", desktop: 81, mobile: 120 },
-  { date: "2024-05-23", desktop: 252, mobile: 290 },
-  { date: "2024-05-24", desktop: 294, mobile: 220 },
-  { date: "2024-05-25", desktop: 201, mobile: 250 },
-  { date: "2024-05-26", desktop: 213, mobile: 170 },
-  { date: "2024-05-27", desktop: 420, mobile: 460 },
-  { date: "2024-05-28", desktop: 233, mobile: 190 },
-  { date: "2024-05-29", desktop: 78, mobile: 130 },
-  { date: "2024-05-30", desktop: 340, mobile: 280 },
-  { date: "2024-05-31", desktop: 178, mobile: 230 },
-  { date: "2024-06-01", desktop: 178, mobile: 200 },
-  { date: "2024-06-02", desktop: 470, mobile: 410 },
-  { date: "2024-06-03", desktop: 103, mobile: 160 },
-  { date: "2024-06-04", desktop: 439, mobile: 380 },
-  { date: "2024-06-05", desktop: 88, mobile: 140 },
-  { date: "2024-06-06", desktop: 294, mobile: 250 },
-  { date: "2024-06-07", desktop: 323, mobile: 370 },
-  { date: "2024-06-08", desktop: 385, mobile: 320 },
-  { date: "2024-06-09", desktop: 438, mobile: 480 },
-  { date: "2024-06-10", desktop: 155, mobile: 200 },
-  { date: "2024-06-11", desktop: 92, mobile: 150 },
-  { date: "2024-06-12", desktop: 492, mobile: 420 },
-  { date: "2024-06-13", desktop: 81, mobile: 130 },
-  { date: "2024-06-14", desktop: 426, mobile: 380 },
-  { date: "2024-06-15", desktop: 307, mobile: 350 },
-  { date: "2024-06-16", desktop: 371, mobile: 310 },
-  { date: "2024-06-17", desktop: 475, mobile: 520 },
-  { date: "2024-06-18", desktop: 107, mobile: 170 },
-  { date: "2024-06-19", desktop: 341, mobile: 290 },
-  { date: "2024-06-20", desktop: 408, mobile: 450 },
-  { date: "2024-06-21", desktop: 169, mobile: 210 },
-  { date: "2024-06-22", desktop: 317, mobile: 270 },
-  { date: "2024-06-23", desktop: 480, mobile: 530 },
-  { date: "2024-06-24", desktop: 132, mobile: 180 },
-  { date: "2024-06-25", desktop: 141, mobile: 190 },
-  { date: "2024-06-26", desktop: 434, mobile: 380 },
-  { date: "2024-06-27", desktop: 448, mobile: 490 },
-  { date: "2024-06-28", desktop: 149, mobile: 200 },
-  { date: "2024-06-29", desktop: 103, mobile: 160 },
-  { date: "2024-06-30", desktop: 446, mobile: 400 },
-];
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { trpc } from "@/trpc/client";
+import { PAGE_SIZE } from "@/constants";
 
-export function ChartSection() {
+import {
+  SIGNALR_JOIN_GROUP,
+  SIGNALR_LEAVE_GROUP,
+  SIGNALR_STOCK_UPDATE_EVENT,
+  useSignalR,
+} from "../../hooks/use-signalr";
+import { CustomToolTip } from "../components/custom-tooltip";
+import { TickerSelector } from "../components/ticker-selector";
+
+interface ChartSectionProps {
+  page: number;
+}
+
+export const ChartSection = (props: ChartSectionProps) => {
+  return (
+    <Suspense fallback={<p>Loading...</p>}>
+      <ErrorBoundary fallback={<p>Error</p>}>
+        <ChartSectionSuspense {...props} />
+      </ErrorBoundary>
+    </Suspense>
+  );
+};
+
+interface PricePoint {
+  index: number;
+  price: number;
+}
+
+const MAX_POINTS = 30;
+
+const ChartSectionSuspense = ({ page }: ChartSectionProps) => {
+  const [pagedTransactions] = trpc.transactions.getMany.useSuspenseQuery({
+    page,
+    pageSize: PAGE_SIZE,
+  });
+
+  const { connection, isLoading } = useSignalR();
+
+  const [pending, setPending] = useState(false);
+
+  const tickers = useMemo(
+    () => Array.from(new Set(pagedTransactions.items.map((t) => t.ticker))),
+    [pagedTransactions]
+  );
+
+  const defaultTicker = useMemo(() => {
+    if (pagedTransactions.items.length === 0) {
+      return "";
+    }
+
+    return pagedTransactions.items.reduce((max, tx) =>
+      tx.limitPrice > max.limitPrice ? tx : max
+    ).ticker;
+  }, [pagedTransactions]);
+
+  const [selectedTicker, setSelectedTicker] = useState<string>(defaultTicker);
+  const [data, setData] = useState<PricePoint[]>([]);
+  const [index, setIndex] = useState(1);
+
+  const resetChart = useCallback(() => {
+    setData([]);
+    setIndex(1);
+  }, []);
+
+  const handleStockUpdate = useCallback(
+    (stockUpdate: StockPriceResponse) => {
+      if (stockUpdate.ticker !== selectedTicker) {
+        return;
+      }
+
+      setData((prev) => {
+        const updated = [...prev, { index, price: stockUpdate.price }];
+        if (updated.length > MAX_POINTS) updated.shift();
+        return updated;
+      });
+      setIndex((prev) => prev + 1);
+    },
+    [selectedTicker, index]
+  );
+
+  useEffect(() => {
+    if (!connection || !selectedTicker) {
+      return;
+    }
+
+    connection.invoke(SIGNALR_JOIN_GROUP, selectedTicker).catch(console.error);
+    connection.on(SIGNALR_STOCK_UPDATE_EVENT, handleStockUpdate);
+
+    return () => {
+      connection.off(SIGNALR_STOCK_UPDATE_EVENT, handleStockUpdate);
+      connection
+        .invoke(SIGNALR_LEAVE_GROUP, selectedTicker)
+        .catch(console.error);
+    };
+  }, [connection, selectedTicker, handleStockUpdate]);
+
+  const onChangeTicker = useCallback(
+    async (ticker: string) => {
+      if (!connection || ticker === selectedTicker || pending) {
+        return;
+      }
+
+      setPending(true);
+
+      try {
+        await connection.invoke(SIGNALR_LEAVE_GROUP, selectedTicker);
+        await connection.invoke(SIGNALR_JOIN_GROUP, ticker);
+
+        resetChart();
+        setSelectedTicker(ticker);
+      } catch (error) {
+        console.error("Error switching ticker groups:", error);
+      } finally {
+        setPending(false);
+      }
+    },
+    [connection, selectedTicker, resetChart, pending]
+  );
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <Card className="dark:bg-black">
-      <CardContent className="px-2 sm:p-6">
+      <CardTitle className="w-full relative">
+        <div className="flex justify-center items-center relative">
+          <h1 className="text-center lg:text-5xl text-4xl">{selectedTicker}</h1>
+          <div className="absolute right-8">
+            <TickerSelector
+              disabled={pending || isLoading}
+              onChange={onChangeTicker}
+              tickers={tickers}
+            />
+          </div>
+        </div>
+      </CardTitle>
+      <CardContent className="px-2 sm:p-6 sm:pt-0">
         <ResponsiveContainer width="100%" height={350}>
-          <LineChart data={chartData}>
+          <LineChart data={data}>
+            <defs>
+              <linearGradient id="colorLine" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#38bdf8" stopOpacity={0.8} />
+                <stop offset="100%" stopColor="#38bdf8" stopOpacity={0.2} />
+              </linearGradient>
+            </defs>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
-              axisLine={false}
-              tickLine={false}
-              dataKey="date"
-              tickFormatter={(value) => format(value, "dd MMM")}
-              style={{ fontSize: "12px" }}
-              tickMargin={16}
+              dataKey="index"
+              tickFormatter={(value) => `#${value}`}
+              tick={{ fontSize: 12 }}
+              tickMargin={8}
             />
-            {/* <Tooltip content={<CustomToolTip />} /> */}
+            <YAxis
+              domain={["dataMin - 0.5", "dataMax + 0.5"]}
+              tickFormatter={(value) => `$${value.toFixed(2)}`}
+              tick={{ fontSize: 12 }}
+              tickMargin={8}
+            />
+            <Tooltip content={<CustomToolTip />} />
             <Line
-              dot={false}
-              dataKey="desktop"
+              type="monotone"
+              dataKey="price"
               stroke="#3d82f6"
-              strokeWidth={2}
-              className="drop-shadow-sm"
-            />
-            <Line
+              strokeWidth={3}
               dot={false}
-              dataKey="mobile"
-              stroke="#f43f5e"
-              strokeWidth={2}
-              className="drop-shadow-sm"
             />
           </LineChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>
   );
-}
+};

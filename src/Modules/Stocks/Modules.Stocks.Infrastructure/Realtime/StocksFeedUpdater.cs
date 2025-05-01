@@ -58,13 +58,19 @@ public sealed class StocksFeedUpdater(
     private decimal CalculateNewPrice(StockPriceResponse currentPrice)
     {
         double dt = 1.0 / 252; // Daily step assuming 252 trading days per year
-        double mu = 0.0005; // Expected return (adjust this as needed)
-        double sigma = _options.Volatility; // Volatility factor
+        double mu = 0.0015; // Increased expected return (more aggressive upward price movement)
+        double sigma = _options.Volatility * 2.0; // Increased volatility (more aggressive price fluctuation)
 
+        // Generate a random shock based on the increased volatility
         double randomShock = sigma * Math.Sqrt(dt) * _random.NextDouble();
+
+        // Calculate the percentage change with more aggressive movement
         double percentageChange = mu * dt + randomShock;
 
         decimal newPrice = currentPrice.Price * (decimal)(1 + percentageChange);
+
+        // Ensure price doesn't go below 0
+        newPrice = Math.Max(newPrice, 0);
 
         return Math.Round(newPrice, 2);
     }

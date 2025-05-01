@@ -8,6 +8,10 @@ import {
 import { trpc } from "@/trpc/client";
 import { SERVER_URL } from "@/constants";
 
+export const SIGNALR_JOIN_GROUP = "JoinGroup";
+export const SIGNALR_LEAVE_GROUP = "LeaveGroup";
+export const SIGNALR_STOCK_UPDATE_EVENT = "ReceiveStockPriceUpdate";
+
 export const useSignalR = () => {
   const [jwt] = trpc.auth.getJwt.useSuspenseQuery();
 
