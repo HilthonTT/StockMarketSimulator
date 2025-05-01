@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useMutation } from "@tanstack/react-query";
 
 import {
   Form,
@@ -16,11 +17,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { trpc } from "@/trpc/client";
+import { useTRPC } from "@/trpc/client";
 
 import { RegisterSchema } from "../../schemas";
 
 export const RegisterFormSection = () => {
+  const trpc = useTRPC();
   const router = useRouter();
 
   const form = useForm<z.infer<typeof RegisterSchema>>({
@@ -32,18 +34,20 @@ export const RegisterFormSection = () => {
     },
   });
 
-  const register = trpc.auth.register.useMutation({
-    onSuccess: () => {
-      toast.success(
-        "Please check your emails for the email verification link!"
-      );
+  const register = useMutation(
+    trpc.auth.register.mutationOptions({
+      onSuccess: () => {
+        toast.success(
+          "Please check your emails for the email verification link!"
+        );
 
-      router.push("/login");
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
+        router.push("/login");
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    })
+  );
 
   const onSubmit = (values: z.infer<typeof RegisterSchema>) => {
     register.mutate(values);

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { HomeView } from "@/modules/home/ui/views/home-view";
 import { fetchUser } from "@/modules/auth/server/caller";
 
-import { HydrateClient, trpc } from "@/trpc/server";
+import { getQueryClient, HydrateClient, trpc } from "@/trpc/server";
 import { PAGE_SIZE } from "@/constants";
 
 interface PageProps {
@@ -23,13 +23,27 @@ const Page = async ({ searchParams }: PageProps) => {
 
   const parsedPage = page ? parseInt(page, 10) : 1;
 
-  void trpc.auth.getJwt.prefetch();
-  void trpc.budgets.getOne.prefetch();
-  void trpc.transactions.getMany.prefetch({
-    page: parsedPage,
-    pageSize: PAGE_SIZE,
-    searchTerm: search,
-  });
+  const queryClient = getQueryClient();
+
+  void queryClient.prefetchQuery(trpc.auth.getJwt.queryOptions());
+  void queryClient.prefetchQuery(trpc.budgets.getOne.queryOptions());
+
+  // Search query transactions
+  void queryClient.prefetchQuery(
+    trpc.transactions.getMany.queryOptions({
+      page: parsedPage,
+      pageSize: PAGE_SIZE,
+      searchTerm: search,
+    })
+  );
+
+  // All Transactions
+  void queryClient.prefetchQuery(
+    trpc.transactions.getMany.queryOptions({
+      page: parsedPage,
+      pageSize: PAGE_SIZE,
+    })
+  );
 
   return (
     <HydrateClient>

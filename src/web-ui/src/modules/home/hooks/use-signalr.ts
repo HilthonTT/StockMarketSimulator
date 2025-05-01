@@ -4,8 +4,9 @@ import {
   HubConnectionBuilder,
   LogLevel,
 } from "@microsoft/signalr";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
-import { trpc } from "@/trpc/client";
+import { useTRPC } from "@/trpc/client";
 import { SERVER_URL } from "@/constants";
 
 export const SIGNALR_JOIN_GROUP = "JoinGroup";
@@ -13,7 +14,9 @@ export const SIGNALR_LEAVE_GROUP = "LeaveGroup";
 export const SIGNALR_STOCK_UPDATE_EVENT = "ReceiveStockPriceUpdate";
 
 export const useSignalR = () => {
-  const [jwt] = trpc.auth.getJwt.useSuspenseQuery();
+  const trpc = useTRPC();
+
+  const { data: jwt } = useSuspenseQuery(trpc.auth.getJwt.queryOptions());
 
   const [connection, setConnection] = useState<HubConnection | null>(null);
   const [isLoading, setIsLoading] = useState(true);

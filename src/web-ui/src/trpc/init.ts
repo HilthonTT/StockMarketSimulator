@@ -1,6 +1,5 @@
 import superjson from "superjson";
 import https from "https";
-import fetch from "node-fetch";
 import { cookies } from "next/headers";
 import { jwtDecode } from "jwt-decode";
 import { cache } from "react";
@@ -8,7 +7,9 @@ import { cache } from "react";
 import { TokenResponse, UserResponse } from "@/modules/auth/types";
 
 import { initTRPC, TRPCError } from "@trpc/server";
-import { ACCESS_TOKEN, REFRESH_TOKEN, SERVER_URL } from "@/constants";
+import { ACCESS_TOKEN, REFRESH_TOKEN } from "@/constants";
+import { setAuthCookies } from "@/lib/auth";
+import { fetchFromApi } from "@/lib/api";
 
 export const agent = new https.Agent({
   rejectUnauthorized: false,
@@ -32,37 +33,14 @@ export const createTRPCContext = cache(async () => {
   // Check if the access token is expired (decoded.exp is the expiration time in seconds)
   if (decoded.exp * 1000 < Date.now() && refreshToken) {
     try {
-      const response = await fetch(
-        `${SERVER_URL}/api/v1/users/refresh-tokens`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ refreshToken }),
-          agent,
-        }
-      );
+      const tokenResponse = await fetchFromApi<TokenResponse>({
+        path: "/api/v1/users/refresh-tokens",
+        method: "POST",
+        body: refreshToken,
+      });
 
-      if (response.ok) {
-        const tokenResponse = (await response.json()) as TokenResponse;
-
-        const cookieStore = await cookies();
-        cookieStore.set(ACCESS_TOKEN, tokenResponse.accessToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          path: "/",
-          sameSite: "lax",
-          maxAge: 60 * 60 * 24 * 1, // 1 day
-        });
-
-        cookieStore.set(REFRESH_TOKEN, tokenResponse.refreshToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          path: "/",
-          sameSite: "lax",
-          maxAge: 60 * 60 * 24 * 7, // 7 days
-        });
+      if (tokenResponse) {
+        await setAuthCookies(tokenResponse);
 
         return { userId: decoded.sub, accessToken: tokenResponse.accessToken };
       }
@@ -104,19 +82,11 @@ export const protectedProcedure = t.procedure.use(async function isAuthed(
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
-  const response = await fetch(`${SERVER_URL}/api/v1/users/me`, {
+  const user = await fetchFromApi<UserResponse>({
     method: "GET",
-    headers: {
-      Authorization: `Bearer ${ctx.accessToken}`,
-    },
-    agent,
+    path: "/api/v1/users/me",
+    accessToken: ctx.accessToken,
   });
-
-  if (response.status !== 200) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
-  }
-
-  const user = (await response.json()) as UserResponse | undefined;
 
   if (!user) {
     throw new TRPCError({ code: "UNAUTHORIZED" });

@@ -11,11 +11,12 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { StockPriceResponse } from "@/modules/stocks/types";
 
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import { trpc } from "@/trpc/client";
+import { useTRPC } from "@/trpc/client";
 import { PAGE_SIZE } from "@/constants";
 
 import {
@@ -49,10 +50,14 @@ interface PricePoint {
 const MAX_POINTS = 30;
 
 const ChartSectionSuspense = ({ page }: ChartSectionProps) => {
-  const [pagedTransactions] = trpc.transactions.getMany.useSuspenseQuery({
-    page,
-    pageSize: PAGE_SIZE,
-  });
+  const trpc = useTRPC();
+
+  const { data: pagedTransactions } = useSuspenseQuery(
+    trpc.transactions.getMany.queryOptions({
+      page,
+      pageSize: PAGE_SIZE,
+    })
+  );
 
   const { connection, isLoading } = useSignalR();
 

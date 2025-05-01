@@ -2,12 +2,13 @@
 
 import { HubConnection } from "@microsoft/signalr";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import { TransactionResponse } from "@/modules/transactions/types";
 import { StockPriceResponse } from "@/modules/stocks/types";
 
 import { TableCell, TableRow } from "@/components/ui/table";
-import { trpc } from "@/trpc/client";
+import { useTRPC } from "@/trpc/client";
 import { cn } from "@/lib/utils";
 
 import {
@@ -25,13 +26,17 @@ export const TransactionWidget = ({
   connection,
   transaction,
 }: TransactionWidgetProps) => {
+  const trpc = useTRPC();
+
   const [pricePerUnit, setPricePerUnit] = useState(transaction.limitPrice);
   const [totalPrice, setTotalPrice] = useState(
     pricePerUnit * transaction.quantity
   );
   const [change, setChange] = useState(0);
 
-  trpc.stocks.getOne.useQuery({ ticker: transaction.ticker });
+  const {} = useQuery(
+    trpc.stocks.getOne.queryOptions({ ticker: transaction.ticker })
+  );
 
   useEffect(() => {
     if (!connection) {

@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
 
 import {
   Form,
@@ -16,11 +17,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { trpc } from "@/trpc/client";
+import { useTRPC } from "@/trpc/client";
 
 import { LoginSchema } from "../../schemas";
 
 export const LoginFormSection = () => {
+  const trpc = useTRPC();
   const router = useRouter();
 
   const form = useForm<z.infer<typeof LoginSchema>>({
@@ -31,16 +33,18 @@ export const LoginFormSection = () => {
     },
   });
 
-  const login = trpc.auth.login.useMutation({
-    onSuccess: () => {
-      toast.success("You've logged in!");
+  const login = useMutation(
+    trpc.auth.login.mutationOptions({
+      onSuccess: () => {
+        toast.success("You've logged in!");
 
-      router.push("/");
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
+        router.push("/");
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    })
+  );
 
   const onSubmit = (values: z.infer<typeof LoginSchema>) => {
     login.mutate(values);

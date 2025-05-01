@@ -4,6 +4,7 @@ import { Suspense, useRef, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { SearchIcon, XIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
 import {
   Table,
@@ -13,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { trpc } from "@/trpc/client";
+import { useTRPC } from "@/trpc/client";
 import { APP_URL, PAGE_SIZE } from "@/constants";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,8 @@ export const TransactionSection = (props: TransactionSectionProps) => {
 };
 
 const TransactionSectionSuspense = ({ page }: TransactionSectionProps) => {
+  const trpc = useTRPC();
+
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -44,11 +47,13 @@ const TransactionSectionSuspense = ({ page }: TransactionSectionProps) => {
   const query = searchParams.get("query") ?? "";
   const [value, setValue] = useState(query);
 
-  const [pagedTransactions] = trpc.transactions.getMany.useSuspenseQuery({
-    page: page || 1,
-    pageSize: PAGE_SIZE,
-    searchTerm: query || undefined,
-  });
+  const { data: pagedTransactions } = useSuspenseQuery(
+    trpc.transactions.getMany.queryOptions({
+      page: page || 1,
+      pageSize: PAGE_SIZE,
+      searchTerm: query || undefined,
+    })
+  );
 
   const { connection, isLoading } = useSignalR();
 

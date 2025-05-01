@@ -4,9 +4,10 @@ import { Suspense } from "react";
 import { FaPiggyBank } from "react-icons/fa";
 import { ErrorBoundary } from "react-error-boundary";
 import { FaArrowTrendDown, FaMedal } from "react-icons/fa6";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
-import { trpc } from "@/trpc/client";
 import { PAGE_SIZE } from "@/constants";
+import { useTRPC } from "@/trpc/client";
 
 import { DataCard } from "../components/data-card";
 
@@ -25,11 +26,15 @@ export const DataSection = (props: DataSectionProps) => {
 };
 
 const DataSectionSuspense = ({ page }: DataSectionProps) => {
-  const [budget] = trpc.budgets.getOne.useSuspenseQuery();
-  const [pagedTransactions] = trpc.transactions.getMany.useSuspenseQuery({
-    page,
-    pageSize: PAGE_SIZE,
-  });
+  const trpc = useTRPC();
+
+  const { data: budget } = useSuspenseQuery(trpc.budgets.getOne.queryOptions());
+  const { data: pagedTransactions } = useSuspenseQuery(
+    trpc.transactions.getMany.queryOptions({
+      page,
+      pageSize: PAGE_SIZE,
+    })
+  );
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-2 mb-8">
