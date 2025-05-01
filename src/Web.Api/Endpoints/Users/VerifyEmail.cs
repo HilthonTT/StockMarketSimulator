@@ -24,6 +24,7 @@ internal sealed class VerifyEmail : IEndpoint
         .WithOpenApi()
         .WithTags(Tags.Users)
         .WithName(UserEndpoints.VerifyEmail)
-        .RequireFeature(FeatureFlags.UseV1UsersApi);
+        .RequireFeature(FeatureFlags.UseV1UsersApi)
+        .RequireRateLimiting(RateLimiterPolicyNames.GlobalLimiter);
     }
 }

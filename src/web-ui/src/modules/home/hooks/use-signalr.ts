@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   HubConnection,
   HubConnectionBuilder,
+  HubConnectionState,
   LogLevel,
 } from "@microsoft/signalr";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -26,8 +27,6 @@ export const useSignalR = () => {
       return;
     }
 
-    console.log(jwt);
-
     const newConnection = new HubConnectionBuilder()
       .withUrl(`${SERVER_URL}/stocks-feed`, {
         accessTokenFactory: () => jwt,
@@ -50,5 +49,8 @@ export const useSignalR = () => {
     };
   }, [jwt]);
 
-  return { connection, isLoading };
+  return {
+    connection,
+    isLoading: isLoading || connection?.state === HubConnectionState.Connecting,
+  };
 };

@@ -27,6 +27,7 @@ internal sealed class ChangePassword : IEndpoint
         .WithOpenApi()
         .WithTags(Tags.Users)
         .HasPermission(Permission.Read, Permission.Write)
-        .RequireFeature(FeatureFlags.UseV1UsersApi);
+        .RequireFeature(FeatureFlags.UseV1UsersApi)
+        .RequireRateLimiting(RateLimiterPolicyNames.GlobalLimiter);
     }
 }

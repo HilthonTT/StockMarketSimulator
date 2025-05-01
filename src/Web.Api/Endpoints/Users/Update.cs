@@ -27,6 +27,7 @@ internal sealed class Update : IEndpoint
         .WithOpenApi()
         .HasPermission(Permission.Read, Permission.Write)
         .WithTags(Tags.Users)
-        .RequireFeature(FeatureFlags.UseV1UsersApi);
+        .RequireFeature(FeatureFlags.UseV1UsersApi)
+        .RequireRateLimiting(RateLimiterPolicyNames.GlobalLimiter);
     }
 }

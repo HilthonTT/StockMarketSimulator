@@ -1,9 +1,13 @@
-﻿using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.RateLimiting;
+﻿using Infrastructure;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.FeatureManagement;
+using RedisRateLimiting.AspNetCore;
+using SharedKernel;
+using StackExchange.Redis;
 using System.Diagnostics;
 using System.IO.Compression;
+using Web.Api.Endpoints;
 using Web.Api.Features;
 using Web.Api.Infrastructure;
 using Web.Api.Middleware;
@@ -12,14 +16,14 @@ namespace Web.Api;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddPresentation(this IServiceCollection services)
+    public static IServiceCollection AddPresentation(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddOpenApi();
         services.AddSwaggerServices();
         services.AddCors();
         services.AddExceptionHandling();
         services.AddMiddlewares();
-        services.ConfigureRateLimiter();
+        services.ConfigureRateLimiter(configuration);
 
         services.AddFeatureManagement()
             .WithTargeting<UserTargetingContext>();
@@ -75,18 +79,23 @@ public static class DependencyInjection
         return services;
     }
 
-    private static IServiceCollection ConfigureRateLimiter(this IServiceCollection services)
+    private static IServiceCollection ConfigureRateLimiter(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddRateLimiter(rateLimiterOptions =>
-        {
-            rateLimiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+        string? redisConnectionString = configuration.GetConnectionString(ConfigurationNames.Redis);
+        Ensure.NotNullOrEmpty(redisConnectionString, nameof(redisConnectionString));
 
-            rateLimiterOptions.AddTokenBucketLimiter("token", options =>
+        var connectionMultiplexer = ConnectionMultiplexer.Connect(redisConnectionString);
+
+        services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            options.AddRedisTokenBucketLimiter(RateLimiterPolicyNames.GlobalLimiter, limiterOptions =>
             {
-                options.TokenLimit = 1000;
-                options.ReplenishmentPeriod = TimeSpan.FromHours(1);
-                options.TokensPerPeriod = 700;
-                options.AutoReplenishment = true;
+                limiterOptions.ConnectionMultiplexerFactory = () => connectionMultiplexer;
+                limiterOptions.TokenLimit = 100;   // Maximum tokens (burst capacity)
+                limiterOptions.TokensPerPeriod = 50; // Refill rate (tokens per period)
+                limiterOptions.ReplenishmentPeriod = TimeSpan.FromSeconds(1); // Refilling interval
             });
         });
 

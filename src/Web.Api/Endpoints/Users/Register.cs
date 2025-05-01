@@ -24,6 +24,7 @@ internal sealed class Register : IEndpoint
         })
         .WithOpenApi()
         .WithTags(Tags.Users)
-        .RequireFeature(FeatureFlags.UseV1UsersApi);
+        .RequireFeature(FeatureFlags.UseV1UsersApi)
+        .RequireRateLimiting(RateLimiterPolicyNames.GlobalLimiter);
     }
 }

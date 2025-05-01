@@ -18,6 +18,10 @@ public sealed class AuditLog : Entity, IAuditable, ISoftDeletable
         Guid? relatedEntityId = null, 
         string? relatedEntityType = null)
     {
+        Ensure.NotNullOrEmpty(id, nameof(id));
+        Ensure.NotNullOrEmpty(userId, nameof(userId));
+        Ensure.NotNullOrEmpty(action, nameof(action));
+
         Id = id;
         UserId = userId;
         LogType = logType;

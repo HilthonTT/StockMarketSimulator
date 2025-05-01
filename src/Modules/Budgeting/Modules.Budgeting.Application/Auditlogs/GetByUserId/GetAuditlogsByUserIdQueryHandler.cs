@@ -1,6 +1,7 @@
 ﻿using Application.Abstractions.Authentication;
 using Application.Abstractions.Messaging;
 using Contracts.Common;
+using Microsoft.EntityFrameworkCore;
 using Modules.Budgeting.Application.Abstractions.Data;
 using Modules.Budgeting.Contracts.AuditLogs;
 using Modules.Budgeting.Domain.Entities;
@@ -27,7 +28,11 @@ internal sealed class GetAuditlogsByUserIdQueryHandler(
 
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
-            auditLogsQuery = auditLogsQuery.Where(t => t.Action.ToLower().Contains(request.SearchTerm.ToLower()));
+            string searchTerm = request.SearchTerm.ToLower();
+
+            auditLogsQuery = auditLogsQuery.Where(a => 
+                EF.Functions.ToTsVector("english", a.Action + " " + a.Description)
+                    .Matches(EF.Functions.PhraseToTsQuery("english", searchTerm)));
         }
 
         if (request.LogType is not null && Enum.IsDefined(typeof(AuditLogType), request.LogType))

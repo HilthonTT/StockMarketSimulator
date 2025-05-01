@@ -22,6 +22,7 @@ internal sealed class GetByTicker : IEndpoint
         })
         .WithOpenApi()
         .WithTags(Tags.Shorten)
-        .RequireFeature(FeatureFlags.UseV1ShortenApi);
+        .RequireFeature(FeatureFlags.UseV1ShortenApi)
+        .RequireRateLimiting(RateLimiterPolicyNames.GlobalLimiter);
     }
 }

@@ -24,7 +24,7 @@ internal sealed class GetByTicker : IEndpoint
         .WithOpenApi()
         .WithTags(Tags.Stocks)
         .HasPermission(Permission.Read)
-        .RequireRateLimiting("token")
+        .RequireRateLimiting(RateLimiterPolicyNames.GlobalLimiter)
         .RequireFeature(FeatureFlags.UseV1StocksApi);
     }
 }

@@ -23,6 +23,7 @@ internal sealed class ResendEmailVerification : IEndpoint
                 .Match(Results.NoContent, CustomResults.Problem);
         })
         .WithTags(Tags.Users)
-        .RequireFeature(FeatureFlags.UseV1UsersApi);
+        .RequireFeature(FeatureFlags.UseV1UsersApi)
+        .RequireRateLimiting(RateLimiterPolicyNames.GlobalLimiter);
     }
 }

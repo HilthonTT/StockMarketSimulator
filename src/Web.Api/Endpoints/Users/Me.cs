@@ -23,6 +23,7 @@ internal sealed class Me : IEndpoint
         .WithOpenApi()
         .WithTags(Tags.Users)
         .HasPermission(Permission.Write, Permission.Read)
-        .RequireFeature(FeatureFlags.UseV1UsersApi);
+        .RequireFeature(FeatureFlags.UseV1UsersApi)
+        .RequireRateLimiting(RateLimiterPolicyNames.GlobalLimiter);
     }
 }

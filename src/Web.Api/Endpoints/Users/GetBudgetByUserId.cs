@@ -24,7 +24,7 @@ internal sealed class GetBudgetByUserId : IEndpoint
         .WithOpenApi()
         .WithTags(Tags.Users)
         .HasPermission(Permission.Read, Permission.Write)
-        .RequireRateLimiting("token")
-        .RequireFeature(FeatureFlags.UseV1UsersApi);
+        .RequireFeature(FeatureFlags.UseV1UsersApi)
+        .RequireRateLimiting(RateLimiterPolicyNames.GlobalLimiter);
     }   
 }

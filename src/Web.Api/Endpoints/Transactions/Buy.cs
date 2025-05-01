@@ -28,6 +28,7 @@ internal sealed class Buy : IEndpoint
         .WithTags(Tags.Transactions)
         .HasPermission(Permission.Read, Permission.Write)
         .AddEndpointFilter<IdempotencyFilter>()
-        .RequireFeature(FeatureFlags.UseV1BudgetingApi);
+        .RequireFeature(FeatureFlags.UseV1BudgetingApi)
+        .RequireRateLimiting(RateLimiterPolicyNames.GlobalLimiter);
     }
 }

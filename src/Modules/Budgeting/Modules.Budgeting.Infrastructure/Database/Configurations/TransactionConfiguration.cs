@@ -10,6 +10,12 @@ internal sealed class TransactionConfiguration : IEntityTypeConfiguration<Transa
     {
         builder.HasKey(x => x.Id);
 
+        builder.Property(x => x.Ticker).HasMaxLength(10);
+
+        builder.HasIndex(x => new { x.Ticker })
+            .HasMethod("GIN")
+            .IsTsVectorExpressionIndex("english");
+
         builder.HasIndex(x => x.UserId);
 
         builder.Ignore(x => x.TotalAmount);

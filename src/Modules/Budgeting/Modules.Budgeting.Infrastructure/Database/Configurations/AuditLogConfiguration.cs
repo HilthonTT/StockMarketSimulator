@@ -12,6 +12,10 @@ internal sealed class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
 
         builder.HasIndex(x => x.UserId);
 
+        builder.HasIndex(x => new { x.Action, x.Description })
+           .HasMethod("GIN")
+           .IsTsVectorExpressionIndex("english");
+
         builder.HasQueryFilter(x => !x.IsDeleted);
 
         builder.HasIndex(x => x.IsDeleted).HasFilter("is_deleted = true");

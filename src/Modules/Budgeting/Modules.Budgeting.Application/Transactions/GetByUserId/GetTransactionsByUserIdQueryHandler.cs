@@ -1,6 +1,7 @@
 ﻿using Application.Abstractions.Authentication;
 using Application.Abstractions.Messaging;
 using Contracts.Common;
+using Microsoft.EntityFrameworkCore;
 using Modules.Budgeting.Application.Abstractions.Data;
 using Modules.Budgeting.Contracts.Transactions;
 using Modules.Budgeting.Domain.Entities;
@@ -26,7 +27,11 @@ internal sealed class GetTransactionsByUserIdQueryHandler(
 
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
-            transactionQuery = transactionQuery.Where(t => t.Ticker.ToLower().Contains(request.SearchTerm.ToLower()));
+            string searchTerm = request.SearchTerm.ToLower();
+
+            transactionQuery = transactionQuery.Where(t =>
+                EF.Functions.ToTsVector("english", t.Ticker)
+                    .Matches(EF.Functions.PhraseToTsQuery("english", searchTerm)));
         }
 
         if (request.StartDate is not null)

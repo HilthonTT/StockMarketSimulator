@@ -8,19 +8,16 @@ import { TokenResponse } from "@/modules/auth/types";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "@/constants";
 import { fetchFromApi } from "@/lib/api";
 
-export async function refreshAccessTokenIfNeeded(): Promise<string | null> {
-  const cookieStore = await cookies();
+const EXPIRATION_TIME = 60 * 60 * 24 * 10; // 10 DAYS
 
-  const accessToken = cookieStore.get(ACCESS_TOKEN)?.value;
-  const refreshToken = cookieStore.get(REFRESH_TOKEN)?.value;
+export async function refreshAccessTokenIfNeeded(): Promise<string | null> {
+  const { accessToken, refreshToken } = await getDecodedTokenFromCookies();
 
   if (!accessToken) {
     return null;
   }
 
-  const decoded = jwtDecode<{ sub: string; exp: number }>(accessToken);
-
-  if (!decoded?.exp || decoded.exp * 1000 > Date.now()) {
+  if (isTokenExpired(accessToken)) {
     return accessToken; // Token still valid
   }
 
@@ -31,12 +28,11 @@ export async function refreshAccessTokenIfNeeded(): Promise<string | null> {
   const tokenResponse = await fetchFromApi<TokenResponse>({
     method: "POST",
     path: "/api/v1/users/refresh-tokens",
-    body: { refreshToken },
+    body: { refreshToken: refreshToken ?? "" },
   });
 
   if (!tokenResponse) {
-    cookieStore.set(ACCESS_TOKEN, "", { maxAge: -1, path: "/" });
-    cookieStore.set(REFRESH_TOKEN, "", { maxAge: -1, path: "/" });
+    await clearAuthCookies();
     return null;
   }
 
@@ -55,7 +51,7 @@ export async function setAuthCookies(
     secure: process.env.NODE_ENV === "production",
     path: "/",
     sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 1, // 1 day
+    maxAge: EXPIRATION_TIME,
   });
 
   cookieStore.set(REFRESH_TOKEN, tokenResponse.refreshToken, {
@@ -63,7 +59,7 @@ export async function setAuthCookies(
     secure: process.env.NODE_ENV === "production",
     path: "/",
     sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7, // 7 days
+    maxAge: EXPIRATION_TIME,
   });
 }
 
@@ -87,4 +83,12 @@ export async function getDecodedTokenFromCookies() {
   const decoded = jwtDecode<{ sub: string; exp: number }>(accessToken);
 
   return { accessToken, refreshToken, userId: decoded.sub };
+}
+
+function isTokenExpired(accessToken: string): boolean {
+  const decoded = jwtDecode<{ sub: string; exp: number }>(accessToken);
+
+  const isExpired = decoded.exp * 1000 > Date.now();
+
+  return isExpired;
 }
