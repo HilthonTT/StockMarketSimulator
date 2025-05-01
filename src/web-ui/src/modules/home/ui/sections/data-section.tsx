@@ -56,7 +56,7 @@ const DataSectionSuspense = ({ page }: DataSectionProps) => {
         dateRange={""}
       />
       <DataCard
-        title="Top Perfomer"
+        title="Top Performer"
         value="TSLA"
         percentageChange={12}
         icon={FaMedal}
