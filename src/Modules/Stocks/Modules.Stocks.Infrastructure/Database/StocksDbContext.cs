@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using Infrastructure.Database.Configurations;
+using Infrastructure.Database.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Modules.Stocks.Application.Abstractions.Data;
@@ -20,6 +21,8 @@ public sealed class StocksDbContext(DbContextOptions<StocksDbContext> options)
         modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
 
         modelBuilder.HasDefaultSchema(Schemas.Stocks);
+
+        modelBuilder.ApplyUtcDateTimeConverter();
     }
 
     public async Task<IDbTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)

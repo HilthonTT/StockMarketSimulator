@@ -1,4 +1,5 @@
 ﻿using Infrastructure.Database.Configurations;
+using Infrastructure.Database.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Modules.Budgeting.Application.Abstractions.Data;
 using Modules.Budgeting.Domain.Entities;
@@ -20,5 +21,7 @@ public sealed class BudgetingDbContext(DbContextOptions<BudgetingDbContext> opti
         modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
 
         modelBuilder.HasDefaultSchema(Schemas.Budgeting);
+
+        modelBuilder.ApplyUtcDateTimeConverter();
     }
 }

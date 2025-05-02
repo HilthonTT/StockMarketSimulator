@@ -16,6 +16,8 @@ using Modules.Users.Application;
 using Modules.Users.BackgroundJobs;
 using Modules.Users.Events;
 using Modules.Users.Infrastructure;
+using Sentry.OpenTelemetry;
+using StockMarketSimulator.ServiceDefaults;
 using Web.Api;
 using Web.Api.Extensions;
 
@@ -24,6 +26,14 @@ const int apiVersion = 1;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
+
+builder.WebHost.UseSentry(options =>
+{
+    options.Dsn = builder.Configuration["Sentry:Dsn"];
+    options.SendDefaultPii = true;
+    options.SampleRate = 1.0f;
+    options.UseOpenTelemetry();
+});
 
 builder.Services
     .AddSwaggerGenWithAuth()

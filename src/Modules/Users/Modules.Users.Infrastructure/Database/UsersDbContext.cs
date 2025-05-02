@@ -1,4 +1,5 @@
 ﻿using Infrastructure.Database.Configurations;
+using Infrastructure.Database.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Modules.Users.Application.Abstractions.Data;
 using Modules.Users.Domain.Entities;
@@ -26,5 +27,7 @@ public sealed class UsersDbContext(DbContextOptions<UsersDbContext> options)
         modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
 
         modelBuilder.HasDefaultSchema(Schemas.Users);
+
+        modelBuilder.ApplyUtcDateTimeConverter();
     }
 }
