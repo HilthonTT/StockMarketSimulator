@@ -20,12 +20,20 @@ import { Button } from "@/components/ui/button";
 import { useTRPC } from "@/trpc/client";
 
 import { LoginSchema } from "../../schemas";
+import { Poppins } from "next/font/google";
+import { cn } from "@/lib/utils";
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["700"],
+});
 
 export const LoginFormSection = () => {
   const trpc = useTRPC();
   const router = useRouter();
 
   const form = useForm<z.infer<typeof LoginSchema>>({
+    mode: "all",
     resolver: zodResolver(LoginSchema),
     defaultValues: {
       email: "",
@@ -56,6 +64,10 @@ export const LoginFormSection = () => {
         onSubmit={form.handleSubmit(onSubmit)}
         className="size-full gap-y-4 flex flex-col"
       >
+        <h1 className={cn("text-4xl font-bold mb-4", poppins.className)}>
+          Welcome back to Stock Market Simulator
+        </h1>
+
         <FormField
           control={form.control}
           name="email"

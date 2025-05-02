@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Poppins } from "next/font/google";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
@@ -20,12 +21,19 @@ import { Button } from "@/components/ui/button";
 import { useTRPC } from "@/trpc/client";
 
 import { RegisterSchema } from "../../schemas";
+import { cn } from "@/lib/utils";
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["700"],
+});
 
 export const RegisterFormSection = () => {
   const trpc = useTRPC();
   const router = useRouter();
 
   const form = useForm<z.infer<typeof RegisterSchema>>({
+    mode: "all",
     resolver: zodResolver(RegisterSchema),
     defaultValues: {
       username: "",
@@ -59,6 +67,10 @@ export const RegisterFormSection = () => {
         onSubmit={form.handleSubmit(onSubmit)}
         className="size-full gap-y-4 flex flex-col"
       >
+        <h1 className={cn("text-4xl font-bold mb-4", poppins.className)}>
+          Attempt to make a bank of your virtual currencies!
+        </h1>
+
         <FormField
           control={form.control}
           name="username"

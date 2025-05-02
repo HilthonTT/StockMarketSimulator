@@ -9,7 +9,7 @@ export const stocksRouter = createTRPCRouter({
   getOne: protectedProcedure
     .input(
       z.object({
-        ticker: z.string().max(10),
+        ticker: z.string().min(1).max(10),
       })
     )
     .query(async ({ ctx, input }) => {

@@ -34,13 +34,17 @@ export const AuthLayout = ({ children }: AuthLayoutProps) => {
           <div className="flex items-center justify-center gap-x-2">
             {pathname === "/login" && (
               <Button variant="outline" asChild>
-                <Link href="/register">Sign Up</Link>
+                <Link prefetch href="/register">
+                  Sign Up
+                </Link>
               </Button>
             )}
 
             {pathname === "/register" && (
               <Button variant="outline" asChild>
-                <Link href="/login">Login</Link>
+                <Link prefetch href="/login">
+                  Login
+                </Link>
               </Button>
             )}
 
