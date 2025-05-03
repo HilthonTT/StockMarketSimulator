@@ -1,6 +1,9 @@
 import NextAuth from "next-auth";
 
 import authConfig from "./auth.config";
+import { fetchFromApi } from "@/lib/api";
+
+import { TokenResponse } from "./types";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
@@ -23,10 +26,28 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.userId = extendedUser.id;
       }
 
+      // current time in seconds
+      const now = Math.floor(Date.now() / 1000);
+
+      if (token.expiresAt && token.expiresAt < now) {
+        const tokenResponse = await fetchFromApi<TokenResponse>({
+          path: `/api/v1/users/${token.userId}/refresh-tokens`,
+          method: "POST",
+          body: { refreshToken: token.refreshToken },
+        });
+
+        if (!tokenResponse) {
+          return null;
+        }
+
+        token.accessToken = tokenResponse?.accessToken;
+        token.refreshToken = tokenResponse?.refreshToken;
+      }
+
       return token;
     },
 
-    async session({ session, token }) {
+    session({ session, token }) {
       session.accessToken = token.accessToken;
       session.refreshToken = token.refreshToken;
       session.expiresAt = token.expiresAt;

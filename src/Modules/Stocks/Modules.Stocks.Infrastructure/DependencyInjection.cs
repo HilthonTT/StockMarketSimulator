@@ -65,7 +65,6 @@ public static class DependencyInjection
 
         services.AddScoped<IDbContext>(sp => sp.GetRequiredService<StocksDbContext>());
 
-        services.AddScoped<IStockRepository, StockRepository>();
         services.AddScoped<IStockSearchResultRepository, StockSearchResultRepository>();
 
         return services;

@@ -5,10 +5,9 @@ import {
   protectedProcedure,
 } from "@/trpc/init";
 
-import { auth, signIn, signOut } from "../auth";
-import { LoginSchema, RegisterSchema } from "../schemas";
+import { auth, signOut } from "../auth";
+import { RegisterSchema } from "../schemas";
 import { TokenResponse } from "../types";
-import { DEFAULT_LOGIN_REDIRECT } from "../routes";
 
 export const authRouter = createTRPCRouter({
   current: baseProcedure.query(async () => {
@@ -18,13 +17,6 @@ export const authRouter = createTRPCRouter({
   }),
   getJwt: protectedProcedure.query(async ({ ctx }) => {
     return ctx.accessToken;
-  }),
-  login: baseProcedure.input(LoginSchema).mutation(async ({ input }) => {
-    await signIn("credentials", {
-      email: input.email,
-      password: input.password,
-      redirectTo: DEFAULT_LOGIN_REDIRECT,
-    });
   }),
   register: baseProcedure.input(RegisterSchema).mutation(async ({ input }) => {
     const tokenResponse = await fetchFromApi<TokenResponse>({

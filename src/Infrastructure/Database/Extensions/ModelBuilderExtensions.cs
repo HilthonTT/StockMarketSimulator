@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Infrastructure.Database.Extensions;
 
-
 /// <summary>
 /// Provides extension methods for configuring the EF Core model,
 /// including applying a UTC DateTime converter to properties.

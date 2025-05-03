@@ -51,11 +51,9 @@ export const LoginFormSection = () => {
       toast.success("You've logged in!");
 
       await queryClient.invalidateQueries(trpc.auth.current.queryFilter());
-
-      router.push("/");
     },
-    onError: (error) => {
-      toast.error(error.message ?? "Something went wrong!");
+    onError: () => {
+      toast.error("Invalid credentials");
     },
   });
 

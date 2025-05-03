@@ -1,7 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Infrastructure.Database.Specifications;
+using Microsoft.EntityFrameworkCore;
 using Modules.Users.Domain.Entities;
 using Modules.Users.Domain.Repositories;
 using Modules.Users.Infrastructure.Database;
+using Modules.Users.Infrastructure.Specifications;
 using SharedKernel;
 
 namespace Modules.Users.Infrastructure.Repositories;
@@ -10,16 +12,14 @@ internal sealed class RefreshTokenRepository(UsersDbContext context) : IRefreshT
 {
     public Task<int> BatchDeleteAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        return context.RefreshTokens
-            .Where(x => x.UserId == userId)
+        return ApplySpecification(new RefreshTokenByUserIdSpecification(userId))
             .ExecuteDeleteAsync(cancellationToken);
     }
 
     public async Task<Option<RefreshToken>> GetByTokenAsync(string token, CancellationToken cancellationToken = default)
     {
-        RefreshToken? refreshToken = await context.RefreshTokens
-            .Include(r => r.User)
-            .FirstOrDefaultAsync(r => r.Token == token, cancellationToken);
+        RefreshToken? refreshToken = await ApplySpecification(new RefreshTokenByTokenSpecification(token))
+            .FirstOrDefaultAsync(cancellationToken);
 
         return Option<RefreshToken>.Some(refreshToken);
     }
@@ -32,5 +32,10 @@ internal sealed class RefreshTokenRepository(UsersDbContext context) : IRefreshT
     public void Remove(RefreshToken refreshToken)
     {
         context.RefreshTokens.Remove(refreshToken);
+    }
+
+    private IQueryable<RefreshToken> ApplySpecification(Specification<RefreshToken> specification)
+    {
+        return SpecificationEvaluator.GetQuery(context.RefreshTokens, specification);
     }
 }

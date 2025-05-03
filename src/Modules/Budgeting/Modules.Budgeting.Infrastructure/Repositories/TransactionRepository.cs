@@ -1,8 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Infrastructure.Database.Specifications;
+using Microsoft.EntityFrameworkCore;
 using Modules.Budgeting.Domain.Entities;
 using Modules.Budgeting.Domain.Enums;
 using Modules.Budgeting.Domain.Repositories;
 using Modules.Budgeting.Infrastructure.Database;
+using Modules.Budgeting.Infrastructure.Specifications;
 using SharedKernel;
 
 namespace Modules.Budgeting.Infrastructure.Repositories;
@@ -11,7 +13,8 @@ internal sealed class TransactionRepository(BudgetingDbContext context) : ITrans
 {
     public async Task<Option<Transaction>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        Transaction? transaction = await context.Transactions.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        Transaction? transaction = await ApplySpecification(new TransactionByIdSpecification(id))
+            .FirstOrDefaultAsync(cancellationToken);
 
         return Option<Transaction>.Some(transaction);
     }
@@ -21,8 +24,7 @@ internal sealed class TransactionRepository(BudgetingDbContext context) : ITrans
         string ticker,
         CancellationToken cancellationToken = default)
     {
-        return context.Transactions
-            .Where(t => t.UserId == userId && t.Ticker == ticker)
+        return ApplySpecification(new CalculateNetPurchasedQuantitySpecification(userId, ticker))
             .SumAsync(t => t.Type == TransactionType.Buy ? t.Quantity : -t.Quantity, cancellationToken);
     }
 
@@ -34,5 +36,10 @@ internal sealed class TransactionRepository(BudgetingDbContext context) : ITrans
     public void Remove(Transaction transaction)
     {
         context.Transactions.Remove(transaction);
+    }
+
+    private IQueryable<Transaction> ApplySpecification(Specification<Transaction> specification)
+    {
+        return SpecificationEvaluator.GetQuery(context.Transactions, specification);
     }
 }
