@@ -5,7 +5,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
+import { Poppins } from "next/font/google";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import {
   Form,
@@ -18,10 +19,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useTRPC } from "@/trpc/client";
+import { cn } from "@/lib/utils";
 
 import { LoginSchema } from "../../schemas";
-import { Poppins } from "next/font/google";
-import { cn } from "@/lib/utils";
+
+import { login } from "../../server/actions";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -30,6 +32,8 @@ const poppins = Poppins({
 
 export const LoginFormSection = () => {
   const trpc = useTRPC();
+  const queryClient = useQueryClient();
+
   const router = useRouter();
 
   const form = useForm<z.infer<typeof LoginSchema>>({
@@ -41,21 +45,22 @@ export const LoginFormSection = () => {
     },
   });
 
-  const login = useMutation(
-    trpc.auth.login.mutationOptions({
-      onSuccess: () => {
-        toast.success("You've logged in!");
+  const { mutate, isPending } = useMutation({
+    mutationFn: login,
+    onSuccess: async () => {
+      toast.success("You've logged in!");
 
-        router.push("/");
-      },
-      onError: (error) => {
-        toast.error(error.message);
-      },
-    })
-  );
+      await queryClient.invalidateQueries(trpc.auth.current.queryFilter());
+
+      router.push("/");
+    },
+    onError: (error) => {
+      toast.error(error.message ?? "Something went wrong!");
+    },
+  });
 
   const onSubmit = (values: z.infer<typeof LoginSchema>) => {
-    login.mutate(values);
+    mutate(values);
   };
 
   return (
@@ -80,7 +85,7 @@ export const LoginFormSection = () => {
                 <Input
                   {...field}
                   placeholder="email@email.com"
-                  disabled={login.isPending}
+                  disabled={isPending}
                 />
               </FormControl>
               <FormMessage />
@@ -98,7 +103,7 @@ export const LoginFormSection = () => {
                   {...field}
                   type="password"
                   placeholder="••••••••"
-                  disabled={login.isPending}
+                  disabled={isPending}
                 />
               </FormControl>
               <FormMessage />
@@ -106,12 +111,7 @@ export const LoginFormSection = () => {
           )}
         />
 
-        <Button
-          type="submit"
-          variant="elevated"
-          size="lg"
-          disabled={login.isPending}
-        >
+        <Button type="submit" variant="elevated" size="lg" disabled={isPending}>
           Login
         </Button>
       </form>

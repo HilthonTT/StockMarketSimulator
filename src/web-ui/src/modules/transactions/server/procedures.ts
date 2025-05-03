@@ -19,14 +19,14 @@ export const transactionsRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
-      const { userId, accessToken } = ctx;
+      const { user, accessToken } = ctx;
       const { page, pageSize, searchTerm, startDate, endDate } = input;
 
       const pagedTransactions = await fetchFromApi<
         PagedList<TransactionResponse>
       >({
         accessToken,
-        path: `/api/v1/users/${userId}/transactions`,
+        path: `/api/v1/users/${user.id}/transactions`,
         queryParams: {
           page,
           pageSize,

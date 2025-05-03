@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation";
 
 import { LoginView } from "@/modules/auth/ui/views/login-view";
-import { fetchUser } from "@/modules/auth/server/caller";
+
+import { caller } from "@/trpc/server";
 
 const Page = async () => {
-  const user = await fetchUser();
+  const user = await caller.auth.current();
   if (user) {
     return redirect("/");
   }

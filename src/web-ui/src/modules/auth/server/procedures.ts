@@ -1,70 +1,30 @@
 import { fetchFromApi } from "@/lib/api";
 import {
-  clearAuthCookies,
-  refreshAccessTokenIfNeeded,
-  setAuthCookies,
-} from "@/lib/auth";
-import {
   baseProcedure,
   createTRPCRouter,
   protectedProcedure,
 } from "@/trpc/init";
 
+import { auth, signIn, signOut } from "../auth";
 import { LoginSchema, RegisterSchema } from "../schemas";
-import { TokenResponse, UserResponse } from "../types";
+import { TokenResponse } from "../types";
+import { DEFAULT_LOGIN_REDIRECT } from "../routes";
 
 export const authRouter = createTRPCRouter({
-  refreshTokens: baseProcedure.mutation(async () => {
-    try {
-      const accessToken = await refreshAccessTokenIfNeeded();
+  current: baseProcedure.query(async () => {
+    const session = await auth();
 
-      if (!accessToken) {
-        return null;
-      }
-
-      const user = await fetchFromApi<UserResponse>({
-        accessToken,
-        path: "/api/v1/users/me",
-      });
-
-      return user;
-    } catch {
-      return null;
-    }
-  }),
-  isAuthenticated: baseProcedure.query(async () => {
-    const accessToken = await refreshAccessTokenIfNeeded();
-
-    if (!accessToken) {
-      return null;
-    }
-
-    try {
-      const user = await fetchFromApi<UserResponse>({
-        accessToken,
-        path: "/api/v1/users/me",
-      });
-
-      return user;
-    } catch {
-      return null;
-    }
+    return session?.user;
   }),
   getJwt: protectedProcedure.query(async ({ ctx }) => {
     return ctx.accessToken;
   }),
   login: baseProcedure.input(LoginSchema).mutation(async ({ input }) => {
-    const tokenResponse = await fetchFromApi<TokenResponse>({
-      path: "/api/v1/users/login",
-      method: "POST",
-      body: input,
+    await signIn("credentials", {
+      email: input.email,
+      password: input.password,
+      redirectTo: DEFAULT_LOGIN_REDIRECT,
     });
-
-    if (tokenResponse) {
-      await setAuthCookies(tokenResponse);
-    }
-
-    return tokenResponse;
   }),
   register: baseProcedure.input(RegisterSchema).mutation(async ({ input }) => {
     const tokenResponse = await fetchFromApi<TokenResponse>({
@@ -73,20 +33,16 @@ export const authRouter = createTRPCRouter({
       body: input,
     });
 
-    if (tokenResponse) {
-      await setAuthCookies(tokenResponse);
-    }
-
     return tokenResponse;
   }),
   logout: protectedProcedure.mutation(async ({ ctx }) => {
-    const { accessToken, userId } = ctx;
+    const { accessToken, user } = ctx;
 
     await Promise.all([
-      clearAuthCookies(),
+      signOut(),
       fetchFromApi({
         accessToken,
-        path: `/api/v1/users/${userId}/refresh-tokens`,
+        path: `/api/v1/users/${user.id}/refresh-tokens`,
         method: "DELETE",
       }),
     ]);

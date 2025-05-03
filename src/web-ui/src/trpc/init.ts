@@ -1,58 +1,19 @@
 import superjson from "superjson";
-import https from "https";
-import { cookies } from "next/headers";
-import { jwtDecode } from "jwt-decode";
 import { cache } from "react";
 
-import { TokenResponse, UserResponse } from "@/modules/auth/types";
+import { UserResponse } from "@/modules/auth/types";
+import { auth } from "@/modules/auth/auth";
 
 import { initTRPC, TRPCError } from "@trpc/server";
-import { ACCESS_TOKEN, REFRESH_TOKEN } from "@/constants";
-import { setAuthCookies } from "@/lib/auth";
 import { fetchFromApi } from "@/lib/api";
 
-export const agent = new https.Agent({
-  rejectUnauthorized: false,
-});
-
 export const createTRPCContext = cache(async () => {
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get(ACCESS_TOKEN)?.value;
-  const refreshToken = cookieStore.get(REFRESH_TOKEN)?.value;
+  const session = await auth();
 
-  if (!accessToken) {
-    return { userId: null, accessToken: null };
-  }
-
-  const decoded = jwtDecode(accessToken);
-
-  if (!decoded || !decoded.sub || !decoded.exp) {
-    return { userId: null, accessToken: null };
-  }
-
-  // Check if the access token is expired (decoded.exp is the expiration time in seconds)
-  if (decoded.exp * 1000 < Date.now() && refreshToken) {
-    try {
-      const tokenResponse = await fetchFromApi<TokenResponse>({
-        path: "/api/v1/users/refresh-tokens",
-        method: "POST",
-        body: refreshToken,
-      });
-
-      if (tokenResponse) {
-        await setAuthCookies(tokenResponse);
-
-        return { userId: decoded.sub, accessToken: tokenResponse.accessToken };
-      }
-
-      return { userId: null, accessToken: null };
-    } catch (error) {
-      console.error("Error refreshing token:", error);
-      return { userId: null, accessToken: null };
-    }
-  }
-
-  return { userId: decoded.sub, accessToken };
+  return {
+    user: session?.user ?? null,
+    ...session,
+  };
 });
 
 export type Context = Awaited<ReturnType<typeof createTRPCContext>>;
@@ -78,7 +39,7 @@ export const protectedProcedure = t.procedure.use(async function isAuthed(
 ) {
   const { ctx } = opts;
 
-  if (!ctx.userId) {
+  if (!ctx.user) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 

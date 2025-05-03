@@ -5,11 +5,13 @@ import { Poppins } from "next/font/google";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { MenuIcon, MoonIcon, SunIcon } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { useTheme } from "next-themes";
 
 import { useLogout } from "@/modules/auth/hooks/use-logout";
 
 import { cn } from "@/lib/utils";
+import { useTRPC } from "@/trpc/client";
 import { Button } from "@/components/ui/button";
 
 import { NavbarItem } from "./navbar-item";
@@ -29,11 +31,14 @@ const navbarItems = [
 
 export const HomeNavbar = () => {
   const pathname = usePathname();
+
+  const trpc = useTRPC();
+  const { data: user, isLoading } = useQuery(trpc.auth.current.queryOptions());
+
+  const { handleLogout, isLoggingOut } = useLogout();
   const { setTheme, theme } = useTheme();
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  const { isLoading, isLoggedOut, handleLogout } = useLogout();
 
   return (
     <nav className="h-20 flex border-b justify-between font-medium bg-white dark:bg-black">
@@ -67,28 +72,30 @@ export const HomeNavbar = () => {
       </div>
 
       <div className="hidden lg:flex">
-        {isLoggedOut ? (
+        {!user ? (
           <Button
             asChild
             variant="secondary"
+            disabled={isLoading}
             className="border-l border-t-0 border-b-0 border-r-0 px-12 h-full rounded-none bg-white dark:bg-black hover:bg-pink-400 transition-colors text-lg"
           >
             <Link href="/login">Log in</Link>
           </Button>
         ) : (
           <Button
-            disabled={isLoading}
-            onClick={handleLogout}
+            onClick={() => handleLogout()}
             variant="secondary"
+            disabled={isLoading || isLoggingOut}
             className="border-l border-t-0 border-b-0 border-r-0 px-12 h-full rounded-none bg-black text-white hover:bg-pink-400  hover:text-black transition-colors text-lg"
           >
             Logout
           </Button>
         )}
-        {isLoggedOut && (
+        {!user && (
           <Button
             asChild
             variant="secondary"
+            disabled={isLoading}
             className="border-l border-t-0 border-b-0 border-r-0 px-12 h-full rounded-none bg-black text-white hover:bg-pink-400  hover:text-black transition-colors text-lg"
           >
             <Link href="/register">Start Gambling!</Link>

@@ -18,10 +18,10 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
 
 import { RegisterSchema } from "../../schemas";
-import { cn } from "@/lib/utils";
 
 const poppins = Poppins({
   subsets: ["latin"],

@@ -1,41 +1,22 @@
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useTRPC } from "@/trpc/client";
 
+import { logout } from "../server/actions";
+
 export const useLogout = () => {
   const trpc = useTRPC();
-  const router = useRouter();
+  const queryClient = useQueryClient();
 
-  const { data: user, isLoading: isAuthLoading } = useQuery(
-    trpc.auth.isAuthenticated.queryOptions()
-  );
+  const { mutate: handleLogout, isPending: isLoggingOut } = useMutation({
+    mutationFn: logout,
+    onSuccess: async () => {
+      toast.success("Logged out!");
 
-  const logout = useMutation(
-    trpc.auth.logout.mutationOptions({
-      onError: (error) => {
-        toast.error(error.message);
-      },
-      onSuccess: () => {
-        toast.success("Logged out!");
-        router.push("/login");
-      },
-    })
-  );
+      await queryClient.invalidateQueries(trpc.auth.current.queryFilter());
+    },
+  });
 
-  const handleLogout = () => {
-    // Avoid triggering logout if authentication query is still loading
-    if (isAuthLoading || !user) {
-      return;
-    }
-
-    logout.mutate();
-  };
-
-  return {
-    isLoading: isAuthLoading || logout.isPending,
-    handleLogout,
-    isLoggedOut: user === null || user === undefined,
-  };
+  return { handleLogout, isLoggingOut };
 };

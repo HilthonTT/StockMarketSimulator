@@ -1,6 +1,3 @@
-import fetch from "node-fetch";
-
-import { agent } from "@/trpc/init";
 import { SERVER_URL } from "@/constants";
 import { ProblemDetails } from "@/types";
 import { TRPCError } from "@trpc/server";
@@ -42,11 +39,15 @@ export async function fetchFromApi<T>({
       Authorization: `Bearer ${accessToken}`,
     },
     body: body ? JSON.stringify(body) : undefined,
-    agent,
   });
 
   if (!response.ok) {
+    if (response.status === 401) {
+      return null;
+    }
+
     const problemDetails = (await response.json()) as ProblemDetails;
+
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: `Error: ${problemDetails.title} - ${problemDetails.detail}`,
