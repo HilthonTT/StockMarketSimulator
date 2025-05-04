@@ -25,7 +25,7 @@ public sealed class UsersDbContext(DbContextOptions<UsersDbContext> options)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(UsersDbContext).Assembly);
         modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
-
+        
         modelBuilder.HasDefaultSchema(Schemas.Users);
 
         modelBuilder.ApplyUtcDateTimeConverter();

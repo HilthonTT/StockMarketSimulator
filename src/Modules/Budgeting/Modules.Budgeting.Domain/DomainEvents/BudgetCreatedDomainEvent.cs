@@ -2,4 +2,4 @@
 
 namespace Modules.Budgeting.Domain.DomainEvents;
 
-public sealed record BudgetCreatedDomainEvent(Guid BudgetId) : IDomainEvent;
+public sealed record BudgetCreatedDomainEvent(Guid Id, Guid BudgetId) : DomainEvent(Id);

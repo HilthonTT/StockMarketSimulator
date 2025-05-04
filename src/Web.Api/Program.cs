@@ -4,6 +4,8 @@ using Asp.Versioning;
 using Asp.Versioning.Builder;
 using HealthChecks.UI.Client;
 using Infrastructure;
+using Infrastructure.Idempotence;
+using MediatR;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Modules.Budgeting.Application;
 using Modules.Budgeting.BackgroundJobs;
@@ -14,8 +16,10 @@ using Modules.Stocks.Infrastructure;
 using Modules.Stocks.Infrastructure.Realtime;
 using Modules.Users.Application;
 using Modules.Users.BackgroundJobs;
+using Modules.Users.Domain.Repositories;
 using Modules.Users.Events;
 using Modules.Users.Infrastructure;
+using Modules.Users.Infrastructure.Repositories;
 using Sentry.OpenTelemetry;
 using StockMarketSimulator.ServiceDefaults;
 using Web.Api;
@@ -58,6 +62,8 @@ builder.Services
     .AddBudgetingInfrastructure(builder.Configuration)
     .AddBudgetingEvents()
     .AddBudgetingBackgroundJobs();
+
+builder.Services.Decorate(typeof(INotificationHandler<>), typeof(IdempotentDomainEventHandler<>));
 
 builder.Services.AddBackgroundJobs();
 builder.Services.AddVersioning();

@@ -53,7 +53,7 @@ public sealed class User : Entity, IAuditable
     {
         var user = new User(Guid.CreateVersion7(), username, email, passwordHash, false);
 
-        user.Raise(new UserCreatedDomainEvent(user.Id, verificationLink));
+        user.Raise(new UserCreatedDomainEvent(Guid.CreateVersion7(), user.Id, verificationLink));
 
         return user;
     }
@@ -65,7 +65,7 @@ public sealed class User : Entity, IAuditable
             return;
         }
 
-        Raise(new UserPasswordChangedDomainEvent(Id));
+        Raise(new UserPasswordChangedDomainEvent(Guid.CreateVersion7(), Id));
 
         PasswordHash = passwordHash;
     }
@@ -79,7 +79,7 @@ public sealed class User : Entity, IAuditable
 
         EmailVerified = true;
 
-        Raise(new UserEmailVerifiedDomainEvent(Id));
+        Raise(new UserEmailVerifiedDomainEvent(Guid.CreateVersion7(), Id));
     }
 
     public void AddRole(Role role)
@@ -96,6 +96,6 @@ public sealed class User : Entity, IAuditable
     {
         Username = username;
 
-        Raise(new UserNameChangedDomainEvent(Id));
+        Raise(new UserNameChangedDomainEvent(Guid.CreateVersion7(), Id));
     }
 }

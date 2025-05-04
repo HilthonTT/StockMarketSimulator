@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Infrastructure.Database;
+using Microsoft.EntityFrameworkCore;
 using Modules.Budgeting.Infrastructure.Database;
 using Modules.Stocks.Infrastructure.Database;
 using Modules.Users.Infrastructure.Database;
@@ -25,5 +26,10 @@ public static class MigrationExtensions
             scope.ServiceProvider.GetRequiredService<BudgetingDbContext>();
 
         budgetingDbContext.Database.Migrate();
+
+        using GeneralDbContext generalDbContext =
+            scope.ServiceProvider.GetRequiredService<GeneralDbContext>();
+
+        generalDbContext.Database.Migrate();
     }
 }

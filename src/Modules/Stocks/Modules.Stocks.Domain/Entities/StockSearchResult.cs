@@ -90,7 +90,7 @@ public sealed class StockSearchResult : Entity, IAuditable
             timezone,
             currency);
 
-        stockResult.Raise(new StockResultCreatedDomainEvent(stockResult.Id));
+        stockResult.Raise(new StockResultCreatedDomainEvent(Guid.CreateVersion7(), stockResult.Id));
 
         return stockResult;
     }

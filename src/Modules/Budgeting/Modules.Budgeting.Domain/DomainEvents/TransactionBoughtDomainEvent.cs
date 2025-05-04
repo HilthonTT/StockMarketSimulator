@@ -2,4 +2,4 @@
 
 namespace Modules.Budgeting.Domain.DomainEvents;
 
-public sealed record TransactionBoughtDomainEvent(Guid TransactionId) : IDomainEvent;
+public sealed record TransactionBoughtDomainEvent(Guid Id,Guid TransactionId) : DomainEvent(Id);

@@ -2,4 +2,4 @@
 
 namespace Modules.Users.Domain.DomainEvents;
 
-public sealed record UserPasswordChangedDomainEvent(Guid UserId) : IDomainEvent;
+public sealed record UserPasswordChangedDomainEvent(Guid Id, Guid UserId) : DomainEvent(Id);

@@ -43,7 +43,7 @@ public sealed class Budget : Entity, IAuditable
     {
         var budget = new Budget(Guid.CreateVersion7(), userId, InitialBudgetAmount);
 
-        budget.Raise(new BudgetCreatedDomainEvent(budget.Id));
+        budget.Raise(new BudgetCreatedDomainEvent(Guid.CreateVersion7(), budget.Id));
 
         return budget;
     }
@@ -61,7 +61,7 @@ public sealed class Budget : Entity, IAuditable
         }
 
         BuyingPower -= amount;
-        Raise(new BudgetUpdatedDomainEvent(Id, BuyingPower));
+        Raise(new BudgetUpdatedDomainEvent(Guid.CreateVersion7(), Id, BuyingPower));
 
         return Result.Success();
     }
@@ -74,7 +74,7 @@ public sealed class Budget : Entity, IAuditable
         }
 
         BuyingPower += amount;
-        Raise(new BudgetUpdatedDomainEvent(Id, BuyingPower));
+        Raise(new BudgetUpdatedDomainEvent(Guid.CreateVersion7(), Id, BuyingPower));
 
         return Result.Success();
     }

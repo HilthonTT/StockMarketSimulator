@@ -1,9 +1,11 @@
-﻿using Application.Abstractions.Authentication;
+﻿using System.Reflection;
+using Application.Abstractions.Authentication;
 using Application.Abstractions.Caching;
 using Application.Abstractions.Data;
 using Application.Abstractions.Emails;
 using Application.Abstractions.Events;
 using Application.Abstractions.Notifications;
+using EntityFramework.Exceptions.PostgreSQL;
 using FluentValidation;
 using Infrastructure.Authentication;
 using Infrastructure.Caching;
@@ -13,12 +15,17 @@ using Infrastructure.Emails;
 using Infrastructure.Emails.Options;
 using Infrastructure.Events;
 using Infrastructure.Events.Options;
+using Infrastructure.Idempotence;
 using Infrastructure.Notifications;
 using Infrastructure.Time;
 using Infrastructure.Validation;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
+using Scrutor;
 using SharedKernel;
 
 namespace Infrastructure;
@@ -61,6 +68,13 @@ public static class DependencyInjection
 
         services.AddSingleton<IDbConnectionFactory>(_ =>
             new DbConnectionFactory(new NpgsqlDataSourceBuilder(connectionString).Build()));
+
+        services.AddDbContext<GeneralDbContext>(
+            (sp, options) => options
+                .UseNpgsql(connectionString, npgsqlOptions =>
+                    npgsqlOptions.MigrationsHistoryTable(HistoryRepository.DefaultTableName, Schemas.General))
+                .UseSnakeCaseNamingConvention()
+                .UseExceptionProcessor());
 
         return services;
     }

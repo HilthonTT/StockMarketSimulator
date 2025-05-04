@@ -40,7 +40,7 @@ public sealed class Stock : Entity, IAuditable
     {
         var stock = new Stock(Guid.CreateVersion7(), ticker, price);
 
-        stock.Raise(new StockCreatedDomainEvent(stock.Id));
+        stock.Raise(new StockCreatedDomainEvent(Guid.CreateVersion7(), stock.Id));
 
         return stock;
     }

@@ -11,6 +11,7 @@ using Polly.Retry;
 using Polly;
 using Quartz;
 using SharedKernel;
+using Modules.Stocks.Domain;
 
 namespace Modules.Stocks.Infrastructure.Outbox;
 
@@ -26,7 +27,8 @@ public sealed class ProcessStockOutboxMessagesJob(
     private const int BatchSize = 1000;
     private static readonly JsonSerializerSettings JsonSerializerSettings = new()
     {
-        TypeNameHandling = TypeNameHandling.All
+        TypeNameHandling = TypeNameHandling.All,
+        Converters = { new DomainEventConverter(StocksDomainAssembly.Instance) }
     };
 
     public async Task Execute(IJobExecutionContext context)
@@ -130,10 +132,9 @@ public sealed class ProcessStockOutboxMessagesJob(
     {
         const int RetryCount = 3;
 
-        if (!TryDeserializeDomainEvent(outboxMessage.Content, out IDomainEvent? domainEvent))
-        {
-            return;
-        }
+        IDomainEvent domainEvent = JsonConvert.DeserializeObject<IDomainEvent>(
+           outboxMessage.Content,
+           JsonSerializerSettings)!;
 
         AsyncRetryPolicy policy = Policy
             .Handle<Exception>()
@@ -150,15 +151,6 @@ public sealed class ProcessStockOutboxMessagesJob(
         };
 
         updateQueue.Enqueue(outboxUpdate);
-    }
-
-    private static bool TryDeserializeDomainEvent(string content, out IDomainEvent? domainEvent)
-    {
-        domainEvent = JsonConvert.DeserializeObject<IDomainEvent>(
-            content,
-            JsonSerializerSettings);
-
-        return domainEvent is not null;
     }
 
     private sealed record OutboxMessageResponse(Guid Id, string Content);

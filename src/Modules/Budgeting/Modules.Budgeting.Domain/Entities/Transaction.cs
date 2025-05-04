@@ -90,10 +90,10 @@ public sealed class Transaction : Entity, IAuditable
         switch (type)
         {
             case TransactionType.Buy:
-                transaction.Raise(new TransactionBoughtDomainEvent(transaction.Id));
+                transaction.Raise(new TransactionBoughtDomainEvent(Guid.CreateVersion7(), transaction.Id));
                 break;
             case TransactionType.Sell:
-                transaction.Raise(new TransactionSoldDomainEvent(transaction.Id));
+                transaction.Raise(new TransactionSoldDomainEvent(Guid.CreateVersion7(), transaction.Id));
                 break;
             default:
                 break;
@@ -111,7 +111,7 @@ public sealed class Transaction : Entity, IAuditable
 
         LimitPrice = newLimitPrice;
 
-        Raise(new TransactionUpdatedDomainEvent(Id));
+        Raise(new TransactionUpdatedDomainEvent(Guid.CreateVersion7(), Id));
 
         return Result.Success();
     }
@@ -125,7 +125,7 @@ public sealed class Transaction : Entity, IAuditable
 
         Quantity = newQuantity;
 
-        Raise(new TransactionUpdatedDomainEvent(Id));
+        Raise(new TransactionUpdatedDomainEvent(Guid.CreateVersion7(), Id));
 
         return Result.Success();
     }
