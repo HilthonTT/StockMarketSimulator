@@ -4,6 +4,13 @@ namespace Modules.Stocks.Application.Core.Errors;
 
 internal static class StocksValidationErrors
 {
+    public static class GetTopPerfomer
+    {
+        public static readonly Error UserIdIsRequired = Error.Problem(
+            "GetTopPerfomer.UserIdIsRequired",
+            "The user identifier is required.");
+    }
+
     public static class CreateShortenUrl
     {
         public static readonly Error UrlIsRequired = Error.Problem(

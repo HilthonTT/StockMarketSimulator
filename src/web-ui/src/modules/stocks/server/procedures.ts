@@ -27,4 +27,21 @@ export const stocksRouter = createTRPCRouter({
 
       return stockPriceResponse;
     }),
+  getTopPerfomer: protectedProcedure.query(async ({ ctx }) => {
+    const { accessToken, user } = ctx;
+
+    const stockPriceResponse = await fetchFromApi<StockPriceResponse>({
+      path: `/api/v1/stocks/top-performer`,
+      accessToken,
+      headers: {
+        userId: user.id,
+      },
+    });
+
+    if (!stockPriceResponse) {
+      throw new TRPCError({ code: "NOT_FOUND" });
+    }
+
+    return stockPriceResponse;
+  }),
 });

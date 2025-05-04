@@ -1,14 +1,8 @@
 import { IconType } from "react-icons";
 import { VariantProps, cva } from "class-variance-authority";
 
-import { cn, formatCurrency, formatPercentage } from "@/lib/utils";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { cn, formatCurrency } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CountUp } from "@/components/count-up";
 
 const boxVariant = cva("rounded-md p-3", {
@@ -45,9 +39,8 @@ type IconVariants = VariantProps<typeof iconVariant>;
 interface DataCardProps extends BoxVariants, IconVariants {
   icon: IconType;
   title: string;
+  description: string;
   value?: number | string;
-  dateRange: string;
-  percentageChange?: number;
   dollarPrefix?: boolean;
 }
 
@@ -55,9 +48,8 @@ export const DataCard = ({
   icon: Icon,
   title,
   value = 0,
-  dateRange,
-  percentageChange = 0,
   variant = "default",
+  description,
   dollarPrefix,
 }: DataCardProps) => {
   return (
@@ -65,9 +57,6 @@ export const DataCard = ({
       <CardHeader className="flex flex-row items-center justify-between gap-x-4">
         <div className="space-y-2">
           <CardTitle className="text-2xl line-clmap-1">{title}</CardTitle>
-          <CardDescription className="line-clamp-1">
-            {dateRange}
-          </CardDescription>
         </div>
         <div
           className={cn(
@@ -100,15 +89,8 @@ export const DataCard = ({
           )}
           {typeof value === "string" && value}
         </h1>
-        <p
-          className={cn(
-            "text-muted-foreground text-sm line-clamp-1",
-            percentageChange > 0 && "text-emerald-500",
-            percentageChange < 0 && "text-rose-500"
-          )}
-        >
-          {formatPercentage(percentageChange, { addPrefix: true })} from last
-          period
+        <p className="text-muted-foreground text-sm line-clamp-1">
+          {description}
         </p>
       </CardContent>
     </Card>

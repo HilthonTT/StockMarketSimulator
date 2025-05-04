@@ -2,7 +2,11 @@
 
 public interface IBudgetingApi
 {
-    Task<BudgetApiResponse?> GetBudgetByUserId(Guid userId, CancellationToken cancellationToken);
+    Task<BudgetApiResponse?> GetBudgetByUserIdAsync(Guid userId, CancellationToken cancellationToken);
 
-    Task AddBudgetAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<int> AddBudgetAsync(Guid userId, CancellationToken cancellationToken = default);
+
+    Task<List<TransactionApiResponse>> GetTransactionsByUserIdAsync(
+        Guid userId, 
+        CancellationToken cancellationToken = default);
 }

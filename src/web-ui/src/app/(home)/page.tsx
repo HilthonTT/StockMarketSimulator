@@ -26,6 +26,7 @@ const Page = async ({ searchParams }: PageProps) => {
 
   void queryClient.prefetchQuery(trpc.auth.getJwt.queryOptions());
   void queryClient.prefetchQuery(trpc.budgets.getOne.queryOptions());
+  void queryClient.prefetchQuery(trpc.stocks.getTopPerfomer.queryOptions());
 
   // Search query transactions
   void queryClient.prefetchQuery(

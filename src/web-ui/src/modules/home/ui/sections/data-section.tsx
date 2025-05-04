@@ -36,32 +36,35 @@ const DataSectionSuspense = ({ page }: DataSectionProps) => {
     })
   );
 
+  const { data: topPerfomerStock } = useSuspenseQuery(
+    trpc.stocks.getTopPerfomer.queryOptions()
+  );
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-2 mb-8">
       <DataCard
         title="Budget"
         value={budget.buyingPower}
-        percentageChange={12}
+        description="Available funds for investing"
         icon={FaPiggyBank}
         variant="default"
-        dateRange={""}
         dollarPrefix
       />
+
       <DataCard
         title="Transactions"
         value={pagedTransactions.totalCount}
-        percentageChange={12}
+        description="Total number of buy/sell trades"
         icon={FaArrowTrendDown}
         variant="default"
-        dateRange={""}
       />
+
       <DataCard
         title="Top Performer"
-        value="TSLA"
-        percentageChange={12}
+        value={topPerfomerStock.ticker.toUpperCase()}
+        description="Your best performing stock"
         icon={FaMedal}
         variant="default"
-        dateRange={""}
       />
     </div>
   );
