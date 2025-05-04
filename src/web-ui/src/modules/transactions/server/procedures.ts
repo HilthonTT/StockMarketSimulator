@@ -1,11 +1,14 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import { v4 as uuidv4 } from "uuid";
 
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { fetchFromApi } from "@/lib/api";
 import { PagedList } from "@/types";
 
 import { TransactionResponse } from "../types";
+import { BuyTransactionSchema, SellTransactionSchema } from "../schemas";
+import { IDEMPOTENCY_HEADER } from "../constants";
 
 export const transactionsRouter = createTRPCRouter({
   getMany: protectedProcedure
@@ -41,5 +44,39 @@ export const transactionsRouter = createTRPCRouter({
       }
 
       return pagedTransactions;
+    }),
+
+  buy: protectedProcedure
+    .input(BuyTransactionSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { accessToken, user } = ctx;
+      const { ticker, quantity } = input;
+
+      await fetchFromApi({
+        accessToken,
+        method: "POST",
+        path: "/api/v1/transactions/buy",
+        headers: {
+          [IDEMPOTENCY_HEADER]: uuidv4(),
+        },
+        body: { ticker, quantity, userId: user.id },
+      });
+    }),
+
+  sell: protectedProcedure
+    .input(SellTransactionSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { accessToken, user } = ctx;
+      const { ticker, quantity } = input;
+
+      await fetchFromApi({
+        accessToken,
+        method: "POST",
+        path: "/api/v1/transactions/sell",
+        headers: {
+          [IDEMPOTENCY_HEADER]: uuidv4(),
+        },
+        body: { ticker, quantity, userId: user.id },
+      });
     }),
 });

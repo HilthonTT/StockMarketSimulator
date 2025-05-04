@@ -1,9 +1,8 @@
 import NextAuth from "next-auth";
+import { jwtDecode } from "jwt-decode";
 
 import authConfig from "./auth.config";
-import { fetchFromApi } from "@/lib/api";
-
-import { TokenResponse } from "./types";
+import { JWT_INVALID_ERROR } from "./constants";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
@@ -12,6 +11,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   callbacks: {
     async jwt({ token, user }) {
+      const now = Math.floor(Date.now() / 1000);
+
       if (user) {
         const extendedUser = user as typeof user & {
           accessToken: string;
@@ -26,28 +27,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.userId = extendedUser.id;
       }
 
-      // current time in seconds
-      const now = Math.floor(Date.now() / 1000);
+      const decoded = jwtDecode<{ exp?: number }>(token.accessToken);
 
-      if (token.expiresAt && token.expiresAt < now) {
-        const tokenResponse = await fetchFromApi<TokenResponse>({
-          path: `/api/v1/users/${token.userId}/refresh-tokens`,
-          method: "POST",
-          body: { refreshToken: token.refreshToken },
-        });
-
-        if (!tokenResponse) {
-          return null;
-        }
-
-        token.accessToken = tokenResponse?.accessToken;
-        token.refreshToken = tokenResponse?.refreshToken;
+      if (decoded.exp && decoded.exp < now) {
+        return null;
       }
 
       return token;
     },
 
     session({ session, token }) {
+      const now = Math.floor(Date.now() / 1000);
+
+      const decoded = jwtDecode<{ exp?: number }>(token.accessToken);
+
       session.accessToken = token.accessToken;
       session.refreshToken = token.refreshToken;
       session.expiresAt = token.expiresAt;
@@ -55,6 +48,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         ...session.user,
         id: token.userId,
       };
+
+      if (decoded.exp && decoded.exp < now) {
+        session.error = JWT_INVALID_ERROR;
+      }
 
       return session;
     },

@@ -13,6 +13,7 @@ using Modules.Budgeting.Domain.Repositories;
 using Modules.Budgeting.Infrastructure.Repositories;
 using Modules.Budgeting.Api;
 using Modules.Budgeting.Infrastructure.Api;
+using EntityFramework.Exceptions.PostgreSQL;
 
 namespace Modules.Budgeting.Infrastructure;
 
@@ -43,6 +44,7 @@ public static class DependencyInjection
                .UseNpgsql(connectionString, npgsqlOptions =>
                    npgsqlOptions.MigrationsHistoryTable(HistoryRepository.DefaultTableName, Schemas.Budgeting))
                .UseSnakeCaseNamingConvention()
+               .UseExceptionProcessor()
                .AddInterceptors(
                    sp.GetRequiredService<InsertOutboxMessagesInterceptor>(),
                    sp.GetRequiredService<UpdateAuditableInterceptor>(),

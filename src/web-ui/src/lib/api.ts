@@ -8,6 +8,7 @@ interface FetchFromApiOptions {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
   queryParams?: Record<string, string | number | boolean | undefined | Date>;
+  headers?: Record<string, string>;
 }
 
 export async function fetchFromApi<T>({
@@ -16,6 +17,7 @@ export async function fetchFromApi<T>({
   method = "GET",
   body,
   queryParams,
+  headers,
 }: FetchFromApiOptions): Promise<T | null> {
   let url = `${SERVER_URL}${path}`;
 
@@ -36,7 +38,8 @@ export async function fetchFromApi<T>({
     method,
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
+      ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+      ...headers,
     },
     body: body ? JSON.stringify(body) : undefined,
   });
@@ -47,6 +50,8 @@ export async function fetchFromApi<T>({
     }
 
     const problemDetails = (await response.json()) as ProblemDetails;
+
+    console.error(problemDetails);
 
     throw new TRPCError({
       code: "BAD_REQUEST",

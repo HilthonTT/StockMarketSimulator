@@ -4,12 +4,15 @@ import { HubConnection, HubConnectionState } from "@microsoft/signalr";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import { TransactionResponse } from "@/modules/transactions/types";
+import {
+  TransactionResponse,
+  TransactionType,
+} from "@/modules/transactions/types";
 import { StockPriceResponse } from "@/modules/stocks/types";
 
 import { TableCell, TableRow } from "@/components/ui/table";
 import { useTRPC } from "@/trpc/client";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 
 import {
   SIGNALR_JOIN_GROUP,
@@ -54,7 +57,13 @@ export const TransactionWidget = ({
 
       setPricePerUnit(stockUpdate.price);
       setTotalPrice(stockUpdate.price * transaction.quantity);
-      setChange(stockUpdate.price - transaction.limitPrice);
+
+      const diff =
+        transaction.type === TransactionType.Buy
+          ? stockUpdate.price - transaction.limitPrice
+          : transaction.limitPrice - stockUpdate.price;
+
+      setChange(diff);
     };
 
     connection.on(SIGNALR_STOCK_UPDATE_EVENT, handler);
@@ -68,6 +77,7 @@ export const TransactionWidget = ({
       }
     };
   }, [
+    transaction.type,
     connection,
     transaction.ticker,
     transaction.quantity,
@@ -77,16 +87,22 @@ export const TransactionWidget = ({
   return (
     <TableRow>
       <TableCell className="text-xl font-bold">{transaction.ticker}</TableCell>
+      <TableCell className="text-xl font-bold">
+        {formatCurrency(transaction.limitPrice)}{" "}
+        {transaction.type === TransactionType.Sell && (
+          <span className="text-rose-500">(Sold)</span>
+        )}
+      </TableCell>
       <TableCell className="lg:text-lg text-base">
-        ${pricePerUnit} (
+        {formatCurrency(pricePerUnit)} (
         <span
           className={cn(
             "lg:text-lg text-base",
-            change > 0 ? "text-emerald-500" : "text-rose-500"
+            change >= 0 ? "text-emerald-500" : "text-rose-500"
           )}
         >
           {change >= 0 ? "+" : "-"}
-          {change.toFixed(2)}%
+          {Math.abs(change).toFixed(2)}%
         </span>
         )
       </TableCell>

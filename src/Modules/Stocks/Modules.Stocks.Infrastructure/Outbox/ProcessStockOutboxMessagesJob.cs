@@ -7,6 +7,8 @@ using Infrastructure.Outbox;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Polly.Retry;
+using Polly;
 using Quartz;
 using SharedKernel;
 
@@ -126,26 +128,37 @@ public sealed class ProcessStockOutboxMessagesJob(
         ConcurrentQueue<OutboxUpdate> updateQueue,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            IDomainEvent domainEvent = JsonConvert.DeserializeObject<IDomainEvent>(
-                outboxMessage.Content,
-                JsonSerializerSettings)!;
+        const int RetryCount = 3;
 
-            await publisher.Publish(domainEvent, cancellationToken);
-
-            updateQueue.Enqueue(new OutboxUpdate { Id = outboxMessage.Id, ProcessedOnUtc = dateTimeProvider.UtcNow });
-        }
-        catch (Exception ex)
+        if (!TryDeserializeDomainEvent(outboxMessage.Content, out IDomainEvent? domainEvent))
         {
-            var update = new OutboxUpdate
-            {
-                Id = outboxMessage.Id,
-                ProcessedOnUtc = dateTimeProvider.UtcNow,
-                Error = ex.ToString()
-            };
-            updateQueue.Enqueue(update);
+            return;
         }
+
+        AsyncRetryPolicy policy = Policy
+            .Handle<Exception>()
+            .WaitAndRetryAsync(RetryCount, attempt => TimeSpan.FromMilliseconds(50 * attempt));
+
+        PolicyResult result = await policy.ExecuteAndCaptureAsync(() =>
+            publisher.Publish(domainEvent!, cancellationToken));
+
+        var outboxUpdate = new OutboxUpdate
+        {
+            Id = outboxMessage.Id,
+            ProcessedOnUtc = dateTimeProvider.UtcNow,
+            Error = result.FinalException?.ToString(),
+        };
+
+        updateQueue.Enqueue(outboxUpdate);
+    }
+
+    private static bool TryDeserializeDomainEvent(string content, out IDomainEvent? domainEvent)
+    {
+        domainEvent = JsonConvert.DeserializeObject<IDomainEvent>(
+            content,
+            JsonSerializerSettings);
+
+        return domainEvent is not null;
     }
 
     private sealed record OutboxMessageResponse(Guid Id, string Content);

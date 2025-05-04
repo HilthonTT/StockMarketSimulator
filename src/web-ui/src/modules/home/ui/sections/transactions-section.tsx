@@ -147,6 +147,9 @@ const TransactionSectionSuspense = ({ page }: TransactionSectionProps) => {
               SYMBOL
             </TableHead>
             <TableHead className="lg:text-2xl text-base">
+              Original Price
+            </TableHead>
+            <TableHead className="lg:text-2xl text-base">
               Bought Price Per Unit
             </TableHead>
             <TableHead className="lg:text-2xl text-base">Units</TableHead>

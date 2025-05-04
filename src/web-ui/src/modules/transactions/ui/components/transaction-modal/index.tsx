@@ -62,7 +62,7 @@ export const TransactionModal = () => {
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-3xl text-center">
-            {stockPrice.ticker}
+            {stockPrice.ticker.toUpperCase()}
           </DialogTitle>
           <DialogDescription className="text-center font-semibold">
             {isBuying

@@ -1,4 +1,5 @@
 ﻿using Application.Abstractions.Messaging;
+using EntityFramework.Exceptions.Common;
 using Modules.Users.Application.Abstractions.Authentication;
 using Modules.Users.Application.Abstractions.Data;
 using Modules.Users.Domain.Entities;
@@ -18,43 +19,50 @@ internal sealed class RegisterUserCommandHandler(
 {
     public async Task<Result<Guid>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
-        // Step 1: Validate Email & Username
-        Result<Email> emailResult = Email.Create(request.Email);
-        Result<Username> usernameResult = Username.Create(request.Username);
-        Result<Password> passwordResult = Password.Create(request.Password);
-        Result validationResult = Result.FirstFailureOrSuccess(emailResult, usernameResult, passwordResult);
-
-        if (validationResult.IsFailure)
+        try
         {
-            return Result.Failure<Guid>(validationResult.Error);
+            // Step 1: Validate Email & Username
+            Result<Email> emailResult = Email.Create(request.Email);
+            Result<Username> usernameResult = Username.Create(request.Username);
+            Result<Password> passwordResult = Password.Create(request.Password);
+            Result validationResult = Result.FirstFailureOrSuccess(emailResult, usernameResult, passwordResult);
+
+            if (validationResult.IsFailure)
+            {
+                return Result.Failure<Guid>(validationResult.Error);
+            }
+
+            Email email = emailResult.Value;
+            Username username = usernameResult.Value;
+
+            // Step 2: Ensure Email Uniqueness
+            if (await userRepository.EmailNotUniqueAsync(email, cancellationToken))
+            {
+                return Result.Failure<Guid>(UserErrors.EmailNotUnique);
+            }
+
+            // Step 3: Generate Verification Token & Link
+            Guid emailVerificationTokenId = Guid.CreateVersion7();
+            string verificationLink = emailVerificationLinkFactory.Create(emailVerificationTokenId);
+
+            // Step 4: Hash Password & Create User
+            string passwordHash = passwordHasher.Hash(request.Password);
+            var user = User.Create(username, email, passwordHash, verificationLink);
+
+            userRepository.Insert(user);
+
+            // Step 5: Create & Store Email Verification Token
+            var emailVerificationToken = EmailVerificationToken.Create(emailVerificationTokenId, user.Id);
+            emailVerificationTokenRepository.Insert(emailVerificationToken);
+
+            // Step 6: Save Changes
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+
+            return user.Id;
         }
-
-        Email email = emailResult.Value;
-        Username username = usernameResult.Value;
-
-        // Step 2: Ensure Email Uniqueness
-        if (await userRepository.EmailNotUniqueAsync(email, cancellationToken))
+        catch (UniqueConstraintException)
         {
             return Result.Failure<Guid>(UserErrors.EmailNotUnique);
         }
-
-        // Step 3: Generate Verification Token & Link
-        Guid emailVerificationTokenId = Guid.CreateVersion7();
-        string verificationLink = emailVerificationLinkFactory.Create(emailVerificationTokenId);
-
-        // Step 4: Hash Password & Create User
-        string passwordHash = passwordHasher.Hash(request.Password);
-        var user = User.Create(username, email, passwordHash, verificationLink);
-
-        userRepository.Insert(user);
-
-        // Step 5: Create & Store Email Verification Token
-        var emailVerificationToken = EmailVerificationToken.Create(emailVerificationTokenId, user.Id);
-        emailVerificationTokenRepository.Insert(emailVerificationToken);
-
-        // Step 6: Save Changes
-        await unitOfWork.SaveChangesAsync(cancellationToken);
-
-        return user.Id;
     }
 }

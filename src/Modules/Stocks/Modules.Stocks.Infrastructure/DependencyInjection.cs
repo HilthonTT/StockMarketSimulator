@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using EntityFramework.Exceptions.PostgreSQL;
+using FluentValidation;
 using Infrastructure;
 using Infrastructure.Database.Interceptors;
 using Infrastructure.Outbox;
@@ -56,6 +57,7 @@ public static class DependencyInjection
                .UseNpgsql(connectionString, npgsqlOptions =>
                    npgsqlOptions.MigrationsHistoryTable(HistoryRepository.DefaultTableName, Schemas.Stocks))
                .UseSnakeCaseNamingConvention()
+               .UseExceptionProcessor()
                .AddInterceptors(
                    sp.GetRequiredService<InsertOutboxMessagesInterceptor>(),
                    sp.GetRequiredService<UpdateAuditableInterceptor>(),

@@ -6,7 +6,7 @@ export type TransactionResponse = {
   type: TransactionType;
   quantity: number;
   createdOnUtc: Date;
-  modifiedOnUtc: Date | null | undefined;
+  modifiedOnUtc?: Date | null | undefined;
 };
 
 export enum TransactionType {
