@@ -3,7 +3,7 @@ using SharedKernel;
 
 namespace Modules.Users.Domain.ValueObjects;
 
-public sealed record Username
+public sealed record Username : ValueObject
 {
     public const int MaxLength = 255;
 
@@ -18,4 +18,9 @@ public sealed record Username
             .Ensure(u => !string.IsNullOrWhiteSpace(username), UsernameErrors.Empty)
             .Ensure(u => u.Length <= MaxLength, UsernameErrors.TooLong)
         .Map(u => new Username(u));
+
+    public override IEnumerable<object> GetAtomicValues()
+    {
+        yield return Value;
+    }
 }

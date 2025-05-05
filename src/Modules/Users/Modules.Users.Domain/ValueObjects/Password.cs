@@ -3,7 +3,7 @@ using SharedKernel;
 
 namespace Modules.Users.Domain.ValueObjects;
 
-public sealed record Password
+public sealed record Password : ValueObject
 {
     public const int MinimumLength = 6;
 
@@ -18,4 +18,9 @@ public sealed record Password
             .Ensure(p => !string.IsNullOrWhiteSpace(p), PasswordErrors.Empty)
             .Ensure(p => p.Length >= MinimumLength, PasswordErrors.TooShort)
         .Map(p => new Password(p));
+
+    public override IEnumerable<object> GetAtomicValues()
+    {
+        yield return Value;
+    }
 }

@@ -4,7 +4,7 @@ using SharedKernel;
 
 namespace Modules.Users.Domain.ValueObjects;
 
-public sealed record Email
+public sealed record Email : ValueObject
 {
     public const int MaxLength = 320;
 
@@ -25,4 +25,9 @@ public sealed record Email
             .Ensure(e => e.Length <= MaxLength, EmailErrors.TooLong)
             .Ensure(EmailFormatRegex.Value.IsMatch, EmailErrors.InvalidFormat)
             .Map(e => new Email(e));
+
+    public override IEnumerable<object> GetAtomicValues()
+    {
+        yield return Value;
+    }
 }
