@@ -1,3 +1,4 @@
+using Aspire.Hosting.Azure;
 using StockMarketSimulator.AppHost;
 
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
@@ -12,6 +13,11 @@ IResourceBuilder<RedisResource> redis = builder.AddRedis("stockmarketsimulator-r
 IResourceBuilder<RabbitMQServerResource> rabbitMq = builder.AddRabbitMQ("stockmarketsimulator-rabbitmq")
     .WithDataVolume();
 
+IResourceBuilder<AzureBlobStorageResource> storage = builder
+    .AddAzureStorage("stockmarketsimulator-storage")
+    .RunAsEmulator()
+    .AddBlobs("stockmarketsimulator-blobs"); // <- The connection string
+
 builder.AddProject<Projects.Web_Api>("web-api")
     .WithSwaggerUI()
     .WithScalar()
@@ -19,6 +25,7 @@ builder.AddProject<Projects.Web_Api>("web-api")
     .WithReference(postgres)
     .WithReference(redis)
     .WithReference(rabbitMq)
+    .WithReference(storage)
     .WaitFor(postgres)
     .WaitFor(redis)
     .WaitFor(rabbitMq);

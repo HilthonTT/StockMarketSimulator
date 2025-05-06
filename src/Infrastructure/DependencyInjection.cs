@@ -1,10 +1,11 @@
-﻿using System.Reflection;
-using Application.Abstractions.Authentication;
+﻿using Application.Abstractions.Authentication;
 using Application.Abstractions.Caching;
 using Application.Abstractions.Data;
 using Application.Abstractions.Emails;
 using Application.Abstractions.Events;
 using Application.Abstractions.Notifications;
+using Application.Abstractions.Storage;
+using Azure.Storage.Blobs;
 using EntityFramework.Exceptions.PostgreSQL;
 using FluentValidation;
 using Infrastructure.Authentication;
@@ -15,17 +16,16 @@ using Infrastructure.Emails;
 using Infrastructure.Emails.Options;
 using Infrastructure.Events;
 using Infrastructure.Events.Options;
-using Infrastructure.Idempotence;
 using Infrastructure.Notifications;
+using Infrastructure.Storage;
+using Infrastructure.Storage.Options;
 using Infrastructure.Time;
 using Infrastructure.Validation;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
-using Scrutor;
 using SharedKernel;
 
 namespace Infrastructure;
@@ -42,6 +42,7 @@ public static class DependencyInjection
             .AddDatabase(configuration)
             .AddCaching(configuration)
             .AddHealthChecks(configuration)
+            .AddAzureBlob(configuration)
             .AddMessaging();
 
         return services;
@@ -117,6 +118,20 @@ public static class DependencyInjection
         services.AddSingleton<IEventBus, EventBus>();
 
         services.AddOptionsWithFluentValidation<MessageBrokerOptions>(MessageBrokerOptions.SettingsKey);
+
+        return services;
+    }
+
+    private static IServiceCollection AddAzureBlob(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddOptionsWithFluentValidation<BlobOptions>(BlobOptions.SettingsKey);
+
+        string? blobConnectionString = configuration.GetConnectionString(ConfigurationNames.AzureBlob);
+        Ensure.NotNullOrEmpty(blobConnectionString, nameof(blobConnectionString));
+
+        services.AddSingleton(_ => new BlobServiceClient(blobConnectionString));
+
+        services.AddSingleton<IBlobService, BlobService>();
 
         return services;
     }

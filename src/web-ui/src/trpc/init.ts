@@ -6,6 +6,7 @@ import { auth } from "@/modules/auth/auth";
 
 import { initTRPC, TRPCError } from "@trpc/server";
 import { fetchFromApi } from "@/lib/api";
+import { ratelimit } from "@/lib/ratelimit";
 
 export const createTRPCContext = cache(async () => {
   const session = await auth();
@@ -51,6 +52,12 @@ export const protectedProcedure = t.procedure.use(async function isAuthed(
 
   if (!user) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+
+  const { success } = await ratelimit.limit(user.id);
+
+  if (!success) {
+    throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
   }
 
   // Return the updated context with the user object
