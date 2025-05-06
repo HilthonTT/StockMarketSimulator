@@ -42,7 +42,12 @@ export const SearchStockSection = () => {
             <form
               onSubmit={form.handleSubmit(onSubmit)}
               className="relative w-full"
+              aria-labelledby="search-form"
             >
+              <h2 id="search-form" className="sr-only">
+                Search for stocks to buy
+              </h2>
+
               <FormField
                 name="searchTerm"
                 render={({ field }) => (
@@ -53,6 +58,7 @@ export const SearchStockSection = () => {
                           type="submit"
                           variant="ghost"
                           className="absolute top-1/2 left-3 -translate-y-1/2 size-8 text-neutral-500 p-4 rounded-full shrink-0"
+                          aria-label="Search for stocks"
                         >
                           <SearchIcon className="shrink-0" />
                         </Button>
@@ -60,6 +66,7 @@ export const SearchStockSection = () => {
                           {...field}
                           className="pl-14"
                           placeholder="Search stocks to buy..."
+                          aria-label="Search stocks"
                         />
                       </div>
                     </FormControl>

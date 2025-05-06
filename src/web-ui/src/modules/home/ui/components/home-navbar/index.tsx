@@ -41,7 +41,10 @@ export const HomeNavbar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <nav className="h-20 flex border-b justify-between font-medium bg-white dark:bg-black">
+    <nav
+      className="h-20 flex border-b justify-between font-medium bg-white dark:bg-black"
+      aria-label="Main navigation"
+    >
       <Link href="/" className="pl-6 flex items-center">
         <span
           className={cn(
@@ -78,6 +81,7 @@ export const HomeNavbar = () => {
             variant="secondary"
             disabled={isLoading}
             className="border-l border-t-0 border-b-0 border-r-0 px-12 h-full rounded-none bg-white dark:bg-black hover:bg-pink-400 transition-colors text-lg"
+            aria-label="Log in"
           >
             <Link href="/login">Log in</Link>
           </Button>
@@ -87,6 +91,7 @@ export const HomeNavbar = () => {
             variant="secondary"
             disabled={isLoading || isLoggingOut}
             className="border-l border-t-0 border-b-0 border-r-0 px-12 h-full rounded-none bg-black text-white hover:bg-pink-400  hover:text-black transition-colors text-lg"
+            aria-label="Log out"
           >
             Logout
           </Button>
@@ -97,6 +102,7 @@ export const HomeNavbar = () => {
             variant="secondary"
             disabled={isLoading}
             className="border-l border-t-0 border-b-0 border-r-0 px-12 h-full rounded-none bg-black text-white hover:bg-pink-400  hover:text-black transition-colors text-lg"
+            aria-label="Start gambling"
           >
             <Link href="/register">Start Gambling!</Link>
           </Button>
@@ -105,6 +111,7 @@ export const HomeNavbar = () => {
         <Button
           variant="secondary"
           className="relative border-l border-t-0 border-b-0 border-r-0 px-12 size-24 h-full rounded-none bg-black text-white hover:bg-pink-400  hover:text-black transition-colors text-lg"
+          aria-label="Toggle theme"
         >
           <div
             onClick={() => {
@@ -127,6 +134,8 @@ export const HomeNavbar = () => {
           variant="ghost"
           className="size-12 border-transparent bg-white dark:bg-black"
           onClick={() => setIsSidebarOpen(true)}
+          aria-label="Open menu"
+          aria-expanded={isSidebarOpen ? "true" : "false"}
         >
           <MenuIcon />
         </Button>

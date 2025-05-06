@@ -17,9 +17,12 @@ export const NavbarItem = ({ href, children, isActive }: NavbarItemProps) => {
         "bg-transparent hover:bg-transparent rounded-full hover:border-primary border-transparent px-3.5 text-lg",
         isActive && "bg-black text-white hover:bg-black hover:text-white"
       )}
+      aria-current={isActive ? "page" : undefined} // Indicates the current page
       asChild
     >
-      <Link href={href}>{children}</Link>
+      <Link href={href} aria-label={children?.toString()}>
+        {children}
+      </Link>
     </Button>
   );
 };

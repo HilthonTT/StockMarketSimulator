@@ -150,22 +150,28 @@ const ChartSectionSuspense = ({ page }: ChartSectionProps) => {
   }
 
   return (
-    <Card className="dark:bg-black">
-      <CardTitle className="w-full relative">
+    <Card className="dark:bg-black" aria-label="Stock chart card">
+      <CardTitle className="w-full relative" aria-label="Chart header">
         <div className="flex justify-center items-center relative">
-          <h1 className="text-center lg:text-5xl text-4xl">{selectedTicker}</h1>
+          <h1
+            className="text-center lg:text-5xl text-4xl"
+            aria-label={`Selected ticker: ${selectedTicker}`}
+          >
+            {selectedTicker}
+          </h1>
           <div className="absolute right-8">
             <TickerSelector
               disabled={pending || isLoading}
               onChange={onChangeTicker}
               tickers={tickers}
+              aria-label="Select ticker symbol"
             />
           </div>
         </div>
       </CardTitle>
-      <CardContent className="px-2 sm:p-6 sm:pt-0">
+      <CardContent className="px-2 sm:p-6 sm:pt-0" aria-label="Chart content">
         <ResponsiveContainer width="100%" height={350}>
-          <LineChart data={data}>
+          <LineChart data={data} aria-label="Price over time line chart">
             <defs>
               <linearGradient id="colorLine" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#38bdf8" stopOpacity={0.8} />
@@ -178,12 +184,14 @@ const ChartSectionSuspense = ({ page }: ChartSectionProps) => {
               tickFormatter={(value) => `#${value}`}
               tick={{ fontSize: 12 }}
               tickMargin={8}
+              aria-label="X axis: Index number"
             />
             <YAxis
               domain={["dataMin - 0.5", "dataMax + 0.5"]}
               tickFormatter={(value) => `$${value.toFixed(2)}`}
               tick={{ fontSize: 12 }}
               tickMargin={8}
+              aria-label="Y axis: Price in USD"
             />
             <Tooltip content={<CustomToolTip />} />
             <Line
@@ -192,6 +200,7 @@ const ChartSectionSuspense = ({ page }: ChartSectionProps) => {
               stroke="#3d82f6"
               strokeWidth={3}
               dot={false}
+              aria-label="Line representing price"
             />
           </LineChart>
         </ResponsiveContainer>

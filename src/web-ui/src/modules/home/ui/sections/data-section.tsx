@@ -42,30 +42,36 @@ const DataSectionSuspense = ({ page }: DataSectionProps) => {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-2 mb-8">
-      <DataCard
-        title="Budget"
-        value={budget.buyingPower}
-        description="Available funds for investing"
-        icon={FaPiggyBank}
-        variant="default"
-        dollarPrefix
-      />
+      <div role="region" aria-labelledby="budget-card">
+        <DataCard
+          title="Budget"
+          value={budget.buyingPower}
+          description="Available funds for investing"
+          icon={FaPiggyBank}
+          variant="default"
+          dollarPrefix
+        />
+      </div>
 
-      <DataCard
-        title="Transactions"
-        value={pagedTransactions.totalCount}
-        description="Total number of buy/sell trades"
-        icon={FaArrowTrendDown}
-        variant="default"
-      />
+      <div role="region" aria-labelledby="transactions-card">
+        <DataCard
+          title="Transactions"
+          value={pagedTransactions.totalCount}
+          description="Total number of buy/sell trades"
+          icon={FaArrowTrendDown}
+          variant="default"
+        />
+      </div>
 
-      <DataCard
-        title="Top Performer"
-        value={topPerfomerStock.ticker.toUpperCase()}
-        description="Your best performing stock"
-        icon={FaMedal}
-        variant="default"
-      />
+      <div role="region" aria-labelledby="top-performer-card">
+        <DataCard
+          title="Top Performer"
+          value={topPerfomerStock.ticker.toUpperCase()}
+          description="Your best performing stock"
+          icon={FaMedal}
+          variant="default"
+        />
+      </div>
     </div>
   );
 };

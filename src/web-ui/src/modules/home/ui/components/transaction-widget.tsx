@@ -1,7 +1,7 @@
 "use client";
 
 import { HubConnection, HubConnectionState } from "@microsoft/signalr";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import {
@@ -10,8 +10,8 @@ import {
 } from "@/modules/transactions/types";
 import { StockPriceResponse } from "@/modules/stocks/types";
 
-import { TableCell, TableRow } from "@/components/ui/table";
 import { useTRPC } from "@/trpc/client";
+import { TableCell, TableRow } from "@/components/ui/table";
 import { cn, formatCurrency } from "@/lib/utils";
 
 import {
@@ -32,10 +32,13 @@ export const TransactionWidget = ({
   const trpc = useTRPC();
 
   const [pricePerUnit, setPricePerUnit] = useState(transaction.limitPrice);
-  const [totalPrice, setTotalPrice] = useState(
-    pricePerUnit * transaction.quantity
-  );
+
   const [change, setChange] = useState(0);
+
+  const totalPrice = useMemo(
+    () => pricePerUnit * transaction.quantity,
+    [pricePerUnit, transaction.quantity]
+  );
 
   const {} = useQuery(
     trpc.stocks.getOne.queryOptions({ ticker: transaction.ticker })
@@ -56,7 +59,6 @@ export const TransactionWidget = ({
       }
 
       setPricePerUnit(stockUpdate.price);
-      setTotalPrice(stockUpdate.price * transaction.quantity);
 
       const diff =
         transaction.type === TransactionType.Buy
@@ -84,9 +86,15 @@ export const TransactionWidget = ({
     transaction.limitPrice,
   ]);
 
+  if (!connection) {
+    return null;
+  }
+
   return (
     <TableRow>
-      <TableCell className="text-xl font-bold">{transaction.ticker}</TableCell>
+      <TableCell aria-label="Ticker" className="text-xl font-bold">
+        {transaction.ticker}
+      </TableCell>
       <TableCell className="text-xl font-bold">
         {formatCurrency(transaction.limitPrice)}{" "}
         {transaction.type === TransactionType.Sell && (
@@ -110,7 +118,7 @@ export const TransactionWidget = ({
         {transaction.quantity}{" "}
       </TableCell>
       <TableCell className="text-right lg:text-lg text-base">
-        ${totalPrice}
+        {formatCurrency(totalPrice)}
       </TableCell>
     </TableRow>
   );

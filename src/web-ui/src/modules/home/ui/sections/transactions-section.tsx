@@ -115,6 +115,7 @@ const TransactionSectionSuspense = ({ page }: TransactionSectionProps) => {
           onChange={handleChange}
           className="md:text-base px-14 w-full border-none focus-visible:shadow-[0_1px_1px_0_rgba(65,69,73,.3),0_1px_3px_1px_rgba(65,69,73,.15)]  rounded-full h-[48px] focus-visible:ring-0 focus:bg-white4"
           placeholder="Search for transactions..."
+          aria-label="Search for transactions"
         />
 
         <Button
@@ -122,6 +123,7 @@ const TransactionSectionSuspense = ({ page }: TransactionSectionProps) => {
           variant="ghost"
           size="icon"
           className="absolute left-3 top-1/2 -translate-y-1/2 [&_svg]:size-5 rounded-full"
+          aria-label="Search"
         >
           <SearchIcon />
         </Button>
@@ -135,25 +137,39 @@ const TransactionSectionSuspense = ({ page }: TransactionSectionProps) => {
             "absolute right-3 top-1/2 -translate-y-1/2 [&_svg]:size-5 rounded-full transition opacity-0 cursor-default",
             value && "opacity-100 cursor-pointer"
           )}
+          aria-label="Clear search"
         >
           <XIcon />
         </Button>
       </form>
-      <Table className="rounded-lg dark:bg-black bg-white">
-        <TableCaption>All of your previous transactions.</TableCaption>
+      <Table
+        className="rounded-lg dark:bg-black bg-white"
+        aria-labelledby="transaction-table"
+      >
+        <TableCaption id="transaction-table">
+          All of your previous transactions.
+        </TableCaption>
         <TableHeader className="h-14">
           <TableRow>
-            <TableHead className="w-[200px] text-bas lg:text-2xl font-bold">
+            <TableHead
+              className="w-[200px] text-bas lg:text-2xl font-bold"
+              aria-sort="none"
+            >
               SYMBOL
             </TableHead>
-            <TableHead className="lg:text-2xl text-base">
+            <TableHead className="lg:text-2xl text-base" aria-sort="none">
               Original Price
             </TableHead>
-            <TableHead className="lg:text-2xl text-base">
+            <TableHead className="lg:text-2xl text-base" aria-sort="none">
               Bought Price Per Unit
             </TableHead>
-            <TableHead className="lg:text-2xl text-base">Units</TableHead>
-            <TableHead className="text-right lg:text-2xl text-base">
+            <TableHead className="lg:text-2xl text-base" aria-sort="none">
+              Units
+            </TableHead>
+            <TableHead
+              className="text-right lg:text-2xl text-base"
+              aria-sort="none"
+            >
               Total Price
             </TableHead>
           </TableRow>
@@ -176,6 +192,7 @@ const TransactionSectionSuspense = ({ page }: TransactionSectionProps) => {
           onClick={() => handlePagination("prev")}
           variant="elevated"
           disabled={!pagedTransactions.hasPreviousPage}
+          aria-label="Previous page"
         >
           Previous
         </Button>
@@ -183,6 +200,7 @@ const TransactionSectionSuspense = ({ page }: TransactionSectionProps) => {
           onClick={() => handlePagination("next")}
           variant="elevated"
           disabled={!pagedTransactions.hasNextPage}
+          aria-label="Next page"
         >
           Next
         </Button>

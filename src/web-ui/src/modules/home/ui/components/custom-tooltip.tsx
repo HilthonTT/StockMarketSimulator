@@ -20,12 +20,19 @@ export const CustomToolTip = ({
   const price = (payload[0] as PayloadItem).payload?.price || 0;
 
   return (
-    <div className="rounded-sm bg-background shadow-sm border overflow-hidden">
+    <div
+      role="tooltip"
+      aria-label={`Tooltip showing price: ${formatCurrency(price)}`}
+      className="rounded-sm bg-background shadow-sm border overflow-hidden"
+    >
       <Separator />
       <div className="p-2 px-3 space-y-1">
         <div className="flex items-center justify-between gap-x-4">
           <div className="flex items-center gap-x-2">
-            <div className="size-1.5 bg-blue-500 rounded-full" />
+            <div
+              className="size-1.5 bg-blue-500 rounded-full"
+              aria-hidden="true"
+            />
             <p className="text-sm text-muted-foreground">Price</p>
           </div>
           <p className="text-sm text-right font-medium">

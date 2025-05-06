@@ -52,32 +52,36 @@ export const DataCard = ({
   description,
   dollarPrefix,
 }: DataCardProps) => {
+  const ariaValue =
+    typeof value === "number"
+      ? dollarPrefix
+        ? formatCurrency(value)
+        : value.toString()
+      : value;
+
   return (
-    <Card className="border-none drop-shadow-sm dark:bg-black">
+    <Card
+      className="border-none drop-shadow-sm dark:bg-black"
+      role="region"
+      aria-label={`${title} card. ${description}. Value: ${ariaValue}`}
+    >
       <CardHeader className="flex flex-row items-center justify-between gap-x-4">
         <div className="space-y-2">
-          <CardTitle className="text-2xl line-clmap-1">{title}</CardTitle>
+          <CardTitle className="text-2xl line-clamp-1">{title}</CardTitle>
         </div>
         <div
-          className={cn(
-            "shrink-0",
-            boxVariant({
-              variant,
-            })
-          )}
+          className={cn("shrink-0", boxVariant({ variant }))}
+          aria-hidden="true"
         >
-          <Icon
-            className={cn(
-              iconVariant({
-                variant,
-              })
-            )}
-          />
+          <Icon className={cn(iconVariant({ variant }))} />
         </div>
       </CardHeader>
       <CardContent>
-        <h1 className="font-bold text-2xl mb-2 line-clamp-1 break-all">
-          {typeof value === "number" && (
+        <h1
+          className="font-bold text-2xl mb-2 line-clamp-1 break-all"
+          aria-label={`Value: ${ariaValue}`}
+        >
+          {typeof value === "number" ? (
             <CountUp
               preserveValue
               start={0}
@@ -86,8 +90,9 @@ export const DataCard = ({
               decimalPlaces={2}
               formattingFn={dollarPrefix ? formatCurrency : undefined}
             />
+          ) : (
+            value
           )}
-          {typeof value === "string" && value}
         </h1>
         <p className="text-muted-foreground text-sm line-clamp-1">
           {description}
