@@ -11,9 +11,9 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Modules.Budgeting.Application.Abstractions.Data;
 using Modules.Budgeting.Domain.Repositories;
 using Modules.Budgeting.Infrastructure.Repositories;
-using Modules.Budgeting.Api;
 using Modules.Budgeting.Infrastructure.Api;
 using EntityFramework.Exceptions.PostgreSQL;
+using Modules.Budgeting.Api.Api;
 
 namespace Modules.Budgeting.Infrastructure;
 

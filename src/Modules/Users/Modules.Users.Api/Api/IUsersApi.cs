@@ -1,6 +1,7 @@
-﻿using SharedKernel;
+﻿using Modules.Users.Api.Responses;
+using SharedKernel;
 
-namespace Modules.Users.Api;
+namespace Modules.Users.Api.Api;
 
 public interface IUsersApi
 {

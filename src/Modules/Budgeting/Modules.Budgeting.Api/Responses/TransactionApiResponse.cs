@@ -1,3 +1,3 @@
-﻿namespace Modules.Budgeting.Api;
+﻿namespace Modules.Budgeting.Api.Responses;
 
 public sealed record TransactionApiResponse(Guid Id, string Ticker, int Type, decimal LimitPrice);

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Modules.Stocks.Api;
+using Modules.Stocks.Api.Api;
+using Modules.Stocks.Api.Responses;
 using Modules.Stocks.Infrastructure.Database;
 using SharedKernel;
 

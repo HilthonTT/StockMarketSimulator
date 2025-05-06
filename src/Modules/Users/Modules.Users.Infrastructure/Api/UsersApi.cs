@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Modules.Users.Api;
+using Modules.Users.Api.Api;
+using Modules.Users.Api.Responses;
 using Modules.Users.Infrastructure.Database;
 using SharedKernel;
 

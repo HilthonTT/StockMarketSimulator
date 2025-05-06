@@ -15,7 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Modules.Users.Api;
+using Modules.Users.Api.Api;
 using Modules.Users.Application.Abstractions.Authentication;
 using Modules.Users.Application.Abstractions.Data;
 using Modules.Users.Domain.Repositories;
@@ -33,7 +33,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddUsersInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly, includeInternalTypes: true);
+        services.AddValidatorsFromAssembly(UsersInfrastructureAssembly.Instance, includeInternalTypes: true);
 
         services
             .AddDatabase(configuration)

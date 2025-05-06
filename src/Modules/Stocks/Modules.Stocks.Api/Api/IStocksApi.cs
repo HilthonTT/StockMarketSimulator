@@ -1,6 +1,7 @@
-﻿using SharedKernel;
+﻿using Modules.Stocks.Api.Responses;
+using SharedKernel;
 
-namespace Modules.Stocks.Api;
+namespace Modules.Stocks.Api.Api;
 
 public interface IStocksApi
 {

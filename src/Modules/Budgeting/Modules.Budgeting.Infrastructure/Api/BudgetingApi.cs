@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Modules.Budgeting.Api;
+using Modules.Budgeting.Api.Api;
+using Modules.Budgeting.Api.Responses;
 using Modules.Budgeting.Domain.Entities;
 using Modules.Budgeting.Infrastructure.Database;
 

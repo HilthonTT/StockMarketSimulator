@@ -57,7 +57,7 @@ public static class DependencyInjection
 
         services.AddHostedService<ChannelNotificationsProcessor>();
 
-        services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly, includeInternalTypes: true);
+        services.AddValidatorsFromAssembly(InfrastructureAssembly.Instance, includeInternalTypes: true);
 
         return services;
     }

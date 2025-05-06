@@ -1,4 +1,3 @@
-using System.Reflection;
 using Application;
 using Asp.Versioning;
 using Asp.Versioning.Builder;
@@ -16,16 +15,14 @@ using Modules.Stocks.Infrastructure;
 using Modules.Stocks.Infrastructure.Realtime;
 using Modules.Users.Application;
 using Modules.Users.BackgroundJobs;
-using Modules.Users.Domain.Repositories;
 using Modules.Users.Events;
 using Modules.Users.Infrastructure;
-using Modules.Users.Infrastructure.Repositories;
 using Sentry.OpenTelemetry;
 using StockMarketSimulator.ServiceDefaults;
 using Web.Api;
 using Web.Api.Extensions;
 
-const int apiVersion = 1;
+const int ApiVersion = 1;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -68,12 +65,12 @@ builder.Services.Decorate(typeof(INotificationHandler<>), typeof(IdempotentDomai
 builder.Services.AddBackgroundJobs();
 builder.Services.AddVersioning();
 
-builder.Services.AddEndpoints(Assembly.GetExecutingAssembly());
+builder.Services.AddEndpoints(PresentationAssembly.Instance);
 
 WebApplication app = builder.Build();
 
 ApiVersionSet apiVersionSet = app.NewApiVersionSet()
-    .HasApiVersion(new ApiVersion(apiVersion))
+    .HasApiVersion(new ApiVersion(ApiVersion))
     .ReportApiVersions()
     .Build();
 

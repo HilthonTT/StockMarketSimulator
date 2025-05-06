@@ -7,7 +7,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddUsersBackgroundJobs(this IServiceCollection services)
     {
-        services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly, includeInternalTypes: true);
+        services.AddValidatorsFromAssembly(UsersBackgroundJobsAssembly.Instance, includeInternalTypes: true);
 
         return services;
     }

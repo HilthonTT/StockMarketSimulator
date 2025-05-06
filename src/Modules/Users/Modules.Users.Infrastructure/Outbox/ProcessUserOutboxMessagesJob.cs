@@ -28,7 +28,7 @@ public sealed partial class ProcessUserOutboxMessagesJob(
     private static readonly JsonSerializerSettings JsonSerializerSettings = new()
     {
         TypeNameHandling = TypeNameHandling.All,
-        Converters = { new DomainEventConverter(UserDomainAssembly.Instance) }
+        Converters = { new DomainEventConverter(UsersDomainAssembly.Instance) }
     };
 
     public async Task Execute(IJobExecutionContext context)

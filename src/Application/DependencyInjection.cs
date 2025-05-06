@@ -10,7 +10,7 @@ public static class DependencyInjection
     {
         services.AddMediatR(cfg =>
         {
-            cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly);
+            cfg.RegisterServicesFromAssembly(ApplicationAssembly.Instance);
 
             cfg.AddOpenBehavior(typeof(ExceptionHandlingPipelineBehavior<,>));
             cfg.AddOpenBehavior(typeof(RequestLoggingPipelineBehavior<,>));

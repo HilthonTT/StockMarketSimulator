@@ -12,24 +12,21 @@ public static class MigrationExtensions
     {
         using IServiceScope scope = app.ApplicationServices.CreateScope();
 
-        using UsersDbContext usersDbContext =
-            scope.ServiceProvider.GetRequiredService<UsersDbContext>();
+        ApplyMigration<UsersDbContext>(scope);
 
-        usersDbContext.Database.Migrate();
+        ApplyMigration<StocksDbContext>(scope);
 
-        using StocksDbContext stocksDbContext =
-             scope.ServiceProvider.GetRequiredService<StocksDbContext>();
+        ApplyMigration<BudgetingDbContext>(scope);
 
-        stocksDbContext.Database.Migrate();
+        ApplyMigration<GeneralDbContext>(scope);
+    }
 
-        using BudgetingDbContext budgetingDbContext =
-            scope.ServiceProvider.GetRequiredService<BudgetingDbContext>();
+    private static void ApplyMigration<TDbContext>(IServiceScope scope)
+        where TDbContext : DbContext
+    {
+        using TDbContext context = scope.ServiceProvider
+            .GetRequiredService<TDbContext>();
 
-        budgetingDbContext.Database.Migrate();
-
-        using GeneralDbContext generalDbContext =
-            scope.ServiceProvider.GetRequiredService<GeneralDbContext>();
-
-        generalDbContext.Database.Migrate();
+        context.Database.Migrate();
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace Modules.Budgeting.Api;
+﻿using Modules.Budgeting.Api.Responses;
+
+namespace Modules.Budgeting.Api.Api;
 
 public interface IBudgetingApi
 {

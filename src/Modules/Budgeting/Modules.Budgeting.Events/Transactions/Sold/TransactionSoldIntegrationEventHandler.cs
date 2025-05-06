@@ -5,7 +5,8 @@ using Modules.Budgeting.BackgroundJobs.Transactions.Sold;
 using Modules.Budgeting.Domain.Entities;
 using Modules.Budgeting.Domain.Errors;
 using Modules.Budgeting.Domain.Repositories;
-using Modules.Users.Api;
+using Modules.Users.Api.Api;
+using Modules.Users.Api.Responses;
 using Quartz;
 using SharedKernel;
 

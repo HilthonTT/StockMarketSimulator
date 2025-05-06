@@ -3,7 +3,7 @@ using Contracts.Emails;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
-using Modules.Budgeting.Api;
+using Modules.Budgeting.Api.Api;
 using Modules.Users.BackgroundJobs.Users.EmailVerification;
 using Quartz;
 using SharedKernel;

@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Modules.Stocks.Api;
+using Modules.Stocks.Api.Api;
 using Modules.Stocks.Application.Abstractions.Data;
 using Modules.Stocks.Application.Abstractions.Http;
 using Modules.Stocks.Application.Abstractions.Realtime;
@@ -30,7 +30,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddStocksInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly, includeInternalTypes: true);
+        services.AddValidatorsFromAssembly(StocksInfrastructureAssembly.Instance, includeInternalTypes: true);
 
         services.AddScoped<IUrlShorteningService, UrlShorteningService>();
 

@@ -1,6 +1,7 @@
 ﻿using Application.Abstractions.Authentication;
 using Application.Abstractions.Messaging;
-using Modules.Budgeting.Api;
+using Modules.Budgeting.Api.Api;
+using Modules.Budgeting.Api.Responses;
 using Modules.Stocks.Application.Abstractions.Realtime;
 using Modules.Stocks.Contracts.Stocks;
 using Modules.Stocks.Domain.Errors;

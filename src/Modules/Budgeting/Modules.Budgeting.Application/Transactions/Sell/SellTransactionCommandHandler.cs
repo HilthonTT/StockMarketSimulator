@@ -5,7 +5,8 @@ using Modules.Budgeting.Domain.Entities;
 using Modules.Budgeting.Domain.Enums;
 using Modules.Budgeting.Domain.Errors;
 using Modules.Budgeting.Domain.Repositories;
-using Modules.Stocks.Api;
+using Modules.Stocks.Api.Api;
+using Modules.Stocks.Api.Responses;
 using SharedKernel;
 
 namespace Modules.Budgeting.Application.Transactions.Sell;
