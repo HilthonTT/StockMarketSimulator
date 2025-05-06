@@ -32,11 +32,13 @@ internal sealed class TransactionSoldIntegrationEventHandler(
 
         Transaction transaction = optionTransaction.ValueOrThrow();
 
-        UserApiResponse? user = await usersApi.GetByIdAsync(transaction.UserId, cancellationToken);
-        if (user is null)
+        Option<UserApiResponse> optionUser = await usersApi.GetByIdAsync(transaction.UserId, cancellationToken);
+        if (!optionUser.IsSome)
         {
             throw new DomainException(UserErrors.NotFound(transaction.UserId));
         }
+
+        UserApiResponse user = optionUser.ValueOrThrow();
 
         IScheduler scheduler = await schedulerFactory.GetScheduler(cancellationToken);
 

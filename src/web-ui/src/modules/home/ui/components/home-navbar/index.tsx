@@ -25,7 +25,7 @@ const poppins = Poppins({
 const navbarItems = [
   { href: "/", children: "Home" },
   { href: "/about", children: "About" },
-  { href: "/Profile", children: "Profile" },
+  { href: "/profile", children: "Profile" },
   { href: "/contact", children: "Contact" },
 ];
 

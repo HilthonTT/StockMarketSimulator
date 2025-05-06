@@ -1,8 +1,10 @@
-﻿namespace Modules.Users.Api;
+﻿using SharedKernel;
+
+namespace Modules.Users.Api;
 
 public interface IUsersApi
 {
-    Task<UserApiResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<Option<UserApiResponse>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
-    Task<UserApiResponse?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
+    Task<Option<UserApiResponse>> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
 }
