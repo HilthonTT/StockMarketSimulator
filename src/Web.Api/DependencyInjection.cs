@@ -7,6 +7,7 @@ using SharedKernel;
 using StackExchange.Redis;
 using System.Diagnostics;
 using System.IO.Compression;
+using System.Threading.RateLimiting;
 using Web.Api.Endpoints;
 using Web.Api.Features;
 using Web.Api.Infrastructure;
@@ -97,6 +98,23 @@ public static class DependencyInjection
                 limiterOptions.TokensPerPeriod = 50; // Refill rate (tokens per period)
                 limiterOptions.ReplenishmentPeriod = TimeSpan.FromSeconds(1); // Refilling interval
             });
+
+            options.OnRejected = async (context, cancellationToken) =>
+            {
+                context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out TimeSpan retryAfter))
+                {
+                    await context.HttpContext.Response.WriteAsync(
+                        $"Too many requests. Please try again after {retryAfter.TotalSeconds} second(s).",
+                        cancellationToken);
+                }
+                else
+                {
+                    await context.HttpContext.Response.WriteAsync(
+                       "Too many requests. Please try again later.",
+                       cancellationToken);
+                }
+            };
         });
 
         return services;
