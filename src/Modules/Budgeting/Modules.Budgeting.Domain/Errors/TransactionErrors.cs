@@ -19,4 +19,12 @@ public static class TransactionErrors
     public static Error NotFound(Guid id) => Error.NotFound(
         "Transactions.NotFound",
         $"Transaction with the Id = '{id}' was not found");
+
+    public static readonly Error IncomeAmountLessThanOrEqualToZero = Error.Problem(
+        "Transaction.AmountLessThanOrEqualToZero",
+        "The income transaction amount can not be less than or equal to zero.");
+
+    public static readonly Error ExpenseAmountGreaterThanOrEqualToZero = Error.Problem(
+        "Transaction.AmountGreaterThanOrEqualToZero",
+        "The expense transaction amount can not be greater than or equal to zero.");
 }

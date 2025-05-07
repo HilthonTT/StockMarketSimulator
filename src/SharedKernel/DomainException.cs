@@ -1,6 +1,6 @@
 ﻿namespace SharedKernel;
 
-public sealed class DomainException : Exception
+public class DomainException : Exception
 {
     public DomainException(Error error)
         : base(error.Description)
