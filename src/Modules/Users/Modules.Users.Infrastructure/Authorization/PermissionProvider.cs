@@ -36,14 +36,13 @@ internal sealed class PermissionProvider(UsersDbContext context, ICacheService c
 
         UserRolesResponse? roles = await context.Users
             .AsNoTracking()
-            .Where(user => user.Id == userId)
             .Include(u => u.Roles)
             .Select(user => new UserRolesResponse
             {
                 Id = user.Id,
                 Roles = user.Roles.ToList()
             })
-            .FirstOrDefaultAsync(cancellationToken);
+            .FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
 
         if (roles is not null)
         {

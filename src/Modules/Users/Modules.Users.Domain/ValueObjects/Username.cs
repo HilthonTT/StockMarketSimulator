@@ -13,6 +13,8 @@ public sealed record Username : ValueObject
 
     public string Value { get; }
 
+    public static implicit operator string(Username? username) => username?.Value ?? string.Empty;
+
     public static Result<Username> Create(string? username) =>
         Result.Create(username, UsernameErrors.Empty)
             .Ensure(u => !string.IsNullOrWhiteSpace(username), UsernameErrors.Empty)

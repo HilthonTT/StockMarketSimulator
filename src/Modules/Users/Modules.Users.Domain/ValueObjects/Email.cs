@@ -19,6 +19,8 @@ public sealed record Email : ValueObject
 
     public string Value { get; }
 
+    public static implicit operator string(Email email) => email?.Value ?? string.Empty;
+
     public static Result<Email> Create(string? email) =>
         Result.Create(email, EmailErrors.Empty)
             .Ensure(e => !string.IsNullOrWhiteSpace(e), EmailErrors.Empty)

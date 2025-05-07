@@ -20,6 +20,7 @@ public sealed class Transaction : Entity, IAuditable
         Ensure.NotNullOrEmpty(ticker, nameof(ticker));
         Ensure.NotNull(money, nameof(money));
         Ensure.GreaterThanOrEqualToZero(quantity, nameof(quantity));
+        Ensure.NotNull(type, nameof(type));
 
         Id = id;
         UserId = userId;

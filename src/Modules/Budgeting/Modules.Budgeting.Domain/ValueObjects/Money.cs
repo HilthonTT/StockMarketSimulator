@@ -7,15 +7,16 @@ public sealed record Money : ValueObject
 {
     public Money(decimal amount, Currency currency)
     {
+        Ensure.GreaterThanOrEqualToZero(amount, nameof(amount));
         Ensure.NotNull(currency, nameof(currency));
 
         Amount = amount;
         Currency = currency;
     }
 
-    public decimal Amount { get; private set; }
+    public decimal Amount { get; init; }
 
-    public Currency Currency { get; private set; }
+    public Currency Currency { get; init; }
 
     public static Money Sum(Money[] moneyArray)
     {

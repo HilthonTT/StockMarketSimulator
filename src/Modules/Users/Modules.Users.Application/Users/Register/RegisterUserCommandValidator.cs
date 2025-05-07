@@ -16,7 +16,11 @@ internal sealed class RegisterUserCommandValidator : AbstractValidator<RegisterU
 
         RuleFor(x => x.Password)
             .NotEmpty().WithError(UsersValidationErrors.RegisterUser.PasswordIsRequired)
-            .MinimumLength(Password.MinimumLength).WithError(UsersValidationErrors.RegisterUser.PasswordIsTooShort);
+            .MinimumLength(Password.MinimumLength).WithError(UsersValidationErrors.RegisterUser.PasswordIsTooShort)
+            .Must(p => p.Any(char.IsLower)).WithError(UsersValidationErrors.RegisterUser.PasswordMissingLowercase)
+            .Must(p => p.Any(char.IsUpper)).WithError(UsersValidationErrors.RegisterUser.PasswordMissingUppercase)
+            .Must(p => p.Any(char.IsDigit)).WithError(UsersValidationErrors.RegisterUser.PasswordMissingDigit)
+            .Must(p => p.Any(c => !char.IsLetterOrDigit(c))).WithError(UsersValidationErrors.RegisterUser.PasswordMissingNonAlphaNumeric);
 
         RuleFor(x => x.Username)
             .NotEmpty().WithError(UsersValidationErrors.RegisterUser.UsernameIsRequired);

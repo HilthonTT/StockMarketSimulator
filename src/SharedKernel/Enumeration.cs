@@ -116,7 +116,8 @@ public abstract class Enumeration<TEnum> : IEquatable<Enumeration<TEnum>>
     /// <inheritdoc />
     public override int GetHashCode() => Id.GetHashCode() * 37;
 
-    private static Dictionary<int, TEnum> CreateEnumerationDictionary(Type enumType) => GetFieldsForType(enumType).ToDictionary(t => t.Id);
+    private static Dictionary<int, TEnum> CreateEnumerationDictionary(Type enumType) => 
+        GetFieldsForType(enumType).ToDictionary(t => t.Id);
 
     private static IEnumerable<TEnum> GetFieldsForType(Type enumType) =>
         enumType.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)

@@ -56,8 +56,8 @@ internal static class UsersValidationErrors
     public static class RegisterUser
     {
         public static readonly Error EmailIsTooLong = Error.Problem(
-            "RegisterUser.EmailIsTooLong",
-            $"The email must be at most {Email.MaxLength} characters."); 
+        "RegisterUser.EmailIsTooLong",
+        $"The email must be at most {Email.MaxLength} characters.");
 
         public static readonly Error EmailIsRequired = Error.Problem(
            "RegisterUser.EmailIsRequired",
@@ -71,13 +71,29 @@ internal static class UsersValidationErrors
            "RegisterUser.PasswordIsRequired",
            "The password is required.");
 
-        public static readonly Error UsernameIsRequired = Error.Problem(
-           "RegisterUser.UsernameIsRequired",
-           "The username is required.");
-
         public static readonly Error PasswordIsTooShort = Error.Problem(
            "RegisterUser.PasswordIsTooShort",
            $"The password must be at least {Password.MinimumLength} characters.");
+
+        public static readonly Error PasswordMissingLowercase = Error.Problem(
+            "RegisterUser.PasswordMissingLowercase",
+            "The password must contain at least one lowercase letter.");
+
+        public static readonly Error PasswordMissingUppercase = Error.Problem(
+            "RegisterUser.PasswordMissingUppercase",
+            "The password must contain at least one uppercase letter.");
+
+        public static readonly Error PasswordMissingDigit = Error.Problem(
+            "RegisterUser.PasswordMissingDigit",
+            "The password must contain at least one digit.");
+
+        public static readonly Error PasswordMissingNonAlphaNumeric = Error.Problem(
+            "RegisterUser.PasswordMissingNonAlphaNumeric",
+            "The password must contain at least one special character.");
+
+        public static readonly Error UsernameIsRequired = Error.Problem(
+           "RegisterUser.UsernameIsRequired",
+           "The username is required.");
     }
 
     public static class ResendEmailVerification
