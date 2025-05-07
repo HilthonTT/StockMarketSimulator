@@ -4,6 +4,7 @@ using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
 using Modules.Budgeting.Api.Api;
+using Modules.Budgeting.Domain.ValueObjects;
 using Modules.Users.BackgroundJobs.Users.EmailVerification;
 using Quartz;
 using SharedKernel;
@@ -51,7 +52,7 @@ public sealed class UserEmailVerifiedJob(
             var request = new WelcomeEmail(jobData.Email, jobData.Username);
 
             Task sendWelcomeTask = notificationService.SendWelcomeAsync(request, context.CancellationToken);
-            Task addBudgetTask = budgetingApi.AddBudgetAsync(jobData.UserId, context.CancellationToken);
+            Task addBudgetTask = budgetingApi.AddBudgetAsync(jobData.UserId, Currency.Usd.Code, context.CancellationToken);
 
             await Task.WhenAll(sendWelcomeTask, addBudgetTask);
 

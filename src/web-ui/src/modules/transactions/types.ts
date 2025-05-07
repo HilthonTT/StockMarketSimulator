@@ -2,7 +2,8 @@ export type TransactionResponse = {
   id: string;
   userId: string;
   ticker: string;
-  limitPrice: number;
+  amount: number;
+  currencyCode: string;
   type: TransactionType;
   quantity: number;
   createdOnUtc: Date;
@@ -10,6 +11,6 @@ export type TransactionResponse = {
 };
 
 export enum TransactionType {
-  Sell = 0,
-  Buy = 1,
+  Income = 2,
+  Expense = 1,
 }

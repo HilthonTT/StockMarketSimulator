@@ -16,7 +16,8 @@ internal static class BudgetQueries
             SELECT
                 id AS Id,
                 user_id AS UserId,
-                buying_power AS BuyingPower
+                money_amount AS Amount,
+                money_currency AS CurrencyCode
             FROM budgeting.budgets
             WHERE user_id = @UserId
             LIMIT 1;

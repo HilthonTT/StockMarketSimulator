@@ -1,6 +1,6 @@
 ﻿namespace Web.Api.Endpoints;
 
-public static class Tags
+internal static class Tags
 {
     public const string Users = "Users";
 
@@ -11,4 +11,6 @@ public static class Tags
     public const string Transactions = "Transactions";
 
     public const string Shorten = "Shorten";
+
+    public const string AuditLogs = "auditlogs";
 }

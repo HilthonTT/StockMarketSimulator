@@ -31,7 +31,7 @@ export const TransactionWidget = ({
 }: TransactionWidgetProps) => {
   const trpc = useTRPC();
 
-  const [pricePerUnit, setPricePerUnit] = useState(transaction.limitPrice);
+  const [pricePerUnit, setPricePerUnit] = useState(transaction.amount);
 
   const [change, setChange] = useState(0);
 
@@ -61,9 +61,9 @@ export const TransactionWidget = ({
       setPricePerUnit(stockUpdate.price);
 
       const diff =
-        transaction.type === TransactionType.Buy
-          ? stockUpdate.price - transaction.limitPrice
-          : transaction.limitPrice - stockUpdate.price;
+        transaction.type === TransactionType.Expense
+          ? stockUpdate.price - transaction.amount
+          : transaction.amount - stockUpdate.price;
 
       setChange(diff);
     };
@@ -83,7 +83,7 @@ export const TransactionWidget = ({
     connection,
     transaction.ticker,
     transaction.quantity,
-    transaction.limitPrice,
+    transaction.amount,
   ]);
 
   if (!connection) {
@@ -96,8 +96,8 @@ export const TransactionWidget = ({
         {transaction.ticker}
       </TableCell>
       <TableCell className="text-xl font-bold">
-        {formatCurrency(transaction.limitPrice)}{" "}
-        {transaction.type === TransactionType.Sell && (
+        {formatCurrency(transaction.amount)}{" "}
+        {transaction.type === TransactionType.Income && (
           <span className="text-rose-500">(Sold)</span>
         )}
       </TableCell>

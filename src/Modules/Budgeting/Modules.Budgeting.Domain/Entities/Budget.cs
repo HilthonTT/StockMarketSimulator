@@ -1,5 +1,6 @@
 ﻿using Modules.Budgeting.Domain.DomainEvents;
 using Modules.Budgeting.Domain.Errors;
+using Modules.Budgeting.Domain.ValueObjects;
 using SharedKernel;
 
 namespace Modules.Budgeting.Domain.Entities;
@@ -8,15 +9,17 @@ public sealed class Budget : Entity, IAuditable
 {
     private const decimal InitialBudgetAmount = 5000m;
 
-    private Budget(Guid id, Guid userId, decimal buyingPower)
+    private Budget(Guid id, Guid userId, Money money)
     {
         Ensure.NotNullOrEmpty(id, nameof(id));
         Ensure.NotNullOrEmpty(userId, nameof(userId));
-        Ensure.GreaterThanOrEqualToZero(buyingPower, nameof(buyingPower));
+
+        Ensure.NotNull(money, nameof(money));
+        Ensure.GreaterThanOrEqualToZero(money.Amount, nameof(money.Amount));
 
         Id = id;
         UserId = userId;
-        BuyingPower = buyingPower;
+        Money = money;
     }
 
     /// <summary>
@@ -33,48 +36,48 @@ public sealed class Budget : Entity, IAuditable
 
     public Guid UserId { get; private set; }
 
-    public decimal BuyingPower { get; private set; }
+    public Money Money { get; private set; }
 
     public DateTime CreatedOnUtc { get; set; }
 
     public DateTime? ModifiedOnUtc { get; set; }
 
-    public static Budget Create(Guid userId)
+    public static Budget Create(Guid userId, Currency currency)
     {
-        var budget = new Budget(Guid.CreateVersion7(), userId, InitialBudgetAmount);
+        var budget = new Budget(Guid.CreateVersion7(), userId, new Money(InitialBudgetAmount, currency));
 
         budget.Raise(new BudgetCreatedDomainEvent(Guid.CreateVersion7(), budget.Id));
 
         return budget;
     }
 
-    public Result DecreaseBuyingPower(decimal amount)
+    public Result DecreaseBuyingPower(Money moneyToDecrease)
     {
-        if (amount < 0)
+        if (moneyToDecrease.Amount < 0)
         {
             return Result.Failure(BudgetErrors.NegativeAmountNotAllowed);
         }
 
-        if (BuyingPower < amount)
+        if (Money.Amount < moneyToDecrease.Amount)
         {
             return Result.Failure(BudgetErrors.NegativeAmountNotAllowed);
         }
 
-        BuyingPower -= amount;
-        Raise(new BudgetUpdatedDomainEvent(Guid.CreateVersion7(), Id, BuyingPower));
+        Money -= moneyToDecrease;
+        Raise(new BudgetUpdatedDomainEvent(Guid.CreateVersion7(), Id, Money.Amount));
 
         return Result.Success();
     }
 
-    public Result IncreaseBuyingPower(decimal amount)
+    public Result IncreaseBuyingPower(Money moneyToIncrease)
     {
-        if (amount < 0)
+        if (moneyToIncrease.Amount < 0)
         {
             return Result.Failure(BudgetErrors.NegativeAmountNotAllowed);
         }
 
-        BuyingPower += amount;
-        Raise(new BudgetUpdatedDomainEvent(Guid.CreateVersion7(), Id, BuyingPower));
+        Money += moneyToIncrease;
+        Raise(new BudgetUpdatedDomainEvent(Guid.CreateVersion7(), Id, Money.Amount));
 
         return Result.Success();
     }

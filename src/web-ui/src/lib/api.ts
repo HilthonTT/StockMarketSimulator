@@ -45,13 +45,11 @@ export async function fetchFromApi<T>({
   });
 
   if (!response.ok) {
-    if (response.status === 401) {
+    if (response.status === 401 || response.status === 404) {
       return null;
     }
 
     const problemDetails = (await response.json()) as ProblemDetails;
-
-    console.error(problemDetails);
 
     throw new TRPCError({
       code: "BAD_REQUEST",

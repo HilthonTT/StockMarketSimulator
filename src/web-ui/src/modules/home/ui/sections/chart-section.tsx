@@ -106,7 +106,7 @@ const ChartSectionSuspense = ({ page }: ChartSectionProps) => {
     }
 
     return pagedTransactions.items.reduce((max, tx) =>
-      tx.limitPrice > max.limitPrice ? tx : max
+      tx.amount > max.amount ? tx : max
     ).ticker;
   }, [pagedTransactions]);
 
@@ -118,6 +118,7 @@ const ChartSectionSuspense = ({ page }: ChartSectionProps) => {
   }, []);
 
   const latestTickerRef = useRef(selectedTicker);
+
   useEffect(() => {
     latestTickerRef.current = selectedTicker;
   }, [selectedTicker]);
@@ -188,9 +189,9 @@ const ChartSectionSuspense = ({ page }: ChartSectionProps) => {
         <div className="flex justify-center items-center relative">
           <h1
             className="text-center lg:text-5xl text-4xl"
-            aria-label={`Selected ticker: ${selectedTicker}`}
+            aria-label={`Selected ticker: ${selectedTicker || "N/A"}`}
           >
-            {selectedTicker}
+            {selectedTicker || "N/A"}
           </h1>
           <div className="absolute right-8">
             <TickerSelector

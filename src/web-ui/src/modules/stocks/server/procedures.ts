@@ -39,7 +39,7 @@ export const stocksRouter = createTRPCRouter({
     });
 
     if (!stockPriceResponse) {
-      throw new TRPCError({ code: "NOT_FOUND" });
+      return null;
     }
 
     return stockPriceResponse;

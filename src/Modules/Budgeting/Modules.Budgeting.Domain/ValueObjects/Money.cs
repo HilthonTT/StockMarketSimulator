@@ -1,4 +1,4 @@
-﻿using Modules.Budgeting.Domain.ValueObjects.Exceptions;
+﻿using Modules.Budgeting.Domain.Exceptions;
 using SharedKernel;
 
 namespace Modules.Budgeting.Domain.ValueObjects;

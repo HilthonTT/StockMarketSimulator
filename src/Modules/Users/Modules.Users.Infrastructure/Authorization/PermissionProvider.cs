@@ -22,7 +22,7 @@ internal sealed class PermissionProvider(UsersDbContext context, ICacheService c
             .Select(x => x.Name)];
     }
 
-    public async Task<UserRolesResponse> GetRolesForUserAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<UserRolesResponse?> GetRolesForUserAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         string cacheKey = $"auth:roles-{userId}";
 
@@ -34,17 +34,21 @@ internal sealed class PermissionProvider(UsersDbContext context, ICacheService c
             return cachedRoles;
         }
 
-        UserRolesResponse roles = await context.Users
+        UserRolesResponse? roles = await context.Users
             .AsNoTracking()
             .Where(user => user.Id == userId)
+            .Include(u => u.Roles)
             .Select(user => new UserRolesResponse
             {
                 Id = user.Id,
                 Roles = user.Roles.ToList()
             })
-            .FirstAsync(cancellationToken);
+            .FirstOrDefaultAsync(cancellationToken);
 
-        await cacheService.SetAsync(cacheKey, roles, cancellationToken: cancellationToken);
+        if (roles is not null)
+        {
+            await cacheService.SetAsync(cacheKey, roles, cancellationToken: cancellationToken);
+        }
 
         return roles;
     }

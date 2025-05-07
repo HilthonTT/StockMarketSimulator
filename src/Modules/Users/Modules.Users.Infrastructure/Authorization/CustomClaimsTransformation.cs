@@ -22,7 +22,12 @@ internal sealed class CustomClaimsTransformation(IServiceProvider serviceProvide
         PermissionProvider permissionProvider = scope.ServiceProvider.GetRequiredService<PermissionProvider>();
         Guid userId = principal.GetUserId();
 
-        UserRolesResponse userRoles = await permissionProvider.GetRolesForUserAsync(userId);
+        UserRolesResponse? userRoles = await permissionProvider.GetRolesForUserAsync(userId);
+
+        if (userRoles is null)
+        {
+            return principal;
+        }
 
         var claimsIdentity = new ClaimsIdentity();
         claimsIdentity.AddClaim(new Claim(JwtRegisteredClaimNames.Sub, userRoles.Id.ToString()));

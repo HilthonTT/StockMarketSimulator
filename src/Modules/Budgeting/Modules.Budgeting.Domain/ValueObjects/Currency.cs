@@ -29,6 +29,12 @@ public sealed class Currency : Enumeration<Currency>
 
     public static readonly Currency Jmd = new(12, "Jamaican Dollar", "JMD");
 
+    public static readonly IReadOnlyCollection<Currency> All =
+    [
+        Usd, Eur, Rsd, Gbp, Cad, Aud, Chf, Cny, Brl, Jmd, Jpy, Inr
+    ];
+
+
     private static readonly IFormatProvider NumberFormat = new CultureInfo("en-US");
 
     /// <summary>
@@ -54,6 +60,12 @@ public sealed class Currency : Enumeration<Currency>
     }
 
     public string Code { get; private set; }
+
+    public static Currency FromCode(string code)
+    {
+        return All.FirstOrDefault(x => x.Code == code) ??
+            throw new ApplicationException("The currency code is invalid");
+    }
 
     public string Format(decimal amount) => $"{amount.ToString("N2", NumberFormat)} {Code}";
 }

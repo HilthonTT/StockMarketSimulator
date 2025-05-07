@@ -51,8 +51,9 @@ internal sealed class GetTransactionsByUserIdQueryHandler(
                 t.Id,
                 t.UserId,
                 t.Ticker,
-                t.LimitPrice,
-                t.Type,
+                t.Money.Amount,
+                t.Money.Currency.Code,
+                t.Type.Id,
                 t.Quantity,
                 t.CreatedOnUtc,
                 t.ModifiedOnUtc));

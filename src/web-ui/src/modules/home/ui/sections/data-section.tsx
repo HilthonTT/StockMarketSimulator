@@ -56,7 +56,7 @@ const DataSectionSuspense = ({ page }: DataSectionProps) => {
       <div role="region" aria-labelledby="budget-card">
         <DataCard
           title="Budget"
-          value={budget.buyingPower}
+          value={budget.amount}
           description="Available funds for investing"
           icon={FaPiggyBank}
           variant="default"
@@ -77,7 +77,7 @@ const DataSectionSuspense = ({ page }: DataSectionProps) => {
       <div role="region" aria-labelledby="top-performer-card">
         <DataCard
           title="Top Performer"
-          value={topPerfomerStock.ticker.toUpperCase()}
+          value={topPerfomerStock?.ticker.toUpperCase() || "N/A"}
           description="Your best performing stock"
           icon={FaMedal}
           variant="default"

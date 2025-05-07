@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Modules.Budgeting.Infrastructure.Database;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Modules.Budgeting.Infrastructure.Database.Migrations
 {
     [DbContext(typeof(BudgetingDbContext))]
-    partial class BudgetingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250507153427_Improved_Transaction_Model")]
+    partial class Improved_Transaction_Model
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -132,6 +135,10 @@ namespace Modules.Budgeting.Infrastructure.Database.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<decimal>("BuyingPower")
+                        .HasColumnType("numeric")
+                        .HasColumnName("buying_power");
+
                     b.Property<DateTime>("CreatedOnUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_on_utc");
@@ -203,36 +210,6 @@ namespace Modules.Budgeting.Infrastructure.Database.Migrations
                         .HasDatabaseName("ix_transactions_user_id");
 
                     b.ToTable("transactions", "budgeting");
-                });
-
-            modelBuilder.Entity("Modules.Budgeting.Domain.Entities.Budget", b =>
-                {
-                    b.OwnsOne("Modules.Budgeting.Domain.ValueObjects.Money", "Money", b1 =>
-                        {
-                            b1.Property<Guid>("BudgetId")
-                                .HasColumnType("uuid")
-                                .HasColumnName("id");
-
-                            b1.Property<decimal>("Amount")
-                                .HasColumnType("numeric")
-                                .HasColumnName("money_amount");
-
-                            b1.Property<string>("Currency")
-                                .IsRequired()
-                                .HasColumnType("text")
-                                .HasColumnName("money_currency");
-
-                            b1.HasKey("BudgetId");
-
-                            b1.ToTable("budgets", "budgeting");
-
-                            b1.WithOwner()
-                                .HasForeignKey("BudgetId")
-                                .HasConstraintName("fk_budgets_budgets_id");
-                        });
-
-                    b.Navigation("Money")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Modules.Budgeting.Domain.Entities.Transaction", b =>

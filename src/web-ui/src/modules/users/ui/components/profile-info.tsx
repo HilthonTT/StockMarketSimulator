@@ -39,7 +39,7 @@ export const ProfileInfo = ({ user, budget }: ProfileInfoProps) => {
               <CountUp
                 preserveValue
                 start={0}
-                end={budget.buyingPower}
+                end={budget.amount}
                 decimal="2"
                 decimalPlaces={2}
                 formattingFn={formatCurrency}

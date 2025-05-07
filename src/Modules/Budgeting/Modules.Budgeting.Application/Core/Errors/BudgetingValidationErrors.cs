@@ -94,4 +94,11 @@ internal static class BudgetingValidationErrors
             "SellTransaction.QuantityMustBeAtleastOne",
             "The quantity must at least be 1.");
     }
+
+    public static class DeleteAuditlog
+    {
+        public static readonly Error AuditlogIdIsRequired = Error.Problem(
+            "DeleteAuditlog.AuditlogIdIsRequired",
+            "The audit log identifier is required.");
+    }
 }

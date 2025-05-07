@@ -1,3 +1,3 @@
 ﻿namespace Modules.Budgeting.Contracts.Budgets;
 
-public sealed record BudgetResponse(Guid Id, Guid UserId, decimal BuyingPower);
+public sealed record BudgetResponse(Guid Id, Guid UserId, decimal Amount, string CurrencyCode);

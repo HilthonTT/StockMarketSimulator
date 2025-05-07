@@ -19,13 +19,17 @@ internal sealed class TransactionRepository(BudgetingDbContext context) : ITrans
         return Option<Transaction>.Some(transaction);
     }
 
-    public Task<int> CalculateNetPurchasedQuantityAsync(
+    public async Task<int> CalculateNetPurchasedQuantityAsync(
         Guid userId, 
         string ticker,
         CancellationToken cancellationToken = default)
     {
-        return ApplySpecification(new CalculateNetPurchasedQuantitySpecification(userId, ticker))
-            .SumAsync(t => t.Type == TransactionType.Buy ? t.Quantity : -t.Quantity, cancellationToken);
+        var transactions = await ApplySpecification(
+            new CalculateNetPurchasedQuantitySpecification(userId, ticker))
+            .ToListAsync(cancellationToken);
+
+        return transactions.Sum(t =>
+            t.Type == TransactionType.Expense ? t.Quantity : -t.Quantity);
     }
 
     public void Insert(Transaction transaction)

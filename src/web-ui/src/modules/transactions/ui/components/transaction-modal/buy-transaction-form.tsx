@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useSearchParams } from "next/navigation";
 
 import { BuyTransactionSchema } from "@/modules/transactions/schemas";
 import { useTransactionModal } from "@/modules/transactions/hooks/use-transaction-modal";
@@ -23,12 +24,17 @@ import { formatCurrency } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useTRPC } from "@/trpc/client";
+import { PAGE_SIZE } from "@/constants";
 
 interface BuyTransactionFormProps {
   stockPrice: StockPriceResponse;
 }
 
 export const BuyTransactionForm = ({ stockPrice }: BuyTransactionFormProps) => {
+  const searchParams = useSearchParams();
+
+  const page = parseInt(searchParams.get("page") || "1");
+
   const { onClose } = useTransactionModal();
 
   const form = useForm<z.infer<typeof BuyTransactionSchema>>({
@@ -49,7 +55,10 @@ export const BuyTransactionForm = ({ stockPrice }: BuyTransactionFormProps) => {
         toast.success("Stock bought!");
 
         await queryClient.invalidateQueries(
-          trpc.transactions.getMany.queryFilter()
+          trpc.transactions.getMany.queryFilter({
+            page,
+            pageSize: PAGE_SIZE,
+          })
         );
 
         await queryClient.invalidateQueries(trpc.budgets.getOne.queryFilter());

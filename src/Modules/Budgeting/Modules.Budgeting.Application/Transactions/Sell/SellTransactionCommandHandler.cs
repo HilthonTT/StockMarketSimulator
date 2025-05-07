@@ -5,6 +5,7 @@ using Modules.Budgeting.Domain.Entities;
 using Modules.Budgeting.Domain.Enums;
 using Modules.Budgeting.Domain.Errors;
 using Modules.Budgeting.Domain.Repositories;
+using Modules.Budgeting.Domain.ValueObjects;
 using Modules.Stocks.Api.Api;
 using Modules.Stocks.Api.Responses;
 using SharedKernel;
@@ -51,8 +52,10 @@ internal sealed class SellTransactionCommandHandler(
             return Result.Failure<Guid>(TransactionErrors.InsufficientStock);
         }
 
+        var money = new Money(stockInfo.Price, Currency.Usd);
+
         Result<Transaction> transactionResult =
-            Transaction.Create(budget, request.Ticker, stockInfo.Price, TransactionType.Sell, request.Quantity);
+            Transaction.Create(budget, request.Ticker, money, TransactionType.Income, request.Quantity);
 
         if (transactionResult.IsFailure)
         {

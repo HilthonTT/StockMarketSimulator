@@ -1,5 +1,6 @@
 export type BudgetResponse = {
   id: string;
   userId: string;
-  buyingPower: number;
+  amount: number;
+  currencyCode: string;
 };

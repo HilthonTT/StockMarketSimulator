@@ -28,9 +28,9 @@ internal sealed class GetTopPerformerQueryHandler(
             cancellationToken);
 
         List<TransactionApiResponse> buyTransactions = [.. transactions
-            .Where(t => t.Type == 1) // TransactionType.Buy
+            .Where(t => t.Type == 1) // TransactionType.Expense
             .GroupBy(t => t.Ticker)
-            .Select(g => g.OrderByDescending(t => t.LimitPrice).First())];
+            .Select(g => g.OrderByDescending(t => t.Amount).First())];
 
         List<(StockPriceResponse Stock, decimal Performance)> performances = [];
 
@@ -47,13 +47,19 @@ internal sealed class GetTopPerformerQueryHandler(
 
             StockPriceResponse stock = stockOption.ValueOrThrow();
 
-            decimal performance = (stock.Price - tx.LimitPrice) / tx.LimitPrice;
+            decimal performance = (stock.Price - tx.Amount) / tx.Amount;
+
             performances.Add((stock, performance));
         }
 
-        StockPriceResponse topPerformer = performances
+        StockPriceResponse? topPerformer = performances
            .OrderByDescending(p => p.Performance)
            .FirstOrDefault().Stock;
+
+        if (topPerformer is null)
+        {
+            return Result.Failure<StockPriceResponse>(StockErrors.NotFound("N/A"));
+        }
 
         return Result.Success(topPerformer);
     }
