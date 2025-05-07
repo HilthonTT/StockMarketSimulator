@@ -24,14 +24,35 @@ export const usersRouter = createTRPCRouter({
   }),
   updateUsername: protectedProcedure
     .input(UpdateUsernameSchema)
-    .mutation(async ({ input }) => {
-      console.log({ input });
-      // TODO: Do this later
+    .mutation(async ({ input, ctx }) => {
+      const { accessToken, user } = ctx;
+
+      await fetchFromApi({
+        method: "PATCH",
+        accessToken,
+        path: `/api/v1/users/${user.id}`,
+        body: {
+          username: input.newUsername,
+        },
+      });
+
+      return true;
     }),
   updatePassword: protectedProcedure
     .input(UpdatePasswordSchema)
-    .mutation(async ({ input }) => {
-      console.log({ input });
-      // TODO: Do this later
+    .mutation(async ({ input, ctx }) => {
+      const { accessToken, user } = ctx;
+
+      await fetchFromApi({
+        method: "POST",
+        accessToken,
+        path: `/api/v1/users/${user.id}/change-password`,
+        body: {
+          currentPassword: input.currentPassword,
+          newPassword: input.newPassword,
+        },
+      });
+
+      return true;
     }),
 });

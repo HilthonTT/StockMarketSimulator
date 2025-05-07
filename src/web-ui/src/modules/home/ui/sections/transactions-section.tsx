@@ -18,6 +18,7 @@ import { useTRPC } from "@/trpc/client";
 import { APP_URL, PAGE_SIZE } from "@/constants";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 import { TransactionWidget } from "../components/transaction-widget";
@@ -29,11 +30,21 @@ interface TransactionSectionProps {
 
 export const TransactionSection = (props: TransactionSectionProps) => {
   return (
-    <Suspense fallback={<p>Loading...</p>}>
+    <Suspense fallback={<TransactionSectionLoading />}>
       <ErrorBoundary fallback={<p>Error</p>}>
         <TransactionSectionSuspense {...props} />
       </ErrorBoundary>
     </Suspense>
+  );
+};
+
+const TransactionSectionLoading = () => {
+  return (
+    <>
+      <Skeleton className="w-[720px] bg-white dark:bg-black h-[50px] rounded-full" />
+
+      <Skeleton className="w-full h-[500px] bg-white dark:bg-black" />
+    </>
   );
 };
 
@@ -88,8 +99,11 @@ const TransactionSectionSuspense = ({ page }: TransactionSectionProps) => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     const trimmed = value.trim();
+
     updateURL(trimmed || undefined, page);
+
     inputRef.current?.blur();
   };
 

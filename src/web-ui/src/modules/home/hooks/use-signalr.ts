@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   HubConnection,
   HubConnectionBuilder,
-  HubConnectionState,
   LogLevel,
 } from "@microsoft/signalr";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -16,41 +15,45 @@ export const SIGNALR_STOCK_UPDATE_EVENT = "ReceiveStockPriceUpdate";
 
 export const useSignalR = () => {
   const trpc = useTRPC();
-
   const { data: jwt } = useSuspenseQuery(trpc.auth.getJwt.queryOptions());
 
-  const [connection, setConnection] = useState<HubConnection | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const connectionRef = useRef<HubConnection | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
 
   useEffect(() => {
-    if (!jwt) {
+    if (!jwt || connectionRef.current) {
       return;
     }
 
-    const newConnection = new HubConnectionBuilder()
+    const connection = new HubConnectionBuilder()
       .withUrl(`${SERVER_URL}/stocks-feed`, {
         accessTokenFactory: () => jwt,
       })
       .configureLogging(LogLevel.Information)
+      .withAutomaticReconnect()
       .build();
 
-    newConnection
-      .start()
-      .then(() => {
-        setConnection(newConnection);
-      })
-      .catch(console.error)
-      .finally(() => {
-        setIsLoading(false);
-      });
+    connectionRef.current = connection;
+    setIsConnecting(true);
 
-    return () => {
-      newConnection.stop();
+    const startConnection = async () => {
+      try {
+        await connection.start();
+        setIsConnected(true);
+      } catch (err) {
+        console.error("SignalR connection error:", err);
+        connectionRef.current = null;
+      } finally {
+        setIsConnecting(false);
+      }
     };
+
+    startConnection();
   }, [jwt]);
 
   return {
-    connection,
-    isLoading: isLoading || connection?.state === HubConnectionState.Connecting,
+    connection: isConnected ? connectionRef.current : null,
+    isLoading: isConnecting || !isConnected,
   };
 };

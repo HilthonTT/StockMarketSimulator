@@ -6,6 +6,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { FaArrowTrendDown, FaMedal } from "react-icons/fa6";
 import { useSuspenseQuery } from "@tanstack/react-query";
 
+import { Skeleton } from "@/components/ui/skeleton";
 import { PAGE_SIZE } from "@/constants";
 import { useTRPC } from "@/trpc/client";
 
@@ -17,11 +18,21 @@ interface DataSectionProps {
 
 export const DataSection = (props: DataSectionProps) => {
   return (
-    <Suspense fallback={<p>Loading...</p>}>
+    <Suspense fallback={<DataSectionLoading />}>
       <ErrorBoundary fallback={<p>Error...</p>}>
         <DataSectionSuspense {...props} />
       </ErrorBoundary>
     </Suspense>
+  );
+};
+
+const DataSectionLoading = () => {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-2 mb-8">
+      <Skeleton className="h-[180px] bg-white drop-shadow" />
+      <Skeleton className="h-[180px] bg-white drop-shadow" />
+      <Skeleton className="h-[180px] bg-white drop-shadow" />
+    </div>
   );
 };
 

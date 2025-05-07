@@ -40,8 +40,12 @@ export const ChangePasswordForm = () => {
 
         form.reset();
       },
-      onError: () => {
-        toast.error("Something went wrong");
+      onError: (error) => {
+        if (error.message.includes("Users.Unauthorized")) {
+          toast.error("Invalid credentials");
+        } else {
+          toast.error("Something went wrong");
+        }
       },
     })
   );

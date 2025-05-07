@@ -1,7 +1,14 @@
 "use client";
 
 import { HubConnectionState } from "@microsoft/signalr";
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import {
   CartesianGrid,
@@ -13,12 +20,15 @@ import {
   YAxis,
 } from "recharts";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { SlidersHorizontalIcon } from "lucide-react";
 
 import { StockPriceResponse } from "@/modules/stocks/types";
 
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { useTRPC } from "@/trpc/client";
 import { PAGE_SIZE } from "@/constants";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import {
   SIGNALR_JOIN_GROUP,
@@ -35,11 +45,32 @@ interface ChartSectionProps {
 
 export const ChartSection = (props: ChartSectionProps) => {
   return (
-    <Suspense fallback={<p>Loading...</p>}>
+    <Suspense fallback={<ChartSectionLoading />}>
       <ErrorBoundary fallback={<p>Error</p>}>
         <ChartSectionSuspense {...props} />
       </ErrorBoundary>
     </Suspense>
+  );
+};
+
+const ChartSectionLoading = () => {
+  return (
+    <Card>
+      <CardTitle className="w-full relative" aria-label="Chart header">
+        <div className="flex justify-center items-center relative">
+          <h1 className="text-center lg:text-5xl text-4xl">Loading...</h1>
+          <div className="absolute right-8">
+            <Button size="icon" variant="outline" disabled>
+              <SlidersHorizontalIcon className="size-5" aria-hidden="true" />
+            </Button>
+          </div>
+        </div>
+      </CardTitle>
+
+      <CardContent className="px-2 sm:p-6 sm:pt-0">
+        <Skeleton className="h-[350px] rounded-xl" />
+      </CardContent>
+    </Card>
   );
 };
 
@@ -81,28 +112,30 @@ const ChartSectionSuspense = ({ page }: ChartSectionProps) => {
 
   const [selectedTicker, setSelectedTicker] = useState<string>(defaultTicker);
   const [data, setData] = useState<PricePoint[]>([]);
-  const [index, setIndex] = useState(1);
 
   const resetChart = useCallback(() => {
     setData([]);
-    setIndex(1);
   }, []);
 
-  const handleStockUpdate = useCallback(
-    (stockUpdate: StockPriceResponse) => {
-      if (stockUpdate.ticker !== selectedTicker) {
-        return;
-      }
+  const latestTickerRef = useRef(selectedTicker);
+  useEffect(() => {
+    latestTickerRef.current = selectedTicker;
+  }, [selectedTicker]);
 
-      setData((prev) => {
-        const updated = [...prev, { index, price: stockUpdate.price }];
-        if (updated.length > MAX_POINTS) updated.shift();
-        return updated;
-      });
-      setIndex((prev) => prev + 1);
-    },
-    [selectedTicker, index]
-  );
+  const handleStockUpdate = useCallback((stockUpdate: StockPriceResponse) => {
+    if (stockUpdate.ticker !== latestTickerRef.current) {
+      return;
+    }
+
+    setData((prev) => {
+      const nextIndex = prev.length > 0 ? prev[prev.length - 1].index + 1 : 1;
+      const updated = [...prev, { index: nextIndex, price: stockUpdate.price }];
+      if (updated.length > MAX_POINTS) {
+        updated.shift();
+      }
+      return updated;
+    });
+  }, []);
 
   const onChangeTicker = useCallback(
     async (ticker: string) => {
@@ -146,7 +179,7 @@ const ChartSectionSuspense = ({ page }: ChartSectionProps) => {
   }, [connection, selectedTicker, handleStockUpdate]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <ChartSectionLoading />;
   }
 
   return (

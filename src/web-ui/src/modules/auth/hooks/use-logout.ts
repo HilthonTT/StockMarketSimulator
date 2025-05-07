@@ -15,6 +15,8 @@ export const useLogout = () => {
       toast.success("Logged out!");
 
       await queryClient.invalidateQueries(trpc.auth.current.queryFilter());
+      await queryClient.invalidateQueries(trpc.users.getCurrent.queryFilter());
+      await queryClient.invalidateQueries(trpc.auth.getJwt.queryFilter());
     },
   });
 
