@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import "./globals.css";
+
+import { auth } from "@/modules/auth/auth";
 
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TRPCReactProvider } from "@/trpc/client";
-import { auth } from "@/modules/auth/auth";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -50,10 +52,12 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <TRPCReactProvider>
-              <Toaster />
-              {children}
-            </TRPCReactProvider>
+            <NuqsAdapter>
+              <TRPCReactProvider>
+                <Toaster />
+                {children}
+              </TRPCReactProvider>
+            </NuqsAdapter>
           </ThemeProvider>
         </body>
       </html>

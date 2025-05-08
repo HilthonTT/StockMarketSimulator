@@ -11,4 +11,6 @@ public interface IBudgetingApi
     Task<List<TransactionApiResponse>> GetTransactionsByUserIdAsync(
         Guid userId, 
         CancellationToken cancellationToken = default);
+
+    Task<List<string>> GetPurchasedTickersAsync(Guid userId, CancellationToken cancellationToken = default);
 }

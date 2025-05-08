@@ -1,9 +1,6 @@
-﻿using Contracts.Common;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Modules.Budgeting.Application.Transactions.GetByUserId;
-using Modules.Budgeting.Contracts.Transactions;
-using Modules.Users.Application.Users.GetById;
 using Modules.Users.Domain.Enums;
 using SharedKernel;
 using Web.Api.Extensions;

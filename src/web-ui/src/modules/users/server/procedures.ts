@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 
 import type { UserResponse } from "@/modules/auth/types";
+import type { PurchasedStockTickersResponse } from "@/modules/stocks/types";
 
 import { fetchFromApi } from "@/lib/api";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
@@ -55,4 +56,19 @@ export const usersRouter = createTRPCRouter({
 
       return true;
     }),
+  getPurchasedStockTickers: protectedProcedure.query(async ({ ctx }) => {
+    const { accessToken, user } = ctx;
+
+    const purchasedStockTickersResponse =
+      await fetchFromApi<PurchasedStockTickersResponse>({
+        path: `/api/v1/users/${user.id}/purchased-stock-tickers`,
+        accessToken,
+      });
+
+    if (!purchasedStockTickersResponse) {
+      throw new TRPCError({ code: "NOT_FOUND" });
+    }
+
+    return purchasedStockTickersResponse;
+  }),
 });

@@ -15,7 +15,8 @@ export const NavbarItem = ({ href, children, isActive }: NavbarItemProps) => {
       variant="outline"
       className={cn(
         "bg-transparent hover:bg-transparent rounded-full hover:border-primary border-transparent px-3.5 text-lg",
-        isActive && "bg-black text-white hover:bg-black hover:text-white"
+        isActive &&
+          "bg-black dark:bg-white dark:text-black text-white hover:bg-black dark:hover:text-white hover:text-white"
       )}
       aria-current={isActive ? "page" : undefined} // Indicates the current page
       asChild

@@ -69,4 +69,11 @@ internal static class StocksValidationErrors
             "SearchStocksQuery.PageSizeMustBeInRange",
             "The page size must be between 1 and 100.");
     }
+
+    public static class GetPurchasedStockTickers
+    {
+        public static readonly Error UserIdIsRequired = Error.Problem(
+            "GetPurchasedStockTickers.UserIdIsRequired",
+            "The user identifier is required.");
+    }
 }

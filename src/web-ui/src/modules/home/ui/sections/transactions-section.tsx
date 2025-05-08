@@ -3,8 +3,9 @@
 import { Suspense, useRef, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { SearchIcon, XIcon } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { useSuspenseQuery } from "@tanstack/react-query";
+
+import { useTransactionFilters } from "@/modules/transactions/hooks/use-transaction-filters";
 
 import {
   Table,
@@ -15,7 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useTRPC } from "@/trpc/client";
-import { APP_URL, PAGE_SIZE } from "@/constants";
+import { PAGE_SIZE } from "@/constants";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,15 +25,11 @@ import { cn } from "@/lib/utils";
 import { TransactionWidget } from "../components/transaction-widget";
 import { useSignalR } from "../../hooks/use-signalr";
 
-interface TransactionSectionProps {
-  page: number;
-}
-
-export const TransactionSection = (props: TransactionSectionProps) => {
+export const TransactionSection = () => {
   return (
     <Suspense fallback={<TransactionSectionLoading />}>
       <ErrorBoundary fallback={<p>Error</p>}>
-        <TransactionSectionSuspense {...props} />
+        <TransactionSectionSuspense />
       </ErrorBoundary>
     </Suspense>
   );
@@ -42,57 +39,38 @@ const TransactionSectionLoading = () => {
   return (
     <>
       <Skeleton className="w-[720px] bg-white dark:bg-black h-[50px] rounded-full" />
-
       <Skeleton className="w-full h-[500px] bg-white dark:bg-black" />
     </>
   );
 };
 
-const TransactionSectionSuspense = ({ page }: TransactionSectionProps) => {
+const TransactionSectionSuspense = () => {
   const trpc = useTRPC();
 
-  const inputRef = useRef<HTMLInputElement>(null);
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const [filters, setFilters] = useTransactionFilters();
 
-  const query = searchParams.get("query") ?? "";
-  const [value, setValue] = useState(query);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const [value, setValue] = useState(filters.searchTerm);
 
   const { data: pagedTransactions } = useSuspenseQuery(
     trpc.transactions.getMany.queryOptions({
-      page: page || 1,
       pageSize: PAGE_SIZE,
-      searchTerm: query || undefined,
+      ...filters,
     })
   );
 
   const { connection, isLoading } = useSignalR();
-
-  const updateURL = (newQuery?: string, newPage?: number) => {
-    const url = new URL("/", APP_URL);
-
-    if (newQuery) {
-      url.searchParams.set("query", newQuery);
-    }
-    if (newPage) {
-      url.searchParams.set("page", newPage.toString());
-    }
-
-    router.push(url.toString());
-  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setValue(e.target.value);
   };
 
   const handleClear = () => {
-    if (!value) {
-      return;
-    }
-
-    updateURL(undefined, page);
-
-    setValue("");
+    setFilters({
+      ...filters,
+      searchTerm: "",
+    });
 
     inputRef.current?.blur();
   };
@@ -100,16 +78,21 @@ const TransactionSectionSuspense = ({ page }: TransactionSectionProps) => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const trimmed = value.trim();
-
-    updateURL(trimmed || undefined, page);
+    setFilters({
+      ...filters,
+      searchTerm: value,
+    });
 
     inputRef.current?.blur();
   };
 
   const handlePagination = (direction: "prev" | "next") => {
     const newPage =
-      direction === "prev" ? page - 1 : direction === "next" ? page + 1 : page;
+      direction === "prev"
+        ? filters.page - 1
+        : direction === "next"
+        ? filters.page + 1
+        : filters.page;
     if (
       (direction === "prev" && !pagedTransactions.hasPreviousPage) ||
       (direction === "next" && !pagedTransactions.hasNextPage)
@@ -117,7 +100,10 @@ const TransactionSectionSuspense = ({ page }: TransactionSectionProps) => {
       return;
     }
 
-    updateURL(query || undefined, newPage);
+    setFilters({
+      ...filters,
+      page: newPage,
+    });
   };
 
   return (

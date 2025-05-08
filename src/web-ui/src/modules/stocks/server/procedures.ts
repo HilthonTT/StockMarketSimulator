@@ -1,9 +1,10 @@
-import { fetchFromApi } from "@/lib/api";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+
+import { fetchFromApi } from "@/lib/api";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 
 import { StockPriceResponse } from "../types";
-import { TRPCError } from "@trpc/server";
 
 export const stocksRouter = createTRPCRouter({
   getOne: protectedProcedure

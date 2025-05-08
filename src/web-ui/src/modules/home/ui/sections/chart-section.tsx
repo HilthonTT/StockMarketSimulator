@@ -1,14 +1,7 @@
 "use client";
 
 import { HubConnectionState } from "@microsoft/signalr";
-import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import {
   CartesianGrid,
@@ -26,7 +19,6 @@ import { StockPriceResponse } from "@/modules/stocks/types";
 
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { useTRPC } from "@/trpc/client";
-import { PAGE_SIZE } from "@/constants";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -39,15 +31,11 @@ import {
 import { CustomToolTip } from "../components/custom-tooltip";
 import { TickerSelector } from "../components/ticker-selector";
 
-interface ChartSectionProps {
-  page: number;
-}
-
-export const ChartSection = (props: ChartSectionProps) => {
+export const ChartSection = () => {
   return (
     <Suspense fallback={<ChartSectionLoading />}>
       <ErrorBoundary fallback={<p>Error</p>}>
-        <ChartSectionSuspense {...props} />
+        <ChartSectionSuspense />
       </ErrorBoundary>
     </Suspense>
   );
@@ -81,34 +69,20 @@ interface PricePoint {
 
 const MAX_POINTS = 30;
 
-const ChartSectionSuspense = ({ page }: ChartSectionProps) => {
+const ChartSectionSuspense = () => {
   const trpc = useTRPC();
 
-  const { data: pagedTransactions } = useSuspenseQuery(
-    trpc.transactions.getMany.queryOptions({
-      page,
-      pageSize: PAGE_SIZE,
-    })
+  const { data: purchasedStockTickers } = useSuspenseQuery(
+    trpc.users.getPurchasedStockTickers.queryOptions()
   );
 
   const { connection, isLoading } = useSignalR();
 
   const [pending, setPending] = useState(false);
 
-  const tickers = useMemo(
-    () => Array.from(new Set(pagedTransactions.items.map((t) => t.ticker))),
-    [pagedTransactions]
-  );
-
-  const defaultTicker = useMemo(() => {
-    if (pagedTransactions.items.length === 0) {
-      return "";
-    }
-
-    return pagedTransactions.items.reduce((max, tx) =>
-      tx.amount > max.amount ? tx : max
-    ).ticker;
-  }, [pagedTransactions]);
+  const defaultTicker = purchasedStockTickers.tickers[0]
+    ? purchasedStockTickers.tickers[0]
+    : "";
 
   const [selectedTicker, setSelectedTicker] = useState<string>(defaultTicker);
   const [data, setData] = useState<PricePoint[]>([]);
@@ -197,7 +171,7 @@ const ChartSectionSuspense = ({ page }: ChartSectionProps) => {
             <TickerSelector
               disabled={pending || isLoading}
               onChange={onChangeTicker}
-              tickers={tickers}
+              tickers={purchasedStockTickers.tickers}
               aria-label="Select ticker symbol"
             />
           </div>

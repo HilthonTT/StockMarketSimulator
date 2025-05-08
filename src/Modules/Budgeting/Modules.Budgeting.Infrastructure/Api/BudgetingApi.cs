@@ -2,6 +2,7 @@
 using Modules.Budgeting.Api.Api;
 using Modules.Budgeting.Api.Responses;
 using Modules.Budgeting.Domain.Entities;
+using Modules.Budgeting.Domain.Enums;
 using Modules.Budgeting.Domain.ValueObjects;
 using Modules.Budgeting.Infrastructure.Database;
 
@@ -24,6 +25,19 @@ internal sealed class BudgetingApi(BudgetingDbContext context) : IBudgetingApi
             .AsNoTracking()
             .Select(b => new BudgetApiResponse(b.Id, b.UserId, b.Money.Amount, b.Money.Currency.Code))
             .FirstOrDefaultAsync(b => b.UserId == userId, cancellationToken);
+    }
+
+    public Task<List<string>> GetPurchasedTickersAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        List<string> tickers = [.. context.Transactions
+            .AsNoTracking()
+            .Where(t => t.UserId == userId)
+            .AsEnumerable() // Force client-side evaluation from here
+            .Where(t => t.Type.Id == TransactionType.Expense.Id)
+            .Select(t => t.Ticker)
+            .Distinct()];
+
+        return Task.FromResult(tickers);
     }
 
     public Task<List<TransactionApiResponse>> GetTransactionsByUserIdAsync(

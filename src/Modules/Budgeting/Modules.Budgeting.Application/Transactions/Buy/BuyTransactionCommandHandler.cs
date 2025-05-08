@@ -1,4 +1,5 @@
 ﻿using Application.Abstractions.Authentication;
+using Application.Abstractions.Caching;
 using Application.Abstractions.Messaging;
 using Modules.Budgeting.Application.Abstractions.Data;
 using Modules.Budgeting.Domain.Entities;
@@ -17,7 +18,8 @@ internal sealed class BuyTransactionCommandHandler(
     ITransactionRepository transactionRepository,
     IStocksApi stocksApi,
     IUserContext userContext,
-    IUnitOfWork unitOfWork) : ICommandHandler<BuyTransactionCommand, Guid>
+    IUnitOfWork unitOfWork,
+    ICacheService cacheService) : ICommandHandler<BuyTransactionCommand, Guid>
 {
     public async Task<Result<Guid>> Handle(BuyTransactionCommand request, CancellationToken cancellationToken)
     {
@@ -57,6 +59,8 @@ internal sealed class BuyTransactionCommandHandler(
         transactionRepository.Insert(transaction);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await cacheService.RemoveAsync($"users:{userContext.UserId}:purchased-stock-tickers", cancellationToken);
 
         return transaction.Id;
     }

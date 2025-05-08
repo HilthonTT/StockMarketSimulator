@@ -6,21 +6,19 @@ import { ErrorBoundary } from "react-error-boundary";
 import { FaArrowTrendDown, FaMedal } from "react-icons/fa6";
 import { useSuspenseQuery } from "@tanstack/react-query";
 
+import { useTransactionFilters } from "@/modules/transactions/hooks/use-transaction-filters";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { PAGE_SIZE } from "@/constants";
 import { useTRPC } from "@/trpc/client";
 
 import { DataCard } from "../components/data-card";
 
-interface DataSectionProps {
-  page: number;
-}
-
-export const DataSection = (props: DataSectionProps) => {
+export const DataSection = () => {
   return (
     <Suspense fallback={<DataSectionLoading />}>
       <ErrorBoundary fallback={<p>Error...</p>}>
-        <DataSectionSuspense {...props} />
+        <DataSectionSuspense />
       </ErrorBoundary>
     </Suspense>
   );
@@ -36,14 +34,16 @@ const DataSectionLoading = () => {
   );
 };
 
-const DataSectionSuspense = ({ page }: DataSectionProps) => {
+const DataSectionSuspense = () => {
   const trpc = useTRPC();
+
+  const [filters] = useTransactionFilters();
 
   const { data: budget } = useSuspenseQuery(trpc.budgets.getOne.queryOptions());
   const { data: pagedTransactions } = useSuspenseQuery(
     trpc.transactions.getMany.queryOptions({
-      page,
       pageSize: PAGE_SIZE,
+      ...filters,
     })
   );
 
