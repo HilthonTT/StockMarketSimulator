@@ -26,14 +26,25 @@ export const TransactionModal = () => {
 
   const { isOpen, onClose, initialValues } = useTransactionModal();
 
-  const { data: stockPrice, isLoading } = useQuery(
+  const { data: stockPrice, isLoading: isStockPriceLoading } = useQuery(
     trpc.stocks.getOne.queryOptions(
       { ticker: initialValues.ticker },
       { enabled: !!initialValues.ticker }
     )
   );
 
+  const { data: shortenUrl, isLoading: isShortenUrlLoading } = useQuery(
+    trpc.shorten.getShortenUrl.queryOptions(
+      {
+        ticker: initialValues.ticker,
+      },
+      { enabled: !!initialValues.ticker }
+    )
+  );
+
   const [isBuying, setIsBuying] = useState(true);
+
+  const isLoading = isStockPriceLoading || isShortenUrlLoading;
 
   if (isLoading) {
     return (
@@ -53,7 +64,7 @@ export const TransactionModal = () => {
     );
   }
 
-  if (!stockPrice) {
+  if (!stockPrice || !shortenUrl) {
     return null;
   }
 
@@ -97,9 +108,12 @@ export const TransactionModal = () => {
         </div>
 
         {isBuying ? (
-          <BuyTransactionForm stockPrice={stockPrice} />
+          <BuyTransactionForm stockPrice={stockPrice} shortenUrl={shortenUrl} />
         ) : (
-          <SellTransactionForm stockPrice={stockPrice} />
+          <SellTransactionForm
+            stockPrice={stockPrice}
+            shortenUrl={shortenUrl}
+          />
         )}
       </DialogContent>
     </Dialog>

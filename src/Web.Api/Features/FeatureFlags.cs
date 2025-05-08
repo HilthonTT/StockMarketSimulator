@@ -9,4 +9,6 @@ internal static class FeatureFlags
     internal const string UseV1BudgetingApi = "UseV1BudgetingApi";
 
     internal const string UseV1ShortenApi = "UseV1ShortenApi";
+
+    internal const string UseV1FilesApi = "UseV1FilesApi";
 }

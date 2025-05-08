@@ -13,4 +13,6 @@ internal static class Tags
     public const string Shorten = "Shorten";
 
     public const string AuditLogs = "auditlogs";
+
+    public const string Files = "Files";
 }

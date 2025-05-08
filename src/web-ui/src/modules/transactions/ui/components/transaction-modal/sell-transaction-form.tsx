@@ -1,15 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useSearchParams } from "next/navigation";
 import { z } from "zod";
 
 import { SellTransactionSchema } from "@/modules/transactions/schemas";
+import { useTransactionFilters } from "@/modules/transactions/hooks/use-transaction-filters";
 import { useTransactionModal } from "@/modules/transactions/hooks/use-transaction-modal";
-import { StockPriceResponse } from "@/modules/stocks/types";
+import type { StockPriceResponse } from "@/modules/stocks/types";
+import type { ShortenUrlResponse } from "@/modules/shorten/types";
 
 import {
   Form,
@@ -28,14 +30,14 @@ import { PAGE_SIZE } from "@/constants";
 
 interface SellTransactionFormProps {
   stockPrice: StockPriceResponse;
+  shortenUrl: ShortenUrlResponse;
 }
 
 export const SellTransactionForm = ({
   stockPrice,
+  shortenUrl,
 }: SellTransactionFormProps) => {
-  const searchParams = useSearchParams();
-
-  const page = parseInt(searchParams.get("page") || "1");
+  const [filters] = useTransactionFilters();
 
   const { onClose } = useTransactionModal();
 
@@ -58,9 +60,13 @@ export const SellTransactionForm = ({
 
         await queryClient.invalidateQueries(
           trpc.transactions.getMany.queryFilter({
-            page,
             pageSize: PAGE_SIZE,
+            ...filters,
           })
+        );
+
+        await queryClient.invalidateQueries(
+          trpc.users.getPurchasedStockTickers.queryFilter()
         );
 
         await queryClient.invalidateQueries(trpc.budgets.getOne.queryFilter());
@@ -102,6 +108,12 @@ export const SellTransactionForm = ({
             </FormItem>
           )}
         />
+
+        <Button variant="link" type="button" asChild>
+          <Link href={shortenUrl.shortCode} target="_blank">
+            More Info
+          </Link>
+        </Button>
 
         <Button
           type="submit"

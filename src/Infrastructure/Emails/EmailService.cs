@@ -18,7 +18,7 @@ internal sealed class EmailService(IOptions<EmailOptions> options) : IEmailServi
         bool isHtml = false, 
         CancellationToken cancellationToken = default)
     {
-        var email = new MimeMessage()
+        using var email = new MimeMessage()
         {
             From =
             {

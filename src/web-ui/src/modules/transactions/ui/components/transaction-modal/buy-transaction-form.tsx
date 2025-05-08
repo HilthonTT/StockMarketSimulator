@@ -1,15 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useSearchParams } from "next/navigation";
 
 import { BuyTransactionSchema } from "@/modules/transactions/schemas";
 import { useTransactionModal } from "@/modules/transactions/hooks/use-transaction-modal";
-import { StockPriceResponse } from "@/modules/stocks/types";
+import { useTransactionFilters } from "@/modules/transactions/hooks/use-transaction-filters";
+import type { StockPriceResponse } from "@/modules/stocks/types";
+import type { ShortenUrlResponse } from "@/modules/shorten/types";
 
 import {
   Form,
@@ -28,12 +30,14 @@ import { PAGE_SIZE } from "@/constants";
 
 interface BuyTransactionFormProps {
   stockPrice: StockPriceResponse;
+  shortenUrl: ShortenUrlResponse;
 }
 
-export const BuyTransactionForm = ({ stockPrice }: BuyTransactionFormProps) => {
-  const searchParams = useSearchParams();
-
-  const page = parseInt(searchParams.get("page") || "1");
+export const BuyTransactionForm = ({
+  stockPrice,
+  shortenUrl,
+}: BuyTransactionFormProps) => {
+  const [filters] = useTransactionFilters();
 
   const { onClose } = useTransactionModal();
 
@@ -56,9 +60,13 @@ export const BuyTransactionForm = ({ stockPrice }: BuyTransactionFormProps) => {
 
         await queryClient.invalidateQueries(
           trpc.transactions.getMany.queryFilter({
-            page,
             pageSize: PAGE_SIZE,
+            ...filters,
           })
+        );
+
+        await queryClient.invalidateQueries(
+          trpc.users.getPurchasedStockTickers.queryFilter()
         );
 
         await queryClient.invalidateQueries(trpc.budgets.getOne.queryFilter());
@@ -104,6 +112,12 @@ export const BuyTransactionForm = ({ stockPrice }: BuyTransactionFormProps) => {
             </FormItem>
           )}
         />
+
+        <Button variant="link" type="button" asChild>
+          <Link href={shortenUrl.shortCode} target="_blank">
+            More Info
+          </Link>
+        </Button>
 
         <Button
           type="submit"
