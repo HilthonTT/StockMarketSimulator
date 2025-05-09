@@ -27,6 +27,8 @@ internal sealed class CacheInvalidationTransactionHandler :
 
     private Task HandleInternal(Guid transactionId, Guid userId, CancellationToken cancellationToken)
     {
-        return _cacheService.RemoveAsync($"users:{userId}:purchased-stock-tickers", cancellationToken);
+        return Task.WhenAll(
+            _cacheService.RemoveAsync($"users:{userId}:purchased-stock-tickers", cancellationToken),
+            _cacheService.RemoveAsync($"users:{userId}:transaction-count", cancellationToken));
     }
 }

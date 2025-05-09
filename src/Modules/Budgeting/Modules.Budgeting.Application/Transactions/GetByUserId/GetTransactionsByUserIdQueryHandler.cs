@@ -11,16 +11,16 @@ using SharedKernel;
 namespace Modules.Budgeting.Application.Transactions.GetByUserId;
 
 internal sealed class GetTransactionsByUserIdQueryHandler(
-    IDbContext dbContext,
-    IUserContext userContext) : IQueryHandler<GetTransactionsByUserIdQuery, PagedList<TransactionResponse>>
+    IUserContext userContext,
+    IDbContext dbContext) : IQueryHandler<GetTransactionsByUserIdQuery, CursorResponse<List<TransactionResponse>>>
 {
-    public async Task<Result<PagedList<TransactionResponse>>> Handle(
+    public async Task<Result<CursorResponse<List<TransactionResponse>>>> Handle(
         GetTransactionsByUserIdQuery request, 
         CancellationToken cancellationToken)
     {
         if (request.UserId != userContext.UserId)
         {
-            return Result.Failure<PagedList<TransactionResponse>>(UserErrors.Unauthorized);
+            return Result.Failure<CursorResponse<List<TransactionResponse>>>(UserErrors.Unauthorized);
         }
 
         IQueryable<Transaction> transactionQuery = dbContext.Transactions.AsQueryable();
@@ -44,9 +44,18 @@ internal sealed class GetTransactionsByUserIdQueryHandler(
             transactionQuery = transactionQuery.Where(t => t.CreatedOnUtc <= request.EndDate);
         }
 
-        IQueryable<TransactionResponse> transactionResponsesQuery = transactionQuery
+        transactionQuery = transactionQuery
             .Where(t => t.UserId == request.UserId)
-            .OrderByDescending(t => t.CreatedOnUtc)
+            .OrderBy(t => t.Id);
+
+        if (request.Cursor is not null)
+        {
+            transactionQuery = transactionQuery.Where(t => t.Id > request.Cursor);
+        }
+
+        IQueryable<TransactionResponse> transactionResponsesQuery = transactionQuery
+            .Take(request.PageSize + 1)
+            .OrderBy(t => t.Id)
             .Select(t => new TransactionResponse(
                 t.Id,
                 t.UserId,
@@ -58,12 +67,16 @@ internal sealed class GetTransactionsByUserIdQueryHandler(
                 t.CreatedOnUtc,
                 t.ModifiedOnUtc));
 
-        PagedList<TransactionResponse> response = await PagedList<TransactionResponse>.CreateAsync(
-            transactionResponsesQuery,
-            request.Page,
-            request.PageSize,
-            cancellationToken);
+        List<TransactionResponse> transactions = await transactionResponsesQuery.ToListAsync(cancellationToken);
 
-        return response;
+        bool hasMore = transactions.Count > request.PageSize;
+        if (hasMore)
+        {
+            transactions = [.. transactions.Take(request.PageSize)];
+        }
+
+        Guid? cursor = hasMore ? transactions[^1].Id : null;
+
+        return new CursorResponse<List<TransactionResponse>>(cursor, transactions);
     }
 }

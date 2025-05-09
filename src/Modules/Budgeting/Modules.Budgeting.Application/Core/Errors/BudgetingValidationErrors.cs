@@ -59,14 +59,6 @@ internal static class BudgetingValidationErrors
            "GetTransactionsByUserId.UserIdIsRequired",
            "The user identifier is required.");
 
-        public static readonly Error PageIsRequired = Error.Problem(
-           "GetTransactionsByUserId.PageIsRequired",
-           "The page is required.");
-
-        public static readonly Error PageMustBePositive = Error.Problem(
-            "GetTransactionsByUserId.PageMustBePositive",
-            "The page must be a positive number.");
-
         public static readonly Error PageSizeIsRequired = Error.Problem(
             "GetTransactionsByUserId.PageSizeIsRequired",
             "The page size is required.");
@@ -100,5 +92,12 @@ internal static class BudgetingValidationErrors
         public static readonly Error AuditlogIdIsRequired = Error.Problem(
             "DeleteAuditlog.AuditlogIdIsRequired",
             "The audit log identifier is required.");
+    }
+
+    public static class GetTransactionCount
+    {
+        public static readonly Error UserIdIsRequired = Error.Problem(
+            "GetTransactionCount.UserIdIsRequired",
+            "The user identifier is required.");
     }
 }

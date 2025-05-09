@@ -58,18 +58,24 @@ export const BuyTransactionForm = ({
       onSuccess: async () => {
         toast.success("Stock bought!");
 
-        await queryClient.invalidateQueries(
-          trpc.transactions.getMany.queryFilter({
-            pageSize: PAGE_SIZE,
-            ...filters,
-          })
-        );
+        await Promise.all([
+          queryClient.invalidateQueries(
+            trpc.transactions.getMany.queryFilter({
+              pageSize: PAGE_SIZE,
+              ...filters,
+            })
+          ),
 
-        await queryClient.invalidateQueries(
-          trpc.users.getPurchasedStockTickers.queryFilter()
-        );
+          queryClient.invalidateQueries(
+            trpc.users.getPurchasedStockTickers.queryFilter()
+          ),
 
-        await queryClient.invalidateQueries(trpc.budgets.getOne.queryFilter());
+          queryClient.invalidateQueries(
+            trpc.transactions.getCount.queryOptions()
+          ),
+
+          queryClient.invalidateQueries(trpc.budgets.getOne.queryFilter()),
+        ]);
 
         onClose();
       },

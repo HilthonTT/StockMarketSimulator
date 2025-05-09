@@ -15,7 +15,7 @@ internal sealed class GetTransactionsByUserId : IEndpoint
     {
         app.MapGet("users/{userId:guid}/transactions", async (
            Guid userId,
-           [FromQuery] int page,
+           [FromQuery] Guid? cursor,
            [FromQuery] int pageSize,
            [FromQuery] string? searchTerm,
            [FromQuery] DateTime? StartDate,
@@ -23,7 +23,8 @@ internal sealed class GetTransactionsByUserId : IEndpoint
            ISender sender,
            CancellationToken cancellationToken = default) =>
         {
-            return await Result.Success(new GetTransactionsByUserIdQuery(userId, page, pageSize, searchTerm, StartDate, EndDate))
+            return await Result.Success(
+                    new GetTransactionsByUserIdQuery(userId, cursor, searchTerm, pageSize, StartDate, EndDate))
                   .Bind(query => sender.Send(query, cancellationToken))
                   .Match(Results.Ok, CustomResults.Problem);
         })

@@ -6,10 +6,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { FaArrowTrendDown, FaMedal } from "react-icons/fa6";
 import { useSuspenseQuery } from "@tanstack/react-query";
 
-import { useTransactionFilters } from "@/modules/transactions/hooks/use-transaction-filters";
-
 import { Skeleton } from "@/components/ui/skeleton";
-import { PAGE_SIZE } from "@/constants";
 import { useTRPC } from "@/trpc/client";
 
 import { DataCard } from "../components/data-card";
@@ -37,14 +34,9 @@ const DataSectionLoading = () => {
 const DataSectionSuspense = () => {
   const trpc = useTRPC();
 
-  const [filters] = useTransactionFilters();
-
   const { data: budget } = useSuspenseQuery(trpc.budgets.getOne.queryOptions());
-  const { data: pagedTransactions } = useSuspenseQuery(
-    trpc.transactions.getMany.queryOptions({
-      pageSize: PAGE_SIZE,
-      ...filters,
-    })
+  const { data: transactionCount } = useSuspenseQuery(
+    trpc.transactions.getCount.queryOptions()
   );
 
   const { data: topPerfomerStock } = useSuspenseQuery(
@@ -67,7 +59,7 @@ const DataSectionSuspense = () => {
       <div role="region" aria-labelledby="transactions-card">
         <DataCard
           title="Transactions"
-          value={pagedTransactions.totalCount}
+          value={transactionCount.count}
           description="Total number of buy/sell trades"
           icon={FaArrowTrendDown}
           variant="default"

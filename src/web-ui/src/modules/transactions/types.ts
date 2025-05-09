@@ -14,3 +14,7 @@ export enum TransactionType {
   Income = 2,
   Expense = 1,
 }
+
+export type TransactionCountResponse = {
+  count: number;
+};

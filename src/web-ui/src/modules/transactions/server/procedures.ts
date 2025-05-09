@@ -4,34 +4,49 @@ import { v4 as uuidv4 } from "uuid";
 
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { fetchFromApi } from "@/lib/api";
-import { PagedList } from "@/types";
+import { CursorResponse } from "@/types";
 
-import { TransactionResponse } from "../types";
+import { TransactionCountResponse, TransactionResponse } from "../types";
 import { BuyTransactionSchema, SellTransactionSchema } from "../schemas";
 import { IDEMPOTENCY_HEADER } from "../constants";
 
 export const transactionsRouter = createTRPCRouter({
+  getCount: protectedProcedure.query(async ({ ctx }) => {
+    const { user, accessToken } = ctx;
+
+    const transactionCountResponse =
+      await fetchFromApi<TransactionCountResponse>({
+        accessToken,
+        path: `/api/v1/users/${user.id}/transaction-count`,
+      });
+
+    if (!transactionCountResponse) {
+      throw new TRPCError({ code: "NOT_FOUND" });
+    }
+
+    return transactionCountResponse;
+  }),
   getMany: protectedProcedure
     .input(
       z.object({
         searchTerm: z.string().optional(),
         startDate: z.date().optional(),
         endDate: z.date().optional(),
-        page: z.number().min(1),
         pageSize: z.number().max(100),
+        cursor: z.string().uuid().optional(),
       })
     )
     .query(async ({ ctx, input }) => {
       const { user, accessToken } = ctx;
-      const { page, pageSize, searchTerm, startDate, endDate } = input;
+      const { cursor, pageSize, searchTerm, startDate, endDate } = input;
 
-      const pagedTransactions = await fetchFromApi<
-        PagedList<TransactionResponse>
+      const cursorResponse = await fetchFromApi<
+        CursorResponse<TransactionResponse>
       >({
         accessToken,
         path: `/api/v1/users/${user.id}/transactions`,
         queryParams: {
-          page,
+          cursor,
           pageSize,
           searchTerm,
           startDate,
@@ -39,11 +54,11 @@ export const transactionsRouter = createTRPCRouter({
         },
       });
 
-      if (!pagedTransactions) {
+      if (!cursorResponse) {
         throw new TRPCError({ code: "NOT_FOUND" });
       }
 
-      return pagedTransactions;
+      return cursorResponse;
     }),
 
   buy: protectedProcedure

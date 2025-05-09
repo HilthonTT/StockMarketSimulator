@@ -6,8 +6,8 @@ namespace Modules.Budgeting.Application.Transactions.GetByUserId;
 
 public sealed record GetTransactionsByUserIdQuery(
     Guid UserId, 
-    int Page, 
-    int PageSize,
+    Guid? Cursor, 
     string? SearchTerm,
+    int PageSize,
     DateTime? StartDate,
-    DateTime? EndDate) : IQuery<PagedList<TransactionResponse>>;
+    DateTime? EndDate) : IQuery<CursorResponse<List<TransactionResponse>>>;

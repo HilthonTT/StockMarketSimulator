@@ -16,3 +16,8 @@ export type PagedList<T> = {
   hasNextPage: boolean;
   hasPreviousPage: boolean;
 };
+
+export type CursorResponse<T> = {
+  cursor?: string | null | undefined;
+  data: T[];
+};
