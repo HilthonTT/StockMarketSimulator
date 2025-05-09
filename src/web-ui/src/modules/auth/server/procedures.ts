@@ -20,7 +20,7 @@ export const authRouter = createTRPCRouter({
   }),
   register: baseProcedure.input(RegisterSchema).mutation(async ({ input }) => {
     const tokenResponse = await fetchFromApi<TokenResponse>({
-      path: "/api/v1/users/register",
+      path: "/api/v1/authentication/register",
       method: "POST",
       body: input,
     });
@@ -34,7 +34,7 @@ export const authRouter = createTRPCRouter({
       signOut(),
       fetchFromApi({
         accessToken,
-        path: `/api/v1/users/${user.id}/refresh-tokens`,
+        path: `/api/v1/authentication/${user.id}/refresh-tokens`,
         method: "DELETE",
       }),
     ]);

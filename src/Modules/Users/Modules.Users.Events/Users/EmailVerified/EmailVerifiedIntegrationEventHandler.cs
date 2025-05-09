@@ -1,7 +1,7 @@
 ﻿using Application.Abstractions.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using Modules.Users.Application.Abstractions.Data;
-using Modules.Users.Application.Users.VerifyEmail;
+using Modules.Users.Application.Authentication.VerifyEmail;
 using Modules.Users.BackgroundJobs.Users.UserEmailVerified;
 using Modules.Users.Domain.Entities;
 using Modules.Users.Domain.Errors;

@@ -23,7 +23,7 @@ internal sealed class StockService(
     {
         try
         {
-            using IDbConnection connection = dbConnectionFactory.GetOpenConnection();
+            using IDbConnection connection = await dbConnectionFactory.GetOpenConnectionAsync(cancellationToken);
 
             // First, try to get the latest price from the database
             StockPriceResponse? dbPrice = await GetLatestPriceFromDatabaseAsync(connection, ticker);

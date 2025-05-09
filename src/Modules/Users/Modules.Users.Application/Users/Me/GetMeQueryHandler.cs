@@ -14,7 +14,7 @@ internal sealed class GetMeQueryHandler(
 {
     public async Task<Result<UserResponse>> Handle(GetMeQuery request, CancellationToken cancellationToken)
     {
-        using IDbConnection connection = dbConnectionFactory.GetOpenConnection();
+        using IDbConnection connection = await dbConnectionFactory.GetOpenConnectionAsync(cancellationToken);
 
         Option<UserResponse> optionUser = await UserQueries.GetByIdAsync(connection, userContext.UserId);
         if (!optionUser.IsSome)

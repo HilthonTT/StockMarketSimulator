@@ -1,6 +1,6 @@
-﻿using Modules.Users.Application.Abstractions.Authentication;
-using Modules.Users.Application.Abstractions.Data;
-using Modules.Users.Application.Users.Register;
+﻿using Modules.Users.Application.Abstractions.Data;
+using Modules.Users.Application.Abstractions.Factories;
+using Modules.Users.Application.Authentication.Register;
 using Modules.Users.Domain.Entities;
 using Modules.Users.Domain.Errors;
 using Modules.Users.Domain.Repositories;
@@ -16,23 +16,21 @@ public sealed class RegisterUserCommandTests
 
     private readonly RegisterUserCommandHandler _handler;
     private readonly IUserRepository _userRepositoryMock;
-    private readonly IPasswordHasher _passwordHasherMock;
-    private readonly IEmailVerificationLinkFactory _emailVerificationLinkFactoryMock;
+    private readonly IUserFactory _userFactoryMock;
     private readonly IEmailVerificationTokenRepository _emailVerificationTokenRepositoryMock;
     private readonly IUnitOfWork _unitOfWorkMock;
 
     public RegisterUserCommandTests()
     {
         _userRepositoryMock = Substitute.For<IUserRepository>();
-        _passwordHasherMock = Substitute.For<IPasswordHasher>();
-        _emailVerificationLinkFactoryMock = Substitute.For<IEmailVerificationLinkFactory>();
+        _userFactoryMock = Substitute.For<IUserFactory>();
         _emailVerificationTokenRepositoryMock = Substitute.For<IEmailVerificationTokenRepository>();
+        
         _unitOfWorkMock = Substitute.For<IUnitOfWork>();
 
         _handler = new RegisterUserCommandHandler(
+            _userFactoryMock,
             _userRepositoryMock,
-            _passwordHasherMock,
-            _emailVerificationLinkFactoryMock,
             _emailVerificationTokenRepositoryMock,
             _unitOfWorkMock);
     }
@@ -73,8 +71,6 @@ public sealed class RegisterUserCommandTests
         _userRepositoryMock.EmailNotUniqueAsync(Arg.Is<Email>(e => e.Value == Command.Email))
             .Returns(false);
 
-        _passwordHasherMock.Hash(Command.Password).Returns("hash");
-
         // Act
         Result<Guid> result = await _handler.Handle(Command, default);
 
@@ -88,8 +84,6 @@ public sealed class RegisterUserCommandTests
         // Arrange
         _userRepositoryMock.EmailNotUniqueAsync(Arg.Is<Email>(e => e.Value == Command.Email))
             .Returns(false);
-
-        _passwordHasherMock.Hash(Command.Password).Returns("hash");
 
         // Act
         await _handler.Handle(Command, default);

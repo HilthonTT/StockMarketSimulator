@@ -34,7 +34,7 @@ internal sealed class UrlShorteningService(
             WHERE short_code = @ShortCode;
             """;
 
-        using IDbConnection connection = dbConnectionFactory.GetOpenConnection();
+        using IDbConnection connection = await dbConnectionFactory.GetOpenConnectionAsync(cancellationToken);
 
         originalUrl = await connection.QuerySingleOrDefaultAsync<string>(
             sql,
@@ -47,7 +47,7 @@ internal sealed class UrlShorteningService(
 
     public async Task<string> ShortenUrlAsync(string originalUrl, CancellationToken cancellationToken = default)
     {
-        using IDbConnection connection = dbConnectionFactory.GetOpenConnection();
+        using IDbConnection connection = await dbConnectionFactory.GetOpenConnectionAsync(cancellationToken);
 
         for (int attempt = 0; attempt < MaxRetries; attempt++)
         {
@@ -97,7 +97,7 @@ internal sealed class UrlShorteningService(
 
     public async Task<string> ShortenUrlAsync(string shortCode, string originalUrl, CancellationToken cancellationToken = default)
     {
-        using IDbConnection connection = dbConnectionFactory.GetOpenConnection();
+        using IDbConnection connection = await dbConnectionFactory.GetOpenConnectionAsync(cancellationToken);
 
         for (int attempt = 0; attempt < MaxRetries; attempt++)
         {
@@ -143,7 +143,7 @@ internal sealed class UrlShorteningService(
         throw new InvalidOperationException("Failed to generate unique short code");
     }
 
-    public Task<IEnumerable<ShortenedUrl>> GetAllUrlsAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<ShortenedUrl>> GetAllUrlsAsync(CancellationToken cancellationToken = default)
     {
         const string sql =
             """
@@ -157,9 +157,9 @@ internal sealed class UrlShorteningService(
             ORDER BY created_on_utc DESC;
             """;
 
-        using IDbConnection connection = dbConnectionFactory.GetOpenConnection();
+        using IDbConnection connection = await dbConnectionFactory.GetOpenConnectionAsync(cancellationToken);
 
-        return connection.QueryAsync<ShortenedUrl>(sql);
+        return await connection.QueryAsync<ShortenedUrl>(sql);
     }
 
     private static string GenerateShortCode()

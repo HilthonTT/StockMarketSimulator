@@ -19,7 +19,7 @@ internal sealed class GetBudgetByUserIdQueryHandler(
             return Result.Failure<BudgetResponse>(UserErrors.Unauthorized);
         }
 
-        using IDbConnection connection = dbConnectionFactory.GetOpenConnection();
+        using IDbConnection connection = await dbConnectionFactory.GetOpenConnectionAsync(cancellationToken);
 
         Option<BudgetResponse> optionBudget = await BudgetQueries.GetByUserIdAsync(connection, request.UserId);
         if (!optionBudget.IsSome)

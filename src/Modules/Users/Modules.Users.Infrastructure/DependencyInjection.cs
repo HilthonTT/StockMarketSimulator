@@ -2,7 +2,9 @@
 using EntityFramework.Exceptions.PostgreSQL;
 using FluentValidation;
 using Infrastructure;
+using Infrastructure.Database;
 using Infrastructure.Database.Interceptors;
+using Infrastructure.Database.Options;
 using Infrastructure.Outbox;
 using Infrastructure.Validation;
 using Microsoft.AspNetCore.Authentication;
@@ -54,15 +56,28 @@ public static class DependencyInjection
         Ensure.NotNullOrEmpty(connectionString, nameof(connectionString));
 
         services.AddDbContext<UsersDbContext>(
-            (sp, options) => options
-                .UseNpgsql(connectionString, npgsqlOptions =>
-                    npgsqlOptions.MigrationsHistoryTable(HistoryRepository.DefaultTableName, Schemas.Users))
-                .UseSnakeCaseNamingConvention()
-                .UseExceptionProcessor()
-                .AddInterceptors(
+           (sp, options) =>
+           {
+               var databaseOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
+
+               options.UseNpgsql(connectionString, npgsqlOptions =>
+               {
+                   npgsqlOptions.MigrationsHistoryTable(HistoryRepository.DefaultTableName, Schemas.Users);
+
+                   npgsqlOptions.CommandTimeout(databaseOptions.CommandTimeout);
+               });
+
+               options.EnableDetailedErrors(databaseOptions.EnableDetailedErrors);
+               options.EnableSensitiveDataLogging(databaseOptions.EnableSensitiveDataLogging);
+
+               options.UseSnakeCaseNamingConvention();
+               options.UseExceptionProcessor();
+
+               options.AddInterceptors(
                     sp.GetRequiredService<InsertOutboxMessagesInterceptor>(),
                     sp.GetRequiredService<UpdateAuditableInterceptor>(),
-                    sp.GetRequiredService<SoftDeleteInterceptor>()));
+                    sp.GetRequiredService<SoftDeleteInterceptor>());
+           });
 
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<UsersDbContext>());
 

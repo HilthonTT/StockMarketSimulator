@@ -2,6 +2,7 @@
 using FluentValidation;
 using Infrastructure;
 using Infrastructure.Database.Interceptors;
+using Infrastructure.Database.Options;
 using Infrastructure.Outbox;
 using Infrastructure.Validation;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using Modules.Stocks.Api.Api;
 using Modules.Stocks.Application.Abstractions.Data;
 using Modules.Stocks.Application.Abstractions.Http;
@@ -53,15 +55,28 @@ public static class DependencyInjection
         Ensure.NotNullOrEmpty(connectionString, nameof(connectionString));
 
         services.AddDbContext<StocksDbContext>(
-           (sp, options) => options
-               .UseNpgsql(connectionString, npgsqlOptions =>
-                   npgsqlOptions.MigrationsHistoryTable(HistoryRepository.DefaultTableName, Schemas.Stocks))
-               .UseSnakeCaseNamingConvention()
-               .UseExceptionProcessor()
-               .AddInterceptors(
-                   sp.GetRequiredService<InsertOutboxMessagesInterceptor>(),
-                   sp.GetRequiredService<UpdateAuditableInterceptor>(),
-                   sp.GetRequiredService<SoftDeleteInterceptor>()));
+           (sp, options) =>
+           {
+               var databaseOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
+
+               options.UseNpgsql(connectionString, npgsqlOptions =>
+               {
+                   npgsqlOptions.MigrationsHistoryTable(HistoryRepository.DefaultTableName, Schemas.Stocks);
+
+                   npgsqlOptions.CommandTimeout(databaseOptions.CommandTimeout);
+               });
+
+               options.EnableDetailedErrors(databaseOptions.EnableDetailedErrors);
+               options.EnableSensitiveDataLogging(databaseOptions.EnableSensitiveDataLogging);
+
+               options.UseSnakeCaseNamingConvention();
+               options.UseExceptionProcessor();
+
+               options.AddInterceptors(
+                    sp.GetRequiredService<InsertOutboxMessagesInterceptor>(),
+                    sp.GetRequiredService<UpdateAuditableInterceptor>(),
+                    sp.GetRequiredService<SoftDeleteInterceptor>());
+           });
 
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<StocksDbContext>());
 

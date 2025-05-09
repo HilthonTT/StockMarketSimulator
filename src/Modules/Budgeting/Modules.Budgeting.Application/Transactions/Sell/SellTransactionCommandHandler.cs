@@ -1,6 +1,6 @@
 ﻿using Application.Abstractions.Authentication;
-using Application.Abstractions.Caching;
 using Application.Abstractions.Messaging;
+using MediatR;
 using Modules.Budgeting.Application.Abstractions.Data;
 using Modules.Budgeting.Domain.Entities;
 using Modules.Budgeting.Domain.Enums;
@@ -19,7 +19,7 @@ internal sealed class SellTransactionCommandHandler(
     IStocksApi stocksApi,
     IUserContext userContext,
     IUnitOfWork unitOfWork,
-    ICacheService cacheService) : ICommandHandler<SellTransactionCommand, Guid>
+    IPublisher publisher) : ICommandHandler<SellTransactionCommand, Guid>
 {
     public async Task<Result<Guid>> Handle(SellTransactionCommand request, CancellationToken cancellationToken)
     {
@@ -70,7 +70,9 @@ internal sealed class SellTransactionCommandHandler(
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        await cacheService.RemoveAsync($"users:{userContext.UserId}:purchased-stock-tickers", cancellationToken);
+        await publisher.Publish(
+            new TransactionSoldCacheInvalidateEvent(transaction.Id, transaction.UserId),
+            cancellationToken);
 
         return transaction.Id;
     }

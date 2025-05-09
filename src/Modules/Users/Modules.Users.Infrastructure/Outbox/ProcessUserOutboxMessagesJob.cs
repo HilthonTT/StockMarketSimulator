@@ -38,7 +38,7 @@ public sealed partial class ProcessUserOutboxMessagesJob(
 
         logger.LogInformation("Beginning to process outbox messages");
 
-        using IDbConnection connection = dbConnectionFactory.GetOpenConnection();
+        using IDbConnection connection = await dbConnectionFactory.GetOpenConnectionAsync(context.CancellationToken);
         using IDbTransaction transaction = connection.BeginTransaction();
 
         stepStopwatch.Restart();

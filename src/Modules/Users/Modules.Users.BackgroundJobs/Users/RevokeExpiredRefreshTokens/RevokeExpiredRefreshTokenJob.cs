@@ -18,7 +18,7 @@ public sealed class RevokeExpiredRefreshTokenJob(
 
     public async Task Execute(IJobExecutionContext context)
     {
-        using IDbConnection connection = dbConnectionFactory.GetOpenConnection();
+        using IDbConnection connection = await dbConnectionFactory.GetOpenConnectionAsync(context.CancellationToken);
         using IDbTransaction transaction = connection.BeginTransaction();
 
         try

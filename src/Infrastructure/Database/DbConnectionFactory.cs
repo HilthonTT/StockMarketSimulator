@@ -12,4 +12,11 @@ internal sealed class DbConnectionFactory(NpgsqlDataSource dataSource) : IDbConn
 
         return connection;
     }
+
+    public async Task<IDbConnection> GetOpenConnectionAsync(CancellationToken cancellationToken = default)
+    {
+        NpgsqlConnection connection = await dataSource.OpenConnectionAsync(cancellationToken);
+
+        return connection;
+    }
 }

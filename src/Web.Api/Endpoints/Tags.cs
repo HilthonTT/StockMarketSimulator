@@ -2,17 +2,19 @@
 
 internal static class Tags
 {
-    public const string Users = "Users";
+    internal const string Users = "Users";
 
-    public const string Stocks = "Stocks";
+    internal const string Stocks = "Stocks";
 
-    public const string Budgets = "Budgets";
+    internal const string Budgets = "Budgets";
 
-    public const string Transactions = "Transactions";
+    internal const string Transactions = "Transactions";
 
-    public const string Shorten = "Shorten";
+    internal const string Shorten = "Shorten";
 
-    public const string AuditLogs = "auditlogs";
+    internal const string AuditLogs = "Auditlogs";
 
-    public const string Files = "Files";
+    internal const string Files = "Files";
+
+    internal const string Authentication = "Authentication";
 }

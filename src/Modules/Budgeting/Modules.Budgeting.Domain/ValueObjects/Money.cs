@@ -37,6 +37,8 @@ public sealed record Money : ValueObject
         return sum;
     }
 
+    public string Format() => Currency.Format(Amount);
+
     public decimal PercentFrom(Money money)
     {
         EnsureCurrenciesMatch(Currency, money.Currency);

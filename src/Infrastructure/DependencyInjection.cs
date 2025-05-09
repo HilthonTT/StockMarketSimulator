@@ -12,6 +12,7 @@ using Infrastructure.Authentication;
 using Infrastructure.Caching;
 using Infrastructure.Channels;
 using Infrastructure.Database;
+using Infrastructure.Database.Options;
 using Infrastructure.Emails;
 using Infrastructure.Emails.Options;
 using Infrastructure.Events;
@@ -25,6 +26,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Npgsql;
 using SharedKernel;
 
@@ -70,12 +72,28 @@ public static class DependencyInjection
         services.AddSingleton<IDbConnectionFactory>(_ =>
             new DbConnectionFactory(new NpgsqlDataSourceBuilder(connectionString).Build()));
 
+        services.AddOptionsWithFluentValidation<DatabaseOptions>(DatabaseOptions.SettingsKey);
+
         services.AddDbContext<GeneralDbContext>(
-            (sp, options) => options
-                .UseNpgsql(connectionString, npgsqlOptions =>
-                    npgsqlOptions.MigrationsHistoryTable(HistoryRepository.DefaultTableName, Schemas.General))
-                .UseSnakeCaseNamingConvention()
-                .UseExceptionProcessor());
+            (sp, options) =>
+            {
+                var databaseOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
+
+                options.UseNpgsql(connectionString, npgsqlOptions =>
+                {
+                    npgsqlOptions.MigrationsHistoryTable(HistoryRepository.DefaultTableName, Schemas.General);
+
+                    npgsqlOptions.EnableRetryOnFailure(databaseOptions.MaxRetryCount);
+
+                    npgsqlOptions.CommandTimeout(databaseOptions.CommandTimeout);
+                });
+
+                options.EnableDetailedErrors(databaseOptions.EnableDetailedErrors);
+                options.EnableSensitiveDataLogging(databaseOptions.EnableSensitiveDataLogging);
+
+                options.UseSnakeCaseNamingConvention();
+                options.UseExceptionProcessor();
+            });
 
         return services;
     }

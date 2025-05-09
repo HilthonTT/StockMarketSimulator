@@ -1,5 +1,5 @@
 ﻿using Application.IntegrationTests.Abstractions;
-using Modules.Users.Application.Users.Register;
+using Modules.Users.Application.Authentication.Register;
 using Modules.Users.Domain.Entities;
 using SharedKernel;
 
