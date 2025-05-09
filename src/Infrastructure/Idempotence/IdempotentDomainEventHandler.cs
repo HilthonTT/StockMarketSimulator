@@ -2,7 +2,6 @@
 using Infrastructure.Database;
 using Infrastructure.Outbox;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SharedKernel;
 
@@ -24,18 +23,17 @@ public sealed class IdempotentDomainEventHandler<TDomainEvent> : IDomainEventHan
 
     public async Task Handle(TDomainEvent notification, CancellationToken cancellationToken)
     {
-        using var scope = _serviceScopeFactory.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<GeneralDbContext>();
+        using IServiceScope scope = _serviceScopeFactory.CreateScope();
+
+        IOutboxMessageConsumerRepository outboxMessageConsumerRepository =
+            scope.ServiceProvider.GetRequiredService<IOutboxMessageConsumerRepository>();
+
+        GeneralDbContext dbContext =
+            scope.ServiceProvider.GetRequiredService<GeneralDbContext>();
 
         string consumerName = _decorated.GetType().Name;
 
-        bool alreadyHandled = await dbContext.OutboxMessageConsumers
-            .AnyAsync(consumer =>
-                consumer.Id == notification.Id &&
-                consumer.Name == consumerName,
-                cancellationToken);
-
-        if (alreadyHandled)
+        if (await outboxMessageConsumerRepository.ExistsAsync(notification.Id, consumerName, cancellationToken))
         {
             return;
         }
@@ -48,7 +46,7 @@ public sealed class IdempotentDomainEventHandler<TDomainEvent> : IDomainEventHan
             Name = consumerName
         };
 
-        dbContext.OutboxMessageConsumers.Add(consumerRecord);
+        outboxMessageConsumerRepository.Insert(consumerRecord);
 
         await dbContext.SaveChangesAsync(cancellationToken);
     }

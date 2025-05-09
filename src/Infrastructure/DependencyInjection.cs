@@ -18,6 +18,7 @@ using Infrastructure.Emails.Options;
 using Infrastructure.Events;
 using Infrastructure.Events.Options;
 using Infrastructure.Notifications;
+using Infrastructure.Outbox;
 using Infrastructure.Storage;
 using Infrastructure.Storage.Options;
 using Infrastructure.Time;
@@ -94,6 +95,10 @@ public static class DependencyInjection
                 options.UseSnakeCaseNamingConvention();
                 options.UseExceptionProcessor();
             });
+
+        services.AddScoped<IOutboxMessageConsumerRepository, OutboxMessageConsumerRepository>();
+
+        services.Decorate<IOutboxMessageConsumerRepository, CachedOutboxMessageConsumerRepository>();
 
         return services;
     }
