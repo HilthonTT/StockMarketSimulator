@@ -38,7 +38,7 @@ const ProfileUserSectionSuspense = () => {
 
   return (
     <div className="flex flex-col">
-      <ProfileBanner />
+      <ProfileBanner user={user} />
       <ProfileInfo user={user} budget={budget} />
     </div>
   );

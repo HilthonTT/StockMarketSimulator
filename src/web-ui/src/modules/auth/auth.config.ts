@@ -26,7 +26,7 @@ export default {
 
         const tokenResponse = await fetchFromApi<TokenResponse>({
           method: "POST",
-          path: "/api/v1/users/login",
+          path: "/api/v1/authentication/login",
           body: { email, password },
         });
 

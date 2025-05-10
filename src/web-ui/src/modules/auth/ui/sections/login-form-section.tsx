@@ -4,7 +4,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+
 import { Poppins } from "next/font/google";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -33,8 +33,6 @@ const poppins = Poppins({
 export const LoginFormSection = () => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-
-  const router = useRouter();
 
   const form = useForm<z.infer<typeof LoginSchema>>({
     mode: "all",

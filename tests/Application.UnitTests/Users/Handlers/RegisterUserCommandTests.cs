@@ -8,7 +8,7 @@ using Modules.Users.Domain.ValueObjects;
 using NSubstitute;
 using SharedKernel;
 
-namespace Application.UnitTests.Users;
+namespace Application.UnitTests.Users.Handlers;
 
 public sealed class RegisterUserCommandTests
 {
@@ -25,7 +25,6 @@ public sealed class RegisterUserCommandTests
         _userRepositoryMock = Substitute.For<IUserRepository>();
         _userFactoryMock = Substitute.For<IUserFactory>();
         _emailVerificationTokenRepositoryMock = Substitute.For<IEmailVerificationTokenRepository>();
-        
         _unitOfWorkMock = Substitute.For<IUnitOfWork>();
 
         _handler = new RegisterUserCommandHandler(
@@ -40,6 +39,9 @@ public sealed class RegisterUserCommandTests
     {
         // Arrange
         RegisterUserCommand invalidCommand = Command with { Email = "invalid_email" };
+
+        _userFactoryMock.CreateAsync(Arg.Any<RegisterUserCommand>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(Result.Failure<User>(EmailErrors.InvalidFormat));
 
         // Act
         Result<Guid> result = await _handler.Handle(invalidCommand, default);
@@ -56,6 +58,9 @@ public sealed class RegisterUserCommandTests
         _userRepositoryMock.EmailNotUniqueAsync(Arg.Is<Email>(e => e.Value == Command.Email))
             .Returns(true);
 
+        _userFactoryMock.CreateAsync(Arg.Any<RegisterUserCommand>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(Result.Failure<User>(UserErrors.EmailNotUnique));
+
         // Act
         Result<Guid> result = await _handler.Handle(Command, default);
 
@@ -68,8 +73,15 @@ public sealed class RegisterUserCommandTests
     public async Task Handle_Should_CallRepository_WhenCreateSucceeds()
     {
         // Arrange
-        _userRepositoryMock.EmailNotUniqueAsync(Arg.Is<Email>(e => e.Value == Command.Email))
-            .Returns(false);
+        _userRepositoryMock.EmailNotUniqueAsync(Arg.Any<Email>()).Returns(false);
+
+        var user = User.Create(
+            Username.Create(Command.Username).Value,
+            Email.Create(Command.Email).Value, 
+            Command.Password, "link-url");
+
+        _userFactoryMock.CreateAsync(Arg.Any<RegisterUserCommand>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(Result.Success(user));
 
         // Act
         Result<Guid> result = await _handler.Handle(Command, default);
@@ -84,6 +96,14 @@ public sealed class RegisterUserCommandTests
         // Arrange
         _userRepositoryMock.EmailNotUniqueAsync(Arg.Is<Email>(e => e.Value == Command.Email))
             .Returns(false);
+
+        var user = User.Create(
+            Username.Create(Command.Username).Value,
+            Email.Create(Command.Email).Value,
+            Command.Password, "link-url");
+
+        _userFactoryMock.CreateAsync(Arg.Any<RegisterUserCommand>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(Result.Success(user));
 
         // Act
         await _handler.Handle(Command, default);

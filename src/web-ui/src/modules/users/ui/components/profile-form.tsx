@@ -6,6 +6,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RefreshCcwDotIcon } from "lucide-react";
+import { useEffect } from "react";
 
 import { UserResponse } from "@/modules/auth/types";
 
@@ -20,9 +21,9 @@ import {
 import { useTRPC } from "@/trpc/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Hint } from "@/components/hint";
 
 import { UpdateUsernameSchema } from "../../schemas";
-import { Hint } from "@/components/hint";
 
 interface ProfileFormProps {
   user: UserResponse;
@@ -50,6 +51,8 @@ export const ProfileForm = ({ user }: ProfileFormProps) => {
         await queryClient.invalidateQueries(
           trpc.users.getCurrent.queryFilter()
         );
+
+        form.reset();
       },
       onError: () => {
         toast.error("Something went wrong");
@@ -60,6 +63,10 @@ export const ProfileForm = ({ user }: ProfileFormProps) => {
   const onSubmit = (values: z.infer<typeof UpdateUsernameSchema>) => {
     updateUsername.mutate(values);
   };
+
+  useEffect(() => {
+    form.reset({ newUsername: user.username });
+  }, [user.username, form]);
 
   return (
     <Form {...form}>
