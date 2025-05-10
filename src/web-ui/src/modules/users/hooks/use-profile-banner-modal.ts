@@ -2,7 +2,7 @@ import { create } from "zustand";
 
 const defaultValues = {
   userId: "",
-  currentImageUrl: "",
+  bannerImageId: "",
 };
 
 interface IProfileBanner {
@@ -14,12 +14,12 @@ interface IProfileBanner {
 
 export const useProfileBannerModal = create<IProfileBanner>((set) => ({
   isOpen: false,
-  onOpen: (userId, currentImageUrl) => {
+  onOpen: (userId, bannerImageId) => {
     set({
       isOpen: true,
       initialValues: {
         userId,
-        currentImageUrl,
+        bannerImageId,
       },
     });
   },

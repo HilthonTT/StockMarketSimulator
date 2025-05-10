@@ -15,7 +15,7 @@ IResourceBuilder<RabbitMQServerResource> rabbitMq = builder.AddRabbitMQ("stockma
 
 IResourceBuilder<AzureBlobStorageResource> storage = builder
     .AddAzureStorage("stockmarketsimulator-storage")
-    .RunAsEmulator()
+    .RunAsEmulator(azurite => azurite.WithLifetime(ContainerLifetime.Persistent))
     .AddBlobs("stockmarketsimulator-blobs"); // <- The connection string
 
 builder.AddProject<Projects.Web_Api>("web-api")

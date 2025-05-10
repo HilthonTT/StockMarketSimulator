@@ -43,6 +43,10 @@ public sealed class User : Entity, IAuditable
 
     public bool EmailVerified { get; private set; }
 
+    public Guid? ProfileImageId { get; private set; }
+
+    public Guid? BannerImageId { get; private set; }
+
     public IReadOnlyList<Role> Roles => [.. _roles];
 
     public DateTime CreatedOnUtc { get; set; }
@@ -97,5 +101,35 @@ public sealed class User : Entity, IAuditable
         Username = username;
 
         Raise(new UserNameChangedDomainEvent(Guid.CreateVersion7(), Id));
+    }
+
+    public void ChangeProfileImage(Guid imageId)
+    {
+        if (ProfileImageId == imageId)
+        {
+            return;
+        }
+
+        ProfileImageId = imageId;
+    }
+
+    public void ChangeBannerImage(Guid bannerId)
+    {
+        if (BannerImageId == bannerId)
+        {
+            return;
+        }
+
+        BannerImageId = bannerId;
+    }
+
+    public void ClearProfileImage()
+    {
+        ProfileImageId = null;
+    }
+
+    public void ClearBannerImage()
+    {
+        BannerImageId = null;
     }
 }

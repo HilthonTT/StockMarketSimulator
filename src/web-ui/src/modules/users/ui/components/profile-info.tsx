@@ -8,7 +8,7 @@ import type { BudgetResponse } from "@/modules/budgets/types";
 
 import { UserAvatar } from "@/components/user-avatar";
 import { Separator } from "@/components/ui/separator";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, getImageUrl } from "@/lib/utils";
 
 import { ProfileForm } from "./profile-form";
 import { ChangePasswordForm } from "./change-password-form";
@@ -24,6 +24,10 @@ interface ProfileInfoProps {
 export const ProfileInfo = ({ user, budget }: ProfileInfoProps) => {
   const { onOpen } = useProfilePictureModal();
 
+  const imageUrl = user.profileImageId
+    ? getImageUrl(user.profileImageId)
+    : "profile.png";
+
   return (
     <>
       <ProfilePictureModal />
@@ -32,10 +36,10 @@ export const ProfileInfo = ({ user, budget }: ProfileInfoProps) => {
         <div className="flex items-start gap-4">
           <UserAvatar
             size="xl"
-            imageUrl="profile.png"
+            imageUrl={imageUrl}
             className="bg-white cursor-pointer hover:opacity-80 transition-opacity duration-300"
             name={user.username}
-            onClick={() => onOpen(user.id, "")}
+            onClick={() => onOpen(user.id, user.profileImageId || "")}
           />
           <div className="flex-1 min-w-0">
             <div className="flex flex-col items-start">

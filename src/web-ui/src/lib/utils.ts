@@ -1,3 +1,4 @@
+import { SERVER_URL } from "@/constants";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -12,7 +13,7 @@ export function formatPercentage(
   } = {
     addPrefix: false,
   }
-) {
+): string {
   const result = new Intl.NumberFormat("en-US", {
     style: "percent",
   }).format(value / 100);
@@ -24,10 +25,18 @@ export function formatPercentage(
   return result;
 }
 
-export function formatCurrency(value: number) {
+export function formatCurrency(value: number): string {
   return Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
     minimumFractionDigits: 2,
   }).format(value);
+}
+
+export function getImageUrl(imageId: string): string {
+  if (!imageId) {
+    return "";
+  }
+
+  return `${SERVER_URL}/api/v1/files/${imageId}`;
 }

@@ -1,5 +1,4 @@
 ﻿using Application.Abstractions.Storage;
-using Modules.Users.Domain.Enums;
 using Web.Api.Extensions;
 using Web.Api.Features;
 
@@ -20,7 +19,6 @@ internal sealed class Get : IEndpoint
         })
         .WithOpenApi()
         .WithTags(Tags.Files)
-        .HasPermission(Permission.Read)
         .RequireRateLimiting(RateLimiterPolicyNames.GlobalLimiter)
         .RequireFeature(FeatureFlags.UseV1FilesApi);
     }

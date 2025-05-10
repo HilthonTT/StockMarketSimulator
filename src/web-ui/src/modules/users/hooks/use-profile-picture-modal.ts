@@ -2,7 +2,7 @@ import { create } from "zustand";
 
 const defaultValues = {
   userId: "",
-  currentImageUrl: "",
+  profileImageId: "",
 };
 
 interface IProfilePicture {
@@ -14,12 +14,12 @@ interface IProfilePicture {
 
 export const useProfilePictureModal = create<IProfilePicture>((set) => ({
   isOpen: false,
-  onOpen: (userId, currentImageUrl) => {
+  onOpen: (userId, profileImageId) => {
     set({
       isOpen: true,
       initialValues: {
         userId,
-        currentImageUrl,
+        profileImageId,
       },
     });
   },

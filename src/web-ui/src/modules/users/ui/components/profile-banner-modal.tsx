@@ -1,8 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { ImageIcon } from "lucide-react";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 
 import {
   Dialog,
@@ -11,15 +13,25 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, getImageUrl } from "@/lib/utils";
+import { useTRPC } from "@/trpc/client";
+import { fetchFromApi } from "@/lib/api";
 
 import { useProfileBannerModal } from "../../hooks/use-profile-banner-modal";
 
 export const ProfileBannerModal = () => {
-  const { isOpen, onClose } = useProfileBannerModal();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
+
+  const { isOpen, onClose, initialValues } = useProfileBannerModal();
+
+  const { data: jwt } = useSuspenseQuery(trpc.auth.getJwt.queryOptions());
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>();
+  const [imageFile, setImageFile] = useState<File | null>(null);
+
+  const [isPending, setIsPending] = useState(false);
 
   const handleClick = () => {
     fileInputRef.current?.click();
@@ -31,6 +43,8 @@ export const ProfileBannerModal = () => {
     if (!file) {
       return;
     }
+
+    setImageFile(file);
 
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -44,6 +58,40 @@ export const ProfileBannerModal = () => {
 
     setSelectedImage(null);
   };
+
+  const handleUpdate = async () => {
+    if (!imageFile || !jwt) {
+      return;
+    }
+
+    setIsPending(true);
+
+    try {
+      await fetchFromApi({
+        accessToken: jwt,
+        path: `/api/v1/users/${initialValues.userId}/banner-image`,
+        method: "PATCH",
+        body: imageFile,
+      });
+
+      toast.success("Banner picture updated!");
+
+      await queryClient.invalidateQueries(trpc.users.getCurrent.queryOptions());
+
+      handleClose();
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong!");
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  useEffect(() => {
+    const url = getImageUrl(initialValues.bannerImageId);
+
+    setSelectedImage(url);
+  }, [initialValues.bannerImageId]);
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -97,7 +145,8 @@ export const ProfileBannerModal = () => {
           <Button
             variant="elevated"
             className="w-full"
-            disabled={!selectedImage?.trim()}
+            disabled={!selectedImage?.trim() || isPending}
+            onClick={handleUpdate}
           >
             Save
           </Button>
@@ -106,6 +155,7 @@ export const ProfileBannerModal = () => {
               onClick={() => setSelectedImage(null)}
               variant="elevated"
               className="w-full"
+              disabled={isPending}
             >
               Remove
             </Button>

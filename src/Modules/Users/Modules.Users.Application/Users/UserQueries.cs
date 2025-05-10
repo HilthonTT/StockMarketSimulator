@@ -17,6 +17,8 @@ internal static class UserQueries
                 u.id AS Id,
                 u.email AS Email,
                 u.username AS Username,
+                u.profile_image_id AS ProfileImageId,
+                u.banner_image_id AS BannerImageId,
                 u.created_on_utc AS CreatedOnUtc,
                 u.modified_on_utc AS ModifiedOnUtc
             FROM users.users u

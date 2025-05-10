@@ -34,14 +34,25 @@ export async function fetchFromApi<T>({
     url += `?${params.toString()}`;
   }
 
+  let requestBody: BodyInit | undefined;
+  const requestHeaders: HeadersInit = {
+    ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+    ...headers,
+  };
+
+  if (body instanceof File) {
+    const formData = new FormData();
+    formData.append("file", body);
+    requestBody = formData;
+  } else if (body) {
+    requestHeaders["Content-Type"] = "application/json";
+    requestBody = JSON.stringify(body);
+  }
+
   const response = await fetch(url, {
     method,
-    headers: {
-      "Content-Type": "application/json",
-      ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
-      ...headers,
-    },
-    body: body ? JSON.stringify(body) : undefined,
+    headers: requestHeaders,
+    body: requestBody,
   });
 
   if (!response.ok) {

@@ -14,6 +14,7 @@ const Page = async () => {
 
   void queryClient.prefetchQuery(trpc.users.getCurrent.queryOptions());
   void queryClient.prefetchQuery(trpc.budgets.getOne.queryOptions());
+  void queryClient.prefetchQuery(trpc.auth.getJwt.queryOptions());
 
   return (
     <HydrateClient>
