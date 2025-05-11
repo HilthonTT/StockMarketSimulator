@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Modules.Stocks.Application.Abstractions.Realtime;
 using Modules.Stocks.Contracts.Stocks;
-using Modules.Stocks.Infrastructure.Realtime.Options;
 using Quartz;
 using SharedKernel;
 
@@ -15,13 +13,10 @@ public sealed class StocksFeedUpdater(
     IActiveTickerManager activeTickerManager,
     IServiceScopeFactory serviceScopeFactory,
     IHubContext<StocksFeedHub, IStocksUpdateClient> hubContext,
-    IOptions<StockUpdateOptions> options,
-    ILogger<StocksFeedUpdater> logger) : IJob
+    ILogger<StocksFeedUpdater> logger,
+    IStockVolatilityProvider stockVolatilityProvider) : IJob
 {
     public const string Name = nameof(StocksFeedUpdater);
-
-    private static readonly Random _random = new();
-    private readonly StockUpdateOptions _options = options.Value;
 
     public Task Execute(IJobExecutionContext context)
     {
@@ -33,14 +28,22 @@ public sealed class StocksFeedUpdater(
         using IServiceScope scope = serviceScopeFactory.CreateScope();
         IStockService stockService = scope.ServiceProvider.GetRequiredService<IStockService>();
 
-        foreach (string ticker in activeTickerManager.GetAllTickers())
+        IReadOnlyCollection<string> tickers = activeTickerManager.GetAllTickers();
+
+        var parallelOptions = new ParallelOptions
         {
-            Option<StockPriceResponse> optionCurrentPrice = 
-                await stockService.GetLatestStockPriceAsync(ticker, cancellationToken);
+            MaxDegreeOfParallelism = 5,
+            CancellationToken = cancellationToken,
+        };
+
+        await Parallel.ForEachAsync(tickers, parallelOptions, async (ticker, token) =>
+        {
+            Option<StockPriceResponse> optionCurrentPrice =
+                    await stockService.GetLatestStockPriceAsync(ticker, token);
 
             if (!optionCurrentPrice.IsSome)
             {
-                continue;
+                return;
             }
 
             StockPriceResponse currentPrice = optionCurrentPrice.ValueOrThrow();
@@ -49,29 +52,55 @@ public sealed class StocksFeedUpdater(
 
             var update = new StockPriceUpdate(ticker, newPrice);
 
-            await hubContext.Clients.Group(ticker).ReceiveStockPriceUpdate(update, cancellationToken);
+            await hubContext.Clients.Group(ticker).ReceiveStockPriceUpdate(update, token);
 
             logger.LogInformation("Updated {Ticker} price to {Price}", ticker, newPrice);
-        }
+        });
     }
 
     private decimal CalculateNewPrice(StockPriceResponse currentPrice)
     {
-        double dt = 1.0 / 252; // Daily step assuming 252 trading days per year
-        double mu = 0.0015; // Increased expected return (more aggressive upward price movement)
-        double sigma = _options.Volatility * 2.0; // Increased volatility (more aggressive price fluctuation)
+        const double dt = 1.0 / 252; // Daily step assuming 252 trading days/year
+        (double mu, double sigma) = stockVolatilityProvider.GetParameters(currentPrice.Ticker);
 
-        // Generate a random shock based on the increased volatility
-        double randomShock = sigma * Math.Sqrt(dt) * _random.NextDouble();
+        double standardNormal = BoxMuller();
+        double percentageChange = (mu * dt) + (sigma * Math.Sqrt(dt) * standardNormal);
 
-        // Calculate the percentage change with more aggressive movement
-        double percentageChange = mu * dt + randomShock;
+        // Occasionally inject a rare but significant price shock
+        if (Random.Shared.NextDouble() < 0.01) // ~1% chance per update
+        {
+            double shockMagnitude = (Random.Shared.NextDouble() - 0.5) * 0.3; // +- 30% max
+            percentageChange += shockMagnitude;
+        }
 
-        decimal newPrice = currentPrice.Price * (decimal)(1 + percentageChange);
+        // Limit the maximum/minimum value of percentageChange to avoid excessive values
+        percentageChange = Math.Clamp(percentageChange, -0.90, 0.90);  // Limit price changes to -90% to +90%
 
-        // Ensure price doesn't go below 0
-        newPrice = Math.Max(newPrice, 0);
+        // Ensure no overflow happens with the price calculation
+        decimal priceFactor = (decimal)(1 + percentageChange);
+        if (priceFactor < 0)
+        {
+            priceFactor = 0; // Ensure price never goes negative
+        }
 
-        return Math.Round(newPrice, 2);
+        decimal newPrice = currentPrice.Price * priceFactor;
+        newPrice = Math.Max(newPrice, 0); // Prevent negative prices
+
+        // Ensure the new price is within a reasonable range to avoid OverflowException
+        newPrice = Math.Round(newPrice, 2);
+
+        return newPrice;
+    }
+
+    /// <summary>
+    /// Generates a standard normally distributed value using the Box-Muller transform.
+    /// </summary>
+    /// <param name="rand">Random number generator.</param>
+    /// <returns>Standard normal variable (mean 0, std dev 1).</returns>
+    private static double BoxMuller()
+    {
+        double u1 = 1.0 - Random.Shared.NextDouble(); // (0,1]
+        double u2 = 1.0 - Random.Shared.NextDouble();
+        return Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Cos(2.0 * Math.PI * u2);
     }
 }

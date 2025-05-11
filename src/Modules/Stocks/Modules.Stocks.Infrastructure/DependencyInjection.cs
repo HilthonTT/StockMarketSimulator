@@ -111,6 +111,8 @@ public static class DependencyInjection
 
         services.AddOptionsWithFluentValidation<StockUpdateOptions>(StockUpdateOptions.ConfigurationSection);
 
+        services.AddSingleton<IStockVolatilityProvider, SimpleStockVolatilityProvider>();
+
         services.AddScoped<IStockService, StockService>();
         services.AddSingleton<IActiveTickerManager, ActiveTickerManager>();
 

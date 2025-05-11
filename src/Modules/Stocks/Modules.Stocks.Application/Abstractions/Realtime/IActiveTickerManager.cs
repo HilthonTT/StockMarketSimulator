@@ -2,7 +2,7 @@
 
 public interface IActiveTickerManager
 {
-    void AddTicker(string ticker);
+    bool AddTicker(string ticker);
 
     IReadOnlyCollection<string> GetAllTickers();
 }

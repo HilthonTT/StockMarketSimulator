@@ -209,6 +209,7 @@ const ChartSectionSuspense = () => {
               strokeWidth={3}
               dot={false}
               aria-label="Line representing price"
+              isAnimationActive={false}
             />
           </LineChart>
         </ResponsiveContainer>
