@@ -49,8 +49,12 @@ export const transactionsRouter = createTRPCRouter({
           cursor,
           pageSize,
           searchTerm,
-          startDate,
-          endDate,
+          startDate:
+            startDate?.getTime() === new Date(0).getTime()
+              ? undefined
+              : startDate,
+          endDate:
+            endDate?.getTime() === new Date(0).getTime() ? undefined : endDate,
         },
       });
 

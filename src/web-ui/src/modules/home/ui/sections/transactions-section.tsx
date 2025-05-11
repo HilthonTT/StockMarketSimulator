@@ -21,6 +21,7 @@ import { InfiniteScroll } from "@/components/infinite-scroll";
 import { TransactionWidget } from "../components/transaction-widget";
 import { useSignalR } from "../../hooks/use-signalr";
 import { SearchTransactions } from "../components/search-transactions";
+import { DateRangePicker } from "../components/date-range-picker";
 
 export const TransactionSection = () => {
   return (
@@ -68,7 +69,10 @@ const TransactionSectionSuspense = () => {
 
   return (
     <>
-      <SearchTransactions />
+      <div className="flex items-center justify-between w-full gap-4">
+        <SearchTransactions />
+        <DateRangePicker />
+      </div>
       <Table
         className="rounded-lg dark:bg-black bg-white"
         aria-labelledby="transaction-table"

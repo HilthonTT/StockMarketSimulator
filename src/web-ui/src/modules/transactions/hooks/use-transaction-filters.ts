@@ -1,4 +1,4 @@
-import { parseAsString, useQueryStates } from "nuqs";
+import { parseAsIsoDate, parseAsString, useQueryStates } from "nuqs";
 
 const params = {
   searchTerm: parseAsString
@@ -6,6 +6,12 @@ const params = {
       clearOnDefault: true,
     })
     .withDefault(""),
+  startDate: parseAsIsoDate
+    .withOptions({ clearOnDefault: true })
+    .withDefault(new Date(0)),
+  endDate: parseAsIsoDate
+    .withOptions({ clearOnDefault: true })
+    .withDefault(new Date(0)),
 };
 
 export const useTransactionFilters = () => {
