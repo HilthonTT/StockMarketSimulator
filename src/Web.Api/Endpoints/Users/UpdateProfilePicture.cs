@@ -1,4 +1,4 @@
-﻿using MediatR;
+﻿using Application.Abstractions.Messaging;
 using Modules.Users.Application.Users.UpdateProfilePicture;
 using Modules.Users.Domain.Enums;
 using SharedKernel;
@@ -15,7 +15,7 @@ internal sealed class UpdateProfilePicture : IEndpoint
         app.MapPatch("users/{userId:guid}/profile-image", async (
             Guid userId,
             IFormFile file,
-            ISender sender,
+            ICommandHandler<UpdateUserProfilePictureCommand> handler,
             CancellationToken cancellationToken) =>
         {
             if (!file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
@@ -24,7 +24,7 @@ internal sealed class UpdateProfilePicture : IEndpoint
             }
 
             return await Result.Success(new UpdateUserProfilePictureCommand(userId, file))
-               .Bind(query => sender.Send(query, cancellationToken))
+               .Bind(query => handler.Handle(query, cancellationToken))
                .Match(Results.NoContent, CustomResults.Problem);
         })
         .WithOpenApi()

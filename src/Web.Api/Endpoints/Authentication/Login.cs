@@ -1,4 +1,4 @@
-﻿using MediatR;
+﻿using Application.Abstractions.Messaging;
 using Modules.Users.Application.Authentication.Login;
 using Modules.Users.Contracts.Users;
 using SharedKernel;
@@ -14,12 +14,12 @@ internal sealed class Login : IEndpoint
     {
         app.MapPost("authentication/login", async (
             LoginRequest request,
-            ISender sender,
+            ICommandHandler<LoginUserCommand, TokenResponse> handler,
             CancellationToken cancellationToken = default) =>
         {
             return await Result.Create(request, GeneralErrors.UnprocessableRequest)
                 .Map(request => new LoginUserCommand(request.Email, request.Password))
-                .Bind(command => sender.Send(command, cancellationToken))
+                .Bind(command => handler.Handle(command, cancellationToken))
                 .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()

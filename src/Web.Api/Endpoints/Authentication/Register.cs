@@ -1,4 +1,4 @@
-﻿using MediatR;
+﻿using Application.Abstractions.Messaging;
 using Modules.Users.Application.Authentication.Register;
 using Modules.Users.Contracts.Users;
 using SharedKernel;
@@ -14,12 +14,12 @@ internal sealed class Register : IEndpoint
     {
         app.MapPost("authentication/register", async (
             RegisterRequest request,
-            ISender sender,
+            ICommandHandler<RegisterUserCommand, Guid> handler,
             CancellationToken cancellationToken) =>
         {
             return await Result.Create(request, GeneralErrors.UnprocessableRequest)
                 .Map(request => new RegisterUserCommand(request.Email, request.Username, request.Password))
-                .Bind(command => sender.Send(command, cancellationToken))
+                .Bind(command => handler.Handle(command, cancellationToken))
                 .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()

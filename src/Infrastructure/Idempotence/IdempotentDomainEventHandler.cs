@@ -1,7 +1,5 @@
-﻿using Application.Abstractions.Messaging;
-using Infrastructure.Database;
+﻿using Infrastructure.Database;
 using Infrastructure.Outbox;
-using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using SharedKernel;
 
@@ -10,11 +8,11 @@ namespace Infrastructure.Idempotence;
 public sealed class IdempotentDomainEventHandler<TDomainEvent> : IDomainEventHandler<TDomainEvent>
     where TDomainEvent : IDomainEvent
 {
-    private readonly INotificationHandler<TDomainEvent> _decorated;
+    private readonly IDomainEventHandler<TDomainEvent> _decorated;
     private readonly IServiceScopeFactory _serviceScopeFactory;
 
     public IdempotentDomainEventHandler(
-        INotificationHandler<TDomainEvent> decorated,
+        IDomainEventHandler<TDomainEvent> decorated,
         IServiceScopeFactory serviceScopeFactory)
     {
         _decorated = decorated;

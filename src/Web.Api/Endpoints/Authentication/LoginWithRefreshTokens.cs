@@ -1,4 +1,4 @@
-﻿using MediatR;
+﻿using Application.Abstractions.Messaging;
 using Modules.Users.Application.Authentication.LoginWithRefreshToken;
 using Modules.Users.Contracts.Users;
 using SharedKernel;
@@ -14,12 +14,12 @@ internal sealed class LoginWithRefreshTokens : IEndpoint
     {
         app.MapPost("authentication/refresh-tokens", async (
             LoginWithRefreshTokenRequest request,
-            ISender sender,
+            ICommandHandler<LoginUserWithRefreshTokenCommand, TokenResponse> handler,
             CancellationToken cancellationToken) =>
         {
             return await Result.Create(request, GeneralErrors.UnprocessableRequest)
                 .Map(request => new LoginUserWithRefreshTokenCommand(request.RefreshToken))
-                .Bind(command => sender.Send(command, cancellationToken))
+                .Bind(command => handler.Handle(command, cancellationToken))
                 .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()

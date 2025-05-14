@@ -1,8 +1,6 @@
-﻿using MediatR;
+﻿namespace Application.Abstractions.Events;
 
-namespace Application.Abstractions.Events;
-
-public interface IIntegrationEvent : INotification
+public interface IIntegrationEvent
 {
     Guid Id { get; init; }
 }

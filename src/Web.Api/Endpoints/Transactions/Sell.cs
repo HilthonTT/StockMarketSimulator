@@ -1,4 +1,4 @@
-﻿using MediatR;
+﻿using Application.Abstractions.Messaging;
 using Modules.Budgeting.Application.Transactions.Sell;
 using Modules.Budgeting.Contracts.Transactions;
 using Modules.Users.Domain.Enums;
@@ -16,12 +16,12 @@ internal sealed class Sell : IEndpoint
     {
         app.MapPost("transactions/sell", async (
             SellTransactionRequest request,
-            ISender sender,
+            ICommandHandler<SellTransactionCommand, Guid> handler,
             CancellationToken cancellationToken = default) =>
         {
             return await Result.Create(request, GeneralErrors.UnprocessableRequest)
                 .Map(request => new SellTransactionCommand(request.UserId, request.Ticker, request.Quantity))
-                .Bind(command => sender.Send(command, cancellationToken))
+                .Bind(command => handler.Handle(command, cancellationToken))
                 .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()

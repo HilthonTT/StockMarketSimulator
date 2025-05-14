@@ -1,5 +1,6 @@
-﻿using MediatR;
+﻿using Application.Abstractions.Messaging;
 using Modules.Stocks.Application.Stocks.GetPurchasedStockTickers;
+using Modules.Stocks.Contracts.Stocks;
 using Modules.Users.Domain.Enums;
 using SharedKernel;
 using Web.Api.Extensions;
@@ -14,11 +15,11 @@ internal sealed class GetPurchasedStockTickers : IEndpoint
     {
         app.MapGet("users/{userId:guid}/purchased-stock-tickers", async (
             Guid userId,
-            ISender sender,
+            IQueryHandler<GetPurchasedStockTickersQuery, PurchasedStockTickersResponse> handler,
             CancellationToken cancellationToken = default) =>
         {
             return await Result.Success(new GetPurchasedStockTickersQuery(userId))
-                  .Bind(query => sender.Send(query, cancellationToken))
+                  .Bind(query => handler.Handle(query, cancellationToken))
                   .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()

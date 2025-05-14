@@ -1,5 +1,6 @@
-﻿using MediatR;
+﻿using Application.Abstractions.Messaging;
 using Modules.Budgeting.Application.Transactions.GetTransactionCount;
+using Modules.Budgeting.Contracts.Transactions;
 using Modules.Users.Domain.Enums;
 using SharedKernel;
 using Web.Api.Extensions;
@@ -14,11 +15,11 @@ internal sealed class GetTransactionCount : IEndpoint
     {
         app.MapGet("users/{userId:guid}/transaction-count", async (
             Guid userId,
-            ISender sender,
+            IQueryHandler<GetTransactionCountQuery, TransactionCountResponse> handler,
             CancellationToken cancellationToken = default) =>
         {
             return await Result.Success(new GetTransactionCountQuery(userId))
-                .Bind(query => sender.Send(query, cancellationToken))
+                .Bind(query => handler.Handle(query, cancellationToken))
                 .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()

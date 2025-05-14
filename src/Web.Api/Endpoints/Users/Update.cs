@@ -1,4 +1,4 @@
-﻿using MediatR;
+﻿using Application.Abstractions.Messaging;
 using Modules.Users.Application.Users.Update;
 using Modules.Users.Contracts.Users;
 using Modules.Users.Domain.Enums;
@@ -16,12 +16,12 @@ internal sealed class Update : IEndpoint
         app.MapPatch("users/{userId:guid}", async (
             Guid userId,
             UpdateUserRequest request,
-            ISender sender,
+            ICommandHandler<UpdateUserCommand> handler,
             CancellationToken cancellationToken) =>
         {
             return await Result.Create(request, GeneralErrors.UnprocessableRequest)
                 .Map(request => new UpdateUserCommand(userId, request.Username))
-                .Bind(command => sender.Send(command, cancellationToken))
+                .Bind(command => handler.Handle(command, cancellationToken))
                 .Match(Results.NoContent, CustomResults.Problem);
         })
         .WithOpenApi()

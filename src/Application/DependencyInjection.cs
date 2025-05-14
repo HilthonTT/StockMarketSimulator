@@ -1,6 +1,7 @@
 ﻿using Application.Abstractions.Behaviors;
-using Application.Abstractions.Channels;
+using Application.Abstractions.Messaging;
 using Microsoft.Extensions.DependencyInjection;
+using SharedKernel;
 
 namespace Application;
 
@@ -8,19 +9,35 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        services.AddMediatR(cfg =>
-        {
-            cfg.RegisterServicesFromAssembly(ApplicationAssembly.Instance);
+        services.Scan(scan => scan.FromAssembliesOf(typeof(DependencyInjection))
+            .AddClasses(classes => classes.AssignableTo(typeof(IQueryHandler<,>)), publicOnly: false)
+                .AsImplementedInterfaces()
+                .WithScopedLifetime()
+            .AddClasses(classes => classes.AssignableTo(typeof(ICommandHandler<>)), publicOnly: false)
+                .AsImplementedInterfaces()
+                .WithScopedLifetime()
+            .AddClasses(classes => classes.AssignableTo(typeof(ICommandHandler<,>)), publicOnly: false)
+                .AsImplementedInterfaces()
+                .WithScopedLifetime());
 
-            cfg.AddOpenBehavior(typeof(ExceptionHandlingPipelineBehavior<,>));
-            cfg.AddOpenBehavior(typeof(RequestLoggingPipelineBehavior<,>));
-            cfg.AddOpenBehavior(typeof(ValidationPipelineBehavior<,>));
-            cfg.AddOpenBehavior(typeof(QueryCachingPipelineBehavior<,>));
+        services.Decorate(typeof(ICommandHandler<,>), typeof(ValidationDecorator.CommandHandler<,>));
+        services.Decorate(typeof(ICommandHandler<>), typeof(ValidationDecorator.CommandBaseHandler<>));
+        services.Decorate(typeof(IQueryHandler<,>), typeof(ValidationDecorator.QueryHandler<,>));
 
-            cfg.NotificationPublisherType = typeof(ChannelPublisher);
-        });
+        services.Decorate(typeof(ICommandHandler<,>), typeof(ExceptionHandlingDecorator.CommandHandler<,>));
+        services.Decorate(typeof(ICommandHandler<>), typeof(ExceptionHandlingDecorator.CommandBaseHandler<>));
+        services.Decorate(typeof(IQueryHandler<,>), typeof(ExceptionHandlingDecorator.QueryHandler<,>));
 
-        services.AddSingleton<NotificationsQueue>();
+        services.Decorate(typeof(IQueryHandler<,>), typeof(QueryCachingDecorator.QueryHandler<,>));
+
+        services.Decorate(typeof(IQueryHandler<,>), typeof(LoggingDecorator.QueryHandler<,>));
+        services.Decorate(typeof(ICommandHandler<,>), typeof(LoggingDecorator.CommandHandler<,>));
+        services.Decorate(typeof(ICommandHandler<>), typeof(LoggingDecorator.CommandBaseHandler<>));
+
+        services.Scan(scan => scan.FromAssembliesOf(typeof(DependencyInjection))
+            .AddClasses(classes => classes.AssignableTo(typeof(IDomainEventHandler<>)), publicOnly: false)
+            .AsImplementedInterfaces()
+            .WithScopedLifetime());
 
         return services;
     }

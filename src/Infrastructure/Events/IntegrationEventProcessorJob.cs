@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using Application.Abstractions.Events;
 using Infrastructure.Events.Options;
-using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -70,9 +69,9 @@ public sealed class IntegrationEventProcessorJob(
         }
 
         using IServiceScope scope = serviceProvider.CreateScope();
-        IPublisher publisher = scope.ServiceProvider.GetRequiredService<IPublisher>();
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IIntegrationEventsDispatcher>();
 
-        await publisher.Publish(integrationEvent, context.CancellationToken);
+        await dispatcher.DispatchAsync(integrationEvent, context.CancellationToken);
 
         await _channel.BasicAckAsync(result.DeliveryTag, multiple: false, cancellationToken: context.CancellationToken);
     }

@@ -1,4 +1,4 @@
-﻿using MediatR;
+﻿using Application.Abstractions.Messaging;
 using Modules.Users.Application.Authentication.ResendEmailVerification;
 using Modules.Users.Contracts.Users;
 using SharedKernel;
@@ -14,12 +14,12 @@ internal sealed class ResendEmailVerification : IEndpoint
     {
         app.MapPost("authentication/resend-email-verification", async (
             ResendEmailVerificationRequest request,
-            ISender sender,
+            ICommandHandler<ResendEmailVerificationCommand> handler,
             CancellationToken cancellationToken = default) =>
         {
             return await Result.Create(request, GeneralErrors.UnprocessableRequest)
                 .Map(request => new ResendEmailVerificationCommand(request.Email))
-                .Bind(command => sender.Send(command, cancellationToken))
+                .Bind(command => handler.Handle(command, cancellationToken))
                 .Match(Results.NoContent, CustomResults.Problem);
         })
         .WithTags(Tags.Authentication)

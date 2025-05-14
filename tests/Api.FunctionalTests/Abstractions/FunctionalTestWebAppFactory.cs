@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Testcontainers.Azurite;
 using Testcontainers.PostgreSql;
+using Testcontainers.RabbitMq;
 using Testcontainers.Redis;
 
 namespace Api.FunctionalTests.Abstractions;
@@ -18,10 +20,20 @@ public sealed class FunctionalTestWebAppFactory : WebApplicationFactory<Program>
         .WithImage("redis:latest")
         .Build();
 
+    private readonly RabbitMqContainer _rabbitMqContainer = new RabbitMqBuilder()
+       .WithImage(RabbitMqBuilder.RabbitMqImage)
+       .Build();
+
+    private readonly AzuriteContainer _azuriteContainer = new AzuriteBuilder()
+        .WithImage(AzuriteBuilder.AzuriteImage)
+        .Build();
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("ConnectionStrings:stockmarketsimulator-db", _dbContainer.GetConnectionString());
         builder.UseSetting("ConnectionStrings:stockmarketsimulator-redis", _redisContainer.GetConnectionString());
+        builder.UseSetting("ConnectionStrings:stockmarketsimulator-blobs", _azuriteContainer.GetConnectionString());
+        builder.UseSetting("ConnectionStrings:stockmarketsimulator-rabbitmq", _rabbitMqContainer.GetConnectionString());
 
         builder.UseSetting("Jwt:Secret", "super-duper-secret-value-that-should-be-in-user-secrets");
         builder.UseSetting("Jwt:Issuer", "stock-market-simulator");
@@ -47,11 +59,15 @@ public sealed class FunctionalTestWebAppFactory : WebApplicationFactory<Program>
     {
         await _dbContainer.StartAsync();
         await _redisContainer.StartAsync();
+        await _azuriteContainer.StartAsync();
+        await _rabbitMqContainer.StartAsync();
     }
 
     async Task IAsyncLifetime.DisposeAsync()
     {
         await _dbContainer.StopAsync();
         await _redisContainer.StopAsync();
+        await _azuriteContainer.StopAsync();
+        await _rabbitMqContainer.StopAsync();
     }
 }

@@ -1,6 +1,6 @@
 ﻿using Application.Abstractions.Events;
-using Application.Abstractions.Messaging;
 using Modules.Users.Domain.DomainEvents;
+using SharedKernel;
 
 namespace Modules.Users.Application.Authentication.ChangePassword;
 

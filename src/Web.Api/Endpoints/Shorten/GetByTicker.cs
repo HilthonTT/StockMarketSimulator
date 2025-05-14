@@ -1,5 +1,7 @@
-﻿using MediatR;
+﻿using Application.Abstractions.Messaging;
+using Modules.Stocks.Application.Shorten.Get;
 using Modules.Stocks.Application.Shorten.GetByTicker;
+using Modules.Stocks.Contracts.Shorten;
 using SharedKernel;
 using Web.Api.Extensions;
 using Web.Api.Features;
@@ -13,11 +15,11 @@ internal sealed class GetByTicker : IEndpoint
     {
         app.MapGet("shorten/ticker/{ticker}", async (
             string ticker,
-            ISender sender,
+            IQueryHandler<GetShortenUrlByTickerQuery, ShortenUrlResponse> handler,
             CancellationToken cancellationToken) =>
         {
             return await Result.Success(new GetShortenUrlByTickerQuery(ticker))
-               .Bind(query => sender.Send(query, cancellationToken))
+               .Bind(query => handler.Handle(query, cancellationToken))
                .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()

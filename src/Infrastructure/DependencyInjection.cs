@@ -10,9 +10,9 @@ using EntityFramework.Exceptions.PostgreSQL;
 using FluentValidation;
 using Infrastructure.Authentication;
 using Infrastructure.Caching;
-using Infrastructure.Channels;
 using Infrastructure.Database;
 using Infrastructure.Database.Options;
+using Infrastructure.DomainEvents;
 using Infrastructure.Emails;
 using Infrastructure.Emails.Options;
 using Infrastructure.Events;
@@ -58,9 +58,9 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
         services.AddScoped<IUserContext, UserContext>();
 
-        services.AddHostedService<ChannelNotificationsProcessor>();
-
         services.AddValidatorsFromAssembly(InfrastructureAssembly.Instance, includeInternalTypes: true);
+
+        services.AddTransient<IDomainEventsDispatcher, DomainEventsDispatcher>();
 
         return services;
     }
@@ -141,6 +141,8 @@ public static class DependencyInjection
         services.AddSingleton<IEventBus, EventBus>();
 
         services.AddOptionsWithFluentValidation<MessageBrokerOptions>(MessageBrokerOptions.SettingsKey);
+
+        services.AddTransient<IIntegrationEventsDispatcher, IntegrationEventsDispatcher>();
 
         return services;
     }

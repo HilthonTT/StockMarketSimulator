@@ -1,4 +1,4 @@
-﻿using MediatR;
+﻿using Application.Abstractions.Messaging;
 using Modules.Users.Application.Users.UpdateBannerPicture;
 using Modules.Users.Domain.Enums;
 using SharedKernel;
@@ -15,7 +15,7 @@ internal sealed class UpdateBannerPicture : IEndpoint
         app.MapPatch("users/{userId:guid}/banner-image", async (
             Guid userId,
             IFormFile file,
-            ISender sender,
+            ICommandHandler<UpdateUserBannerPictureCommand> handler,
             CancellationToken cancellationToken) =>
         {
             if (!file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
@@ -24,7 +24,7 @@ internal sealed class UpdateBannerPicture : IEndpoint
             }
 
             return await Result.Success(new UpdateUserBannerPictureCommand(userId, file))
-               .Bind(query => sender.Send(query, cancellationToken))
+               .Bind(query => handler.Handle(query, cancellationToken))
                .Match(Results.NoContent, CustomResults.Problem);
         })
         .WithOpenApi()

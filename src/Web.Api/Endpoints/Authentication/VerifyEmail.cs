@@ -1,4 +1,4 @@
-﻿using MediatR;
+﻿using Application.Abstractions.Messaging;
 using Modules.Users.Application.Authentication.VerifyEmail;
 using Modules.Users.Application.Users;
 using SharedKernel;
@@ -14,11 +14,11 @@ internal sealed class VerifyEmail : IEndpoint
     {
         app.MapGet("authentication/verify-email", async (
             Guid token,
-            ISender sender,
+            ICommandHandler<VerifyEmailCommand> handler,
             CancellationToken cancellationToken = default) =>
         {
             return await Result.Success(new VerifyEmailCommand(token))
-                .Bind(command => sender.Send(command, cancellationToken))
+                .Bind(command => handler.Handle(command, cancellationToken))
                 .Match(Results.NoContent, CustomResults.Problem);
         })
         .WithOpenApi()

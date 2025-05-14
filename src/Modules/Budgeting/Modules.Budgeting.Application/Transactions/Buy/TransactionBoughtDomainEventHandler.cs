@@ -1,6 +1,6 @@
 ﻿using Application.Abstractions.Events;
-using Application.Abstractions.Messaging;
 using Modules.Budgeting.Domain.DomainEvents;
+using SharedKernel;
 
 namespace Modules.Budgeting.Application.Transactions.Buy;
 

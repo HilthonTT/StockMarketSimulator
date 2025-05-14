@@ -1,4 +1,4 @@
-﻿using MediatR;
+﻿using Application.Abstractions.Messaging;
 using Modules.Users.Application.Authentication.RevokeRefreshTokens;
 using Modules.Users.Domain.Enums;
 using SharedKernel;
@@ -14,11 +14,11 @@ internal sealed class RevokeRefreshTokens : IEndpoint
     {
         app.MapDelete("authentication/{userId:guid}/refresh-tokens", async (
             Guid userId,
-            ISender sender,
+            ICommandHandler<RevokeRefreshTokensCommand> handler,
             CancellationToken cancellationToken = default) =>
         {
             return await Result.Success(new RevokeRefreshTokensCommand(userId))
-                .Bind(command => sender.Send(command, cancellationToken))
+                .Bind(command => handler.Handle(command, cancellationToken))
                 .Match(Results.NoContent, CustomResults.Problem);
         })
         .WithOpenApi()

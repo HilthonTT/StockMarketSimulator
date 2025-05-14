@@ -1,6 +1,8 @@
-﻿using MediatR;
+﻿using Application.Abstractions.Messaging;
+using Contracts.Common;
 using Microsoft.AspNetCore.Mvc;
 using Modules.Budgeting.Application.Auditlogs.GetByUserId;
+using Modules.Budgeting.Contracts.AuditLogs;
 using Modules.Users.Domain.Enums;
 using SharedKernel;
 using Web.Api.Extensions;
@@ -19,11 +21,11 @@ internal sealed class GetAuditlogsByUserId : IEndpoint
            [FromQuery] int pageSize,
            [FromQuery] string? searchTerm,
            [FromQuery] int? logType,
-           ISender sender,
+           IQueryHandler<GetAuditlogsByUserIdQuery, PagedList<AuditLogResponse>> handler,
            CancellationToken cancellationToken = default) =>
         {
             return await Result.Success(new GetAuditlogsByUserIdQuery(userId, searchTerm, page, pageSize, logType))
-                .Bind(query => sender.Send(query, cancellationToken))
+                .Bind(query => handler.Handle(query, cancellationToken))
                 .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()

@@ -4,7 +4,6 @@ using System.Diagnostics;
 using Application.Abstractions.Data;
 using Dapper;
 using Infrastructure.Outbox;
-using MediatR;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Polly.Retry;
@@ -12,13 +11,14 @@ using Polly;
 using Quartz;
 using SharedKernel;
 using Modules.Stocks.Domain;
+using Infrastructure.DomainEvents;
 
 namespace Modules.Stocks.Infrastructure.Outbox;
 
 [DisallowConcurrentExecution]
 public sealed class ProcessStockOutboxMessagesJob(
     IDbConnectionFactory dbConnectionFactory,
-    IPublisher publisher,
+    IDomainEventsDispatcher domainEventsDispatcher,
     IDateTimeProvider dateTimeProvider,
     ILogger<ProcessStockOutboxMessagesJob> logger) : IJob
 {
@@ -140,8 +140,8 @@ public sealed class ProcessStockOutboxMessagesJob(
             .Handle<Exception>()
             .WaitAndRetryAsync(RetryCount, attempt => TimeSpan.FromMilliseconds(50 * attempt));
 
-        PolicyResult result = await policy.ExecuteAndCaptureAsync(() =>
-            publisher.Publish(domainEvent!, cancellationToken));
+         PolicyResult result = await policy.ExecuteAndCaptureAsync(() =>
+            domainEventsDispatcher.DispatchAsync(domainEvent!, cancellationToken));
 
         var outboxUpdate = new OutboxUpdate
         {

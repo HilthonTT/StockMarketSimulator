@@ -1,4 +1,4 @@
-﻿using MediatR;
+﻿using Application.Abstractions.Messaging;
 using Modules.Budgeting.Application.Auditlogs.Delete;
 using SharedKernel;
 using Web.Api.Extensions;
@@ -13,11 +13,11 @@ internal sealed class Delete : IEndpoint
     {
         app.MapDelete("auditlogs/{auditlogId:guid}", async (
             Guid auditlogId,
-            ISender sender,
+            ICommandHandler<DeleteAuditlogCommand> handler,
             CancellationToken cancellationToken = default) =>
         {
             return await Result.Success(new DeleteAuditlogCommand(auditlogId))
-                .Bind(query => sender.Send(query, cancellationToken))
+                .Bind(query => handler.Handle(query, cancellationToken))
                 .Match(Results.NoContent, CustomResults.Problem);
         })
         .WithOpenApi()

@@ -55,8 +55,6 @@ export const DateRangePicker = ({
     filters.startDate?.getTime() !== initialTime ||
     filters.endDate?.getTime() !== initialTime;
 
-  console.log({ hasValue });
-
   return (
     <div
       className={cn(

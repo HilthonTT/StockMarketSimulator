@@ -1,4 +1,4 @@
-﻿using MediatR;
+﻿using Application.Abstractions.Messaging;
 using Modules.Users.Application.Authentication.ChangePassword;
 using Modules.Users.Contracts.Users;
 using Modules.Users.Domain.Enums;
@@ -16,12 +16,12 @@ internal sealed class ChangePassword : IEndpoint
         app.MapPost("authentication/{userId:guid}/change-password", async (
             Guid userId,
             ChangePasswordRequest request,
-            ISender sender,
+            ICommandHandler<ChangePasswordCommand> handler,
             CancellationToken cancellationToken) =>
         {
             return await Result.Create(request, GeneralErrors.UnprocessableRequest)
                 .Map(request => new ChangePasswordCommand(userId, request.CurrentPassword, request.NewPassword))
-                .Bind(command => sender.Send(command, cancellationToken))
+                .Bind(command => handler.Handle(command, cancellationToken))
                 .Match(Results.NoContent, CustomResults.Problem);
         })
         .WithOpenApi()

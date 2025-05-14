@@ -3,8 +3,8 @@ using System.Data;
 using System.Diagnostics;
 using Application.Abstractions.Data;
 using Dapper;
+using Infrastructure.DomainEvents;
 using Infrastructure.Outbox;
-using MediatR;
 using Microsoft.Extensions.Logging;
 using Modules.Users.Domain;
 using Newtonsoft.Json;
@@ -18,7 +18,7 @@ namespace Modules.Users.Infrastructure.Outbox;
 [DisallowConcurrentExecution]
 public sealed partial class ProcessUserOutboxMessagesJob(
     IDbConnectionFactory dbConnectionFactory,
-    IPublisher publisher,
+    IDomainEventsDispatcher domainEventsDispatcher,
     IDateTimeProvider dateTimeProvider,
     ILogger<ProcessUserOutboxMessagesJob> logger) : IJob
 {
@@ -140,8 +140,8 @@ public sealed partial class ProcessUserOutboxMessagesJob(
             .Handle<Exception>()
             .WaitAndRetryAsync(RetryCount, attempt => TimeSpan.FromMilliseconds(50 * attempt));
 
-        PolicyResult result = await policy.ExecuteAndCaptureAsync(() => 
-            publisher.Publish(domainEvent!, cancellationToken));
+        PolicyResult result = await policy.ExecuteAndCaptureAsync(() =>
+            domainEventsDispatcher.DispatchAsync(domainEvent!, cancellationToken));
 
         var outboxUpdate = new OutboxUpdate
         {
