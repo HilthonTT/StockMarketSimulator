@@ -3,6 +3,7 @@ using Application.Abstractions.Caching;
 using Application.Abstractions.Data;
 using Application.Abstractions.Emails;
 using Application.Abstractions.Events;
+using Application.Abstractions.Messaging;
 using Application.Abstractions.Notifications;
 using Application.Abstractions.Storage;
 using Azure.Storage.Blobs;
@@ -17,6 +18,7 @@ using Infrastructure.Emails;
 using Infrastructure.Emails.Options;
 using Infrastructure.Events;
 using Infrastructure.Events.Options;
+using Infrastructure.Messaging;
 using Infrastructure.Notifications;
 using Infrastructure.Outbox;
 using Infrastructure.Storage;
@@ -61,6 +63,7 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(InfrastructureAssembly.Instance, includeInternalTypes: true);
 
         services.AddTransient<IDomainEventsDispatcher, DomainEventsDispatcher>();
+        services.AddScoped<ISender, Sender>();
 
         return services;
     }
