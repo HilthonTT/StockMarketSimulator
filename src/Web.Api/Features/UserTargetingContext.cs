@@ -1,4 +1,5 @@
-﻿using Microsoft.FeatureManagement.FeatureFilters;
+﻿using Infrastructure.Authentication;
+using Microsoft.FeatureManagement.FeatureFilters;
 
 namespace Web.Api.Features;
 
@@ -40,11 +41,10 @@ internal sealed class UserTargetingContext : ITargetingContextAccessor
         return new ValueTask<TargetingContext>(targetingContext);
     }
 
-    private static string GetUserId(HttpContext? httpContext)
+    private static string GetUserId(HttpContext httpContext)
     {
-        // For demo purposes, this might come for JWT claims.
-
-        return httpContext?.Request.Headers["X-User-Id"].FirstOrDefault() ?? string.Empty;
+        return httpContext.User.TryGetUserId(out Guid userId) ?
+            userId.ToString() : string.Empty;
     }
 
     private static string[] GetUserGroups(HttpContext? httpContext)

@@ -18,6 +18,7 @@ public sealed class UpdateLatestStockPriceJob(
     IDateTimeProvider dateTimeProvider) : IJob
 {
     private const int DaysInPast = 3;
+    private const int BatchSize = 100;
 
     public const string Name = nameof(UpdateLatestStockPriceJob);
 
@@ -43,6 +44,7 @@ public sealed class UpdateLatestStockPriceJob(
                 .Where(s =>
                     (s.ModifiedOnUtc.HasValue && s.ModifiedOnUtc < thresholdDate) ||
                     (!s.ModifiedOnUtc.HasValue && s.CreatedOnUtc < thresholdDate))
+                .Take(BatchSize)
                 .ToListAsync(context.CancellationToken);
 
             logger.LogInformation("Found {Count} outdated stock(s) to update.", outdatedStocks.Count);

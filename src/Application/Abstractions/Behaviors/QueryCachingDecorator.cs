@@ -36,7 +36,7 @@ public static class QueryCachingDecorator
             {
                 await cacheService.SetAsync(
                     query.CacheKey,
-                    result,
+                    result.Value,
                     query.Expiration,
                     cancellationToken);
             }

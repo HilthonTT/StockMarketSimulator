@@ -88,6 +88,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Api.FunctionalTests", "test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Modules.Stocks.BackgroundJobs", "src\Modules\Stocks\Modules.Stocks.BackgroundJobs\Modules.Stocks.BackgroundJobs.csproj", "{827409C5-6A0A-4820-A12A-5935875DE10E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "yarp", "yarp", "{671916E3-5829-401E-8B0F-C0B1015D4F06}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yarp.Proxy", "src\Yarp.Proxy\Yarp.Proxy.csproj", "{316501DF-6468-9C01-95C1-0493D55750BD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -222,6 +226,10 @@ Global
 		{827409C5-6A0A-4820-A12A-5935875DE10E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{827409C5-6A0A-4820-A12A-5935875DE10E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{827409C5-6A0A-4820-A12A-5935875DE10E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{316501DF-6468-9C01-95C1-0493D55750BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{316501DF-6468-9C01-95C1-0493D55750BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{316501DF-6468-9C01-95C1-0493D55750BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{316501DF-6468-9C01-95C1-0493D55750BD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -264,6 +272,8 @@ Global
 		{A7066DAE-E2EF-4257-B646-4A1D1218FD28} = {7B1C7E13-1007-4A2E-B520-EEC97C976A73}
 		{6C69D554-D688-4440-AF36-4B437E236FF8} = {7B1C7E13-1007-4A2E-B520-EEC97C976A73}
 		{827409C5-6A0A-4820-A12A-5935875DE10E} = {116DFD56-9731-4B98-B843-865D9F7CF53C}
+		{671916E3-5829-401E-8B0F-C0B1015D4F06} = {0629A2D7-9056-4BD4-AC56-4D87E08F216B}
+		{316501DF-6468-9C01-95C1-0493D55750BD} = {671916E3-5829-401E-8B0F-C0B1015D4F06}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CD593C20-A8F4-4A5C-961C-E5BA7D03D2BF}

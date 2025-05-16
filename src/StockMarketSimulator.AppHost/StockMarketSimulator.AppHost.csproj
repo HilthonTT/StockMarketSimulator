@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Web.Api\Web.Api.csproj" />
+    <ProjectReference Include="..\Yarp.Proxy\Yarp.Proxy.csproj" />
   </ItemGroup>
 
 </Project>

@@ -30,4 +30,6 @@ builder.AddProject<Projects.Web_Api>("web-api")
     .WaitFor(redis)
     .WaitFor(rabbitMq);
 
+builder.AddProject<Projects.Yarp_Proxy>("yarp-proxy");
+
 await builder.Build().RunAsync();
