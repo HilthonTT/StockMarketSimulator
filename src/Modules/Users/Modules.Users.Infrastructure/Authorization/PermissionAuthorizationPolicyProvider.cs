@@ -24,7 +24,7 @@ internal sealed class PermissionAuthorizationPolicyProvider : DefaultAuthorizati
             return policy;
         }
 
-        await _semaphore.WaitAsync();
+        await _semaphore.WaitAsync(100);
 
         try
         {

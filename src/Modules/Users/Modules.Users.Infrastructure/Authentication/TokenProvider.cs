@@ -7,10 +7,13 @@ using Microsoft.IdentityModel.Tokens;
 using Modules.Users.Application.Abstractions.Authentication;
 using Modules.Users.Domain.Entities;
 using Modules.Users.Infrastructure.Authentication.Options;
+using SharedKernel;
 
 namespace Modules.Users.Infrastructure.Authentication;
 
-internal sealed class TokenProvider(IOptions<JwtOptions> options) : ITokenProvider
+internal sealed class TokenProvider(
+    IOptions<JwtOptions> options,
+    IDateTimeProvider dateTimeProvider) : ITokenProvider
 {
     private readonly JwtOptions _options = options.Value;
 
@@ -28,7 +31,7 @@ internal sealed class TokenProvider(IOptions<JwtOptions> options) : ITokenProvid
                 new Claim(JwtRegisteredClaimNames.PreferredUsername, user.Username.Value),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email.Value),
             ]),
-            Expires = DateTime.UtcNow.AddMinutes(_options.ExpirationInMinutes),
+            Expires = dateTimeProvider.UtcNow.AddMinutes(_options.ExpirationInMinutes),
             SigningCredentials = credentials,
             Issuer = _options.Issuer,
             Audience = _options.Audience
