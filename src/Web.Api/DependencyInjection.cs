@@ -85,7 +85,7 @@ public static class DependencyInjection
         string? redisConnectionString = configuration.GetConnectionString(ConfigurationNames.Redis);
         Ensure.NotNullOrEmpty(redisConnectionString, nameof(redisConnectionString));
 
-        var connectionMultiplexer = ConnectionMultiplexer.Connect(redisConnectionString);
+        IConnectionMultiplexer connectionMultiplexer = ConnectionMultiplexer.Connect(redisConnectionString);
 
         services.AddRateLimiter(options =>
         {

@@ -45,18 +45,20 @@ public sealed class EmailVerificationToken : Entity, IAuditable
     /// </remarks>
     public User User { get; set; } = null!; 
 
-    public static EmailVerificationToken Create(Guid id, Guid userId)
+    public static EmailVerificationToken Create(Guid id, Guid userId, IDateTimeProvider dateTimeProvider)
     {
-        return new EmailVerificationToken(id, userId, CalculateExpirationDate());
+        return new EmailVerificationToken(id, userId, CalculateExpirationDate(dateTimeProvider));
     }
 
-    public void RefreshExpiration()
+    public void RefreshExpiration(IDateTimeProvider dateTimeProvider)
     {
-        ExpiresOnUtc = CalculateExpirationDate();
-        ModifiedOnUtc = DateTime.UtcNow;
+        ExpiresOnUtc = CalculateExpirationDate(dateTimeProvider);
+        ModifiedOnUtc = dateTimeProvider.UtcNow;
     }
 
-    public bool IsExpired() => DateTime.UtcNow >= ExpiresOnUtc;
+    public bool IsExpired(IDateTimeProvider dateTimeProvider) => 
+        dateTimeProvider.UtcNow >= ExpiresOnUtc;
 
-    private static DateTime CalculateExpirationDate() => DateTime.UtcNow.AddHours(DefaultExpirationHours);
+    private static DateTime CalculateExpirationDate(IDateTimeProvider dateTimeProvider) =>
+        dateTimeProvider.UtcNow.AddHours(DefaultExpirationHours);
 }

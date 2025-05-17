@@ -40,4 +40,23 @@ internal sealed class CacheService(IDistributedCache cache) : ICacheService
         JsonSerializer.Serialize(writer, value);
         return buffer.WrittenSpan.ToArray();
     }
+
+    public async Task<T> GetOrCreateAsync<T>(
+        string key, 
+        Func<Task<T>> factory,
+        TimeSpan? expiration = null,
+        CancellationToken cancellationToken = default)
+    {
+        byte[]? bytes = await cache.GetAsync(key, cancellationToken);
+        if (bytes is not null)
+        {
+            return Deserialize<T>(bytes);
+        }
+
+        T? data = await factory();
+
+        await SetAsync(key, data, expiration, cancellationToken);
+
+        return data;
+    }
 }

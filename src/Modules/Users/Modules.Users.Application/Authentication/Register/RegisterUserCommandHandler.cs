@@ -13,7 +13,8 @@ internal sealed class RegisterUserCommandHandler(
     IUserFactory userFactory,
     IUserRepository userRepository,
     IEmailVerificationTokenRepository emailVerificationTokenRepository,
-    IUnitOfWork unitOfWork) : ICommandHandler<RegisterUserCommand, Guid>
+    IUnitOfWork unitOfWork,
+    IDateTimeProvider dateTimeProvider) : ICommandHandler<RegisterUserCommand, Guid>
 {
     public async Task<Result<Guid>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
@@ -31,7 +32,7 @@ internal sealed class RegisterUserCommandHandler(
 
             userRepository.Insert(user);
 
-            var emailVerificationToken = EmailVerificationToken.Create(emailVerificationTokenId, user.Id);
+            var emailVerificationToken = EmailVerificationToken.Create(emailVerificationTokenId, user.Id, dateTimeProvider);
             emailVerificationTokenRepository.Insert(emailVerificationToken);
 
             await unitOfWork.SaveChangesAsync(cancellationToken);

@@ -9,7 +9,8 @@ namespace Modules.Users.Application.Authentication.VerifyEmail;
 
 internal sealed class VerifyEmailCommandHandler(
     IEmailVerificationTokenRepository emailVerificationTokenRepository,
-    IUnitOfWork unitOfWork) : ICommandHandler<VerifyEmailCommand>
+    IUnitOfWork unitOfWork,
+    IDateTimeProvider dateTimeProvider) : ICommandHandler<VerifyEmailCommand>
 {
     public async Task<Result> Handle(VerifyEmailCommand request, CancellationToken cancellationToken)
     {
@@ -23,7 +24,7 @@ internal sealed class VerifyEmailCommandHandler(
 
         EmailVerificationToken token = optionToken.ValueOrThrow();
 
-        if (token.IsExpired())
+        if (token.IsExpired(dateTimeProvider))
         {
             return Result.Failure(EmailVerificationTokenErrors.Expired);
         }

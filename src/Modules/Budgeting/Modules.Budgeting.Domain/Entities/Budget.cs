@@ -51,7 +51,7 @@ public sealed class Budget : Entity, IAuditable
         return budget;
     }
 
-    public Result DecreaseBuyingPower(Money moneyToDecrease)
+    public Result DecreaseMoney(Money moneyToDecrease)
     {
         if (moneyToDecrease.Amount < 0)
         {
@@ -69,7 +69,7 @@ public sealed class Budget : Entity, IAuditable
         return Result.Success();
     }
 
-    public Result IncreaseBuyingPower(Money moneyToIncrease)
+    public Result IncreaseMoney(Money moneyToIncrease)
     {
         if (moneyToIncrease.Amount < 0)
         {

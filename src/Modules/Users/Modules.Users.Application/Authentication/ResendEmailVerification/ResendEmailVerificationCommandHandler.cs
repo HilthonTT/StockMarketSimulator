@@ -1,7 +1,6 @@
 ﻿using Application.Abstractions.Messaging;
 using Modules.Users.Application.Abstractions.Authentication;
 using Modules.Users.Application.Abstractions.Data;
-using Modules.Users.Application.Authentication.ResendEmailVerification;
 using Modules.Users.BackgroundJobs.Users.EmailVerification;
 using Modules.Users.Domain.Entities;
 using Modules.Users.Domain.Errors;
@@ -17,7 +16,8 @@ internal sealed class ResendEmailVerificationCommandHandler(
     ISchedulerFactory schedulerFactory,
     IEmailVerificationLinkFactory emailVerificationLinkFactory,
     IEmailVerificationTokenRepository emailVerificationTokenRepository,
-    IUnitOfWork unitOfWork) : ICommandHandler<ResendEmailVerificationCommand>
+    IUnitOfWork unitOfWork,
+    IDateTimeProvider dateTimeProvider) : ICommandHandler<ResendEmailVerificationCommand>
 {
     public async Task<Result> Handle(ResendEmailVerificationCommand request, CancellationToken cancellationToken)
     {
@@ -45,7 +45,7 @@ internal sealed class ResendEmailVerificationCommandHandler(
         Guid emailVerificationTokenId = Guid.CreateVersion7();
         string verificationLink = emailVerificationLinkFactory.Create(emailVerificationTokenId);
 
-        var emailVerificationToken = EmailVerificationToken.Create(emailVerificationTokenId, user.Id);
+        var emailVerificationToken = EmailVerificationToken.Create(emailVerificationTokenId, user.Id, dateTimeProvider);
         emailVerificationTokenRepository.Insert(emailVerificationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);

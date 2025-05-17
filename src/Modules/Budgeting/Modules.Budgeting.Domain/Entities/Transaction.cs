@@ -67,31 +67,26 @@ public sealed class Transaction : Entity, IAuditable
     {
         Ensure.NotNull(budget, nameof(budget));
 
-        if (type == TransactionType.Expense)
-        {
-            Result result = budget.DecreaseBuyingPower(money);
-            if (result.IsFailure)
-            {
-                return Result.Failure<Transaction>(result.Error);
-            }
-        }
-        else if (type == TransactionType.Income)
-        {
-            Result result = budget.IncreaseBuyingPower(money);
-            if (result.IsFailure)
-            {
-                return Result.Failure<Transaction>(result.Error);
-            }
-        }
-
         var transaction = new Transaction(Guid.CreateVersion7(), budget.UserId, ticker, money, type, quantity);
 
         if (type == TransactionType.Expense)
         {
+            Result result = budget.DecreaseMoney(money);
+            if (result.IsFailure)
+            {
+                return Result.Failure<Transaction>(result.Error);
+            }
+
             transaction.Raise(new TransactionBoughtDomainEvent(Guid.CreateVersion7(), transaction.Id));
         }
         else if (type == TransactionType.Income)
         {
+            Result result = budget.IncreaseMoney(money);
+            if (result.IsFailure)
+            {
+                return Result.Failure<Transaction>(result.Error);
+            }
+
             transaction.Raise(new TransactionSoldDomainEvent(Guid.CreateVersion7(), transaction.Id));
         }
 
