@@ -69,6 +69,10 @@ export const usersRouter = createTRPCRouter({
       throw new TRPCError({ code: "NOT_FOUND" });
     }
 
+    if (!purchasedStockTickersResponse.tickers) {
+      purchasedStockTickersResponse.tickers = [];
+    }
+
     return purchasedStockTickersResponse;
   }),
 });

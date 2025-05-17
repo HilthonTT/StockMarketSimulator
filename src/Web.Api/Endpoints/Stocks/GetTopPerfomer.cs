@@ -1,7 +1,6 @@
 ﻿using Application.Abstractions.Messaging;
 using Microsoft.AspNetCore.Mvc;
 using Modules.Stocks.Application.Stocks.GetTopPerfomer;
-using Modules.Stocks.Contracts.Stocks;
 using Modules.Users.Domain.Enums;
 using SharedKernel;
 using Web.Api.Extensions;
@@ -16,11 +15,11 @@ internal sealed class GetTopPerfomer : IEndpoint
     {
         app.MapGet("stocks/top-performer", async (
             [FromHeader] Guid userId,
-            IQueryHandler<GetTopPerformerQuery, StockPriceResponse> handler,
+            ISender sender,
             CancellationToken cancellationToken = default) =>
         {
             return await Result.Success(new GetTopPerformerQuery(userId))
-               .Bind(query => handler.Handle(query, cancellationToken))
+               .Bind(query => sender.Send(query, cancellationToken))
                .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()

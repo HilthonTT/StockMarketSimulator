@@ -14,12 +14,12 @@ internal sealed class Register : IEndpoint
     {
         app.MapPost("authentication/register", async (
             RegisterRequest request,
-            ICommandHandler<RegisterUserCommand, Guid> handler,
+            ISender sender,
             CancellationToken cancellationToken) =>
         {
             return await Result.Create(request, GeneralErrors.UnprocessableRequest)
                 .Map(request => new RegisterUserCommand(request.Email, request.Username, request.Password))
-                .Bind(command => handler.Handle(command, cancellationToken))
+                .Bind(command => sender.Send(command, cancellationToken))
                 .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()

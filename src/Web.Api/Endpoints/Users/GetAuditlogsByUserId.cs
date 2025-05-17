@@ -1,8 +1,6 @@
 ﻿using Application.Abstractions.Messaging;
-using Contracts.Common;
 using Microsoft.AspNetCore.Mvc;
 using Modules.Budgeting.Application.Auditlogs.GetByUserId;
-using Modules.Budgeting.Contracts.AuditLogs;
 using Modules.Users.Domain.Enums;
 using SharedKernel;
 using Web.Api.Extensions;
@@ -16,16 +14,16 @@ internal sealed class GetAuditlogsByUserId : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapPost("users/{userId:guid}/auditlogs", async (
-            Guid userId,
+           Guid userId,
            [FromQuery] int page,
            [FromQuery] int pageSize,
            [FromQuery] string? searchTerm,
            [FromQuery] int? logType,
-           IQueryHandler<GetAuditlogsByUserIdQuery, PagedList<AuditLogResponse>> handler,
+           ISender sender,
            CancellationToken cancellationToken = default) =>
         {
             return await Result.Success(new GetAuditlogsByUserIdQuery(userId, searchTerm, page, pageSize, logType))
-                .Bind(query => handler.Handle(query, cancellationToken))
+                .Bind(query => sender.Send(query, cancellationToken))
                 .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()

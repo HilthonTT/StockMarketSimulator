@@ -1,6 +1,5 @@
 ﻿using Application.Abstractions.Messaging;
 using Modules.Users.Application.Users.GetById;
-using Modules.Users.Contracts.Users;
 using Modules.Users.Domain.Enums;
 using SharedKernel;
 using Web.Api.Extensions;
@@ -15,11 +14,11 @@ internal sealed class GetById : IEndpoint
     {
         app.MapGet("users/{userId:guid}", async (
             Guid userId,
-            IQueryHandler<GetUserByIdQuery, UserResponse> handler,
+            ISender sender,
             CancellationToken cancellationToken = default) =>
         {
             return await Result.Success(new GetUserByIdQuery(userId))
-               .Bind(query => handler.Handle(query, cancellationToken))
+               .Bind(query => sender.Send(query, cancellationToken))
                .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()

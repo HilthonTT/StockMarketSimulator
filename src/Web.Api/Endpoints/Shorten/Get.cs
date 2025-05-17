@@ -1,6 +1,5 @@
 ﻿using Application.Abstractions.Messaging;
 using Modules.Stocks.Application.Shorten.Get;
-using Modules.Stocks.Contracts.Shorten;
 using SharedKernel;
 using Web.Api.Extensions;
 using Web.Api.Features;
@@ -14,11 +13,11 @@ internal sealed class Get : IEndpoint
     {
         app.MapGet("shorten/{shortCode}", async (
             string shortCode,
-            IQueryHandler<GetShortenUrlQuery, ShortenUrlResponse> handler,
+            ISender sender,
             CancellationToken cancellationToken) =>
         {
             return await Result.Success(new GetShortenUrlQuery(shortCode))
-                .Bind(query => handler.Handle(query, cancellationToken))
+                .Bind(query => sender.Send(query, cancellationToken))
                 .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()

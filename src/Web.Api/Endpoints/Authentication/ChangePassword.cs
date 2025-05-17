@@ -16,12 +16,12 @@ internal sealed class ChangePassword : IEndpoint
         app.MapPost("authentication/{userId:guid}/change-password", async (
             Guid userId,
             ChangePasswordRequest request,
-            ICommandHandler<ChangePasswordCommand> handler,
+            ISender sender,
             CancellationToken cancellationToken) =>
         {
             return await Result.Create(request, GeneralErrors.UnprocessableRequest)
                 .Map(request => new ChangePasswordCommand(userId, request.CurrentPassword, request.NewPassword))
-                .Bind(command => handler.Handle(command, cancellationToken))
+                .Bind(command => sender.Send(command, cancellationToken))
                 .Match(Results.NoContent, CustomResults.Problem);
         })
         .WithOpenApi()

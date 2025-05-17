@@ -15,7 +15,7 @@ internal sealed class UpdateProfilePicture : IEndpoint
         app.MapPatch("users/{userId:guid}/profile-image", async (
             Guid userId,
             IFormFile file,
-            ICommandHandler<UpdateUserProfilePictureCommand> handler,
+            ISender sender,
             CancellationToken cancellationToken) =>
         {
             if (!file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
@@ -24,7 +24,7 @@ internal sealed class UpdateProfilePicture : IEndpoint
             }
 
             return await Result.Success(new UpdateUserProfilePictureCommand(userId, file))
-               .Bind(query => handler.Handle(query, cancellationToken))
+               .Bind(query => sender.Send(query, cancellationToken))
                .Match(Results.NoContent, CustomResults.Problem);
         })
         .WithOpenApi()

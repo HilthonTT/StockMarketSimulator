@@ -24,9 +24,9 @@ export const DataSection = () => {
 const DataSectionLoading = () => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-2 mb-8">
-      <Skeleton className="h-[180px] bg-white drop-shadow" />
-      <Skeleton className="h-[180px] bg-white drop-shadow" />
-      <Skeleton className="h-[180px] bg-white drop-shadow" />
+      <Skeleton className="h-[180px] bg-white dark:bg-black drop-shadow" />
+      <Skeleton className="h-[180px] bg-white dark:bg-black drop-shadow" />
+      <Skeleton className="h-[180px] bg-white dark:bg-black drop-shadow" />
     </div>
   );
 };

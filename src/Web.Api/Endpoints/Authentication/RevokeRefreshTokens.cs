@@ -14,11 +14,11 @@ internal sealed class RevokeRefreshTokens : IEndpoint
     {
         app.MapDelete("authentication/{userId:guid}/refresh-tokens", async (
             Guid userId,
-            ICommandHandler<RevokeRefreshTokensCommand> handler,
+            ISender sender,
             CancellationToken cancellationToken = default) =>
         {
             return await Result.Success(new RevokeRefreshTokensCommand(userId))
-                .Bind(command => handler.Handle(command, cancellationToken))
+                .Bind(command => sender.Send(command, cancellationToken))
                 .Match(Results.NoContent, CustomResults.Problem);
         })
         .WithOpenApi()

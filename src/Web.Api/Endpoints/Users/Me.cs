@@ -14,11 +14,12 @@ internal sealed class Me : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapGet("users/me", async (
-            IQueryHandler<GetMeQuery, UserResponse> handler, 
+            ISender sender,
+            //IQueryHandler<GetMeQuery, UserResponse> handler, 
             CancellationToken cancellationToken = default) =>
         {
             return await Result.Success(new GetMeQuery())
-                .Bind(query => handler.Handle(query, cancellationToken))
+                .Bind(query => sender.Send(query, cancellationToken))
                 .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()

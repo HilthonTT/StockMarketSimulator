@@ -14,11 +14,11 @@ internal sealed class VerifyEmail : IEndpoint
     {
         app.MapGet("authentication/verify-email", async (
             Guid token,
-            ICommandHandler<VerifyEmailCommand> handler,
+            ISender sender,
             CancellationToken cancellationToken = default) =>
         {
             return await Result.Success(new VerifyEmailCommand(token))
-                .Bind(command => handler.Handle(command, cancellationToken))
+                .Bind(command => sender.Send(command, cancellationToken))
                 .Match(Results.NoContent, CustomResults.Problem);
         })
         .WithOpenApi()

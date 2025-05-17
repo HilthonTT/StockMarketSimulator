@@ -16,12 +16,12 @@ internal sealed class Update : IEndpoint
         app.MapPatch("users/{userId:guid}", async (
             Guid userId,
             UpdateUserRequest request,
-            ICommandHandler<UpdateUserCommand> handler,
+            ISender sender,
             CancellationToken cancellationToken) =>
         {
             return await Result.Create(request, GeneralErrors.UnprocessableRequest)
                 .Map(request => new UpdateUserCommand(userId, request.Username))
-                .Bind(command => handler.Handle(command, cancellationToken))
+                .Bind(command => sender.Send(command, cancellationToken))
                 .Match(Results.NoContent, CustomResults.Problem);
         })
         .WithOpenApi()

@@ -4,7 +4,7 @@ namespace Application.Abstractions.Messaging;
 
 public interface ISender
 {
-    Task<Result> Send<TResponse>(ICommand command, CancellationToken cancellationToken = default);
+    Task<Result> Send(ICommand command, CancellationToken cancellationToken = default);
 
     Task<Result<TResponse>> Send<TResponse>(ICommand<TResponse> command, CancellationToken cancellationToken = default);
 

@@ -8,12 +8,17 @@ using SharedKernel;
 
 namespace Infrastructure.Storage;
 
-internal sealed class BlobService(
-    BlobServiceClient blobServiceClient, 
-    IOptions<BlobOptions> options) : IBlobService
+internal sealed class BlobService : IBlobService
 {
-    private readonly BlobContainerClient _containerClient =
-        blobServiceClient.GetBlobContainerClient(options.Value.ContainerName);
+    private readonly BlobContainerClient _containerClient;
+
+    public BlobService(
+        BlobServiceClient blobServiceClient,
+        IOptions<BlobOptions> options)
+    {
+        _containerClient = blobServiceClient.GetBlobContainerClient(options.Value.ContainerName);
+        _containerClient.CreateIfNotExists();
+    }
 
     public async Task DeleteAsync(Guid fileId, CancellationToken cancellationToken = default)
     {

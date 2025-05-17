@@ -1,6 +1,5 @@
 ﻿using Application.Abstractions.Messaging;
 using Modules.Budgeting.Application.Budgets.GetByUserId;
-using Modules.Budgeting.Contracts.Budgets;
 using Modules.Users.Domain.Enums;
 using SharedKernel;
 using Web.Api.Extensions;
@@ -15,11 +14,11 @@ internal sealed class GetBudgetByUserId : IEndpoint
     {
         app.MapGet("users/{userId:guid}/budget", async (
             Guid userId,
-            IQueryHandler<GetBudgetByUserIdQuery, BudgetResponse> handler,
+            ISender sender,
             CancellationToken cancellationToken = default) =>
         {
             return await Result.Success(new GetBudgetByUserIdQuery(userId))
-                .Bind(query => handler.Handle(query, cancellationToken))
+                .Bind(query => sender.Send(query, cancellationToken))
                 .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()

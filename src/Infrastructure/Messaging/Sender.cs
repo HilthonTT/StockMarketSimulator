@@ -1,42 +1,49 @@
-﻿using Application.Abstractions.Messaging;
-using Microsoft.Extensions.DependencyInjection;
+﻿using System.Collections.Concurrent;
+using Application.Abstractions.Messaging;
 using SharedKernel;
 
 namespace Infrastructure.Messaging;
 
 internal sealed class Sender(IServiceProvider serviceProvider) : ISender
 {
-    public Task<Result> Send<TResponse>(ICommand command, CancellationToken cancellationToken = default)
+    private static readonly ConcurrentDictionary<Type, Type> HandlerTypeDictionary = new();
+
+    public Task<Result> Send(ICommand command, CancellationToken cancellationToken = default)
     {
-        using IServiceScope scope = serviceProvider.CreateScope();
-
         Type commandType = command.GetType();
-        Type handlerType = typeof(ICommandHandler<>).MakeGenericType(commandType);
+        Type wrapperType = HandlerTypeDictionary.GetOrAdd(
+            commandType,
+            typeof(CommandHandlerWrapper<>).MakeGenericType(commandType));
 
-        dynamic handler = scope.ServiceProvider.GetRequiredService(handlerType);
+        IHandlerWrapper? wrapper = (IHandlerWrapper?)Activator.CreateInstance(wrapperType);
+        Ensure.NotNull(wrapper, nameof(wrapper));
 
-        return handler.Handle((dynamic)command, cancellationToken);
+        return wrapper.Handle(command, serviceProvider, cancellationToken);
     }
 
     public Task<Result<TResponse>> Send<TResponse>(ICommand<TResponse> command, CancellationToken cancellationToken = default)
     {
-        using IServiceScope scope = serviceProvider.CreateScope();
-
         Type commandType = command.GetType();
-        Type handlerType = typeof(ICommandHandler<,>).MakeGenericType(commandType, typeof(TResponse));
+        Type wrapperType = HandlerTypeDictionary.GetOrAdd(
+            commandType,
+            typeof(CommandHandlerWrapper<,>).MakeGenericType(commandType, typeof(TResponse)));
 
-        dynamic handler = scope.ServiceProvider.GetRequiredService(handlerType);
-        return handler.Handle((dynamic)command, cancellationToken);
+        IHandlerWrapper<TResponse>? wrapper = (IHandlerWrapper<TResponse>?)Activator.CreateInstance(wrapperType);
+        Ensure.NotNull(wrapper, nameof(wrapper));
+
+        return wrapper.Handle(command, serviceProvider, cancellationToken);
     }
 
     public Task<Result<TResponse>> Send<TResponse>(IQuery<TResponse> query, CancellationToken cancellationToken = default)
     {
-        using IServiceScope scope = serviceProvider.CreateScope();
-
         Type queryType = query.GetType();
-        Type handlerType = typeof(IQueryHandler<,>).MakeGenericType(queryType, typeof(TResponse));
+        Type wrapperType = HandlerTypeDictionary.GetOrAdd(
+            queryType,
+            _ => typeof(QueryHandlerWrapper<,>).MakeGenericType(queryType, typeof(TResponse)));
 
-        dynamic handler = scope.ServiceProvider.GetRequiredService(handlerType);
-        return handler.Handle((dynamic)query, cancellationToken);
+        IHandlerWrapper<TResponse>? wrapper = (IHandlerWrapper<TResponse>?)Activator.CreateInstance(wrapperType);
+        Ensure.NotNull(wrapper, nameof(wrapper));
+
+        return wrapper.Handle(query, serviceProvider, cancellationToken);
     }
 }

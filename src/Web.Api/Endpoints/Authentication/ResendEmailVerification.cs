@@ -14,12 +14,12 @@ internal sealed class ResendEmailVerification : IEndpoint
     {
         app.MapPost("authentication/resend-email-verification", async (
             ResendEmailVerificationRequest request,
-            ICommandHandler<ResendEmailVerificationCommand> handler,
+            ISender sender,
             CancellationToken cancellationToken = default) =>
         {
             return await Result.Create(request, GeneralErrors.UnprocessableRequest)
                 .Map(request => new ResendEmailVerificationCommand(request.Email))
-                .Bind(command => handler.Handle(command, cancellationToken))
+                .Bind(command => sender.Send(command, cancellationToken))
                 .Match(Results.NoContent, CustomResults.Problem);
         })
         .WithTags(Tags.Authentication)

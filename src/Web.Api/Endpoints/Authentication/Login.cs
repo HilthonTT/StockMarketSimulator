@@ -14,12 +14,12 @@ internal sealed class Login : IEndpoint
     {
         app.MapPost("authentication/login", async (
             LoginRequest request,
-            ICommandHandler<LoginUserCommand, TokenResponse> handler,
+            ISender sender,
             CancellationToken cancellationToken = default) =>
         {
             return await Result.Create(request, GeneralErrors.UnprocessableRequest)
                 .Map(request => new LoginUserCommand(request.Email, request.Password))
-                .Bind(command => handler.Handle(command, cancellationToken))
+                .Bind(command => sender.Send(command, cancellationToken))
                 .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()

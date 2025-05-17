@@ -14,12 +14,12 @@ internal sealed class LoginWithRefreshTokens : IEndpoint
     {
         app.MapPost("authentication/refresh-tokens", async (
             LoginWithRefreshTokenRequest request,
-            ICommandHandler<LoginUserWithRefreshTokenCommand, TokenResponse> handler,
+            ISender sender,
             CancellationToken cancellationToken) =>
         {
             return await Result.Create(request, GeneralErrors.UnprocessableRequest)
                 .Map(request => new LoginUserWithRefreshTokenCommand(request.RefreshToken))
-                .Bind(command => handler.Handle(command, cancellationToken))
+                .Bind(command => sender.Send(command, cancellationToken))
                 .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()

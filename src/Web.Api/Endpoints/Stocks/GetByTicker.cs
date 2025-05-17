@@ -1,6 +1,5 @@
 ﻿using Application.Abstractions.Messaging;
 using Modules.Stocks.Application.Stocks.GetByTicker;
-using Modules.Stocks.Contracts.Stocks;
 using Modules.Users.Domain.Enums;
 using SharedKernel;
 using Web.Api.Extensions;
@@ -15,11 +14,11 @@ internal sealed class GetByTicker : IEndpoint
     {
         app.MapGet("stocks/{ticker}", async (
             string ticker,
-            IQueryHandler<GetStockByTickerQuery, StockPriceResponse> handler,
+            ISender sender,
             CancellationToken cancellationToken = default) =>
         {
             return await Result.Success(new GetStockByTickerQuery(ticker))
-               .Bind(query => handler.Handle(query, cancellationToken))
+               .Bind(query => sender.Send(query, cancellationToken))
                .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()

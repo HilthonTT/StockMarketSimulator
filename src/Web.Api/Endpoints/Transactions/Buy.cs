@@ -16,12 +16,12 @@ internal sealed class Buy : IEndpoint
     {
         app.MapPost("transactions/buy", async (
             BuyTransactionRequest request,
-            ICommandHandler<BuyTransactionCommand, Guid> handler,
+            ISender sender,
             CancellationToken cancellationToken = default) =>
         {
             return await Result.Create(request, GeneralErrors.UnprocessableRequest)
                 .Map(request => new BuyTransactionCommand(request.UserId, request.Ticker, request.Quantity))
-                .Bind(command => handler.Handle(command, cancellationToken))
+                .Bind(command => sender.Send(command, cancellationToken))
                 .Match(Results.Ok, CustomResults.Problem);
         })
         .WithOpenApi()
