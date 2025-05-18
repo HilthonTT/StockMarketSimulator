@@ -1,6 +1,8 @@
-﻿using Infrastructure.Database.Configurations;
+﻿using System.Data;
+using Infrastructure.Database.Configurations;
 using Infrastructure.Database.Extensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Modules.Users.Application.Abstractions.Data;
 using Modules.Users.Domain.Entities;
 
@@ -21,6 +23,8 @@ public sealed class UsersDbContext(DbContextOptions<UsersDbContext> options)
 
     public DbSet<Permission> Permissions { get; set; }
 
+    public DbSet<Follower> Followers { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(UsersDbContext).Assembly);
@@ -29,5 +33,10 @@ public sealed class UsersDbContext(DbContextOptions<UsersDbContext> options)
         modelBuilder.HasDefaultSchema(Schemas.Users);
 
         modelBuilder.ApplyUtcDateTimeConverter();
+    }
+
+    public async Task<IDbTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        return (await Database.BeginTransactionAsync(cancellationToken)).GetDbTransaction();
     }
 }

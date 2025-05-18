@@ -3,6 +3,7 @@ using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Modules.Users.Application.Abstractions.Factories;
 using Modules.Users.Application.Authentication.Factories;
+using Modules.Users.Domain.Services;
 using SharedKernel;
 
 namespace Modules.Users.Application;
@@ -30,6 +31,8 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(UsersApplicationAssembly.Instance, includeInternalTypes: true);
 
         services.AddScoped<IUserFactory, UserFactory>();
+
+        services.AddScoped<IFollowerService, FollowerService>();
 
         return services;
     }

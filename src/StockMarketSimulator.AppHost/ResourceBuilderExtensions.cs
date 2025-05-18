@@ -50,10 +50,13 @@ internal static class ResourceBuilderExtensions
                 {
                     return new ExecuteCommandResult { Success = false, ErrorMessage = e.ToString() };
                 }
-            }, 
-            updateState: context => context.ResourceSnapshot.HealthStatus == HealthStatus.Healthy ? 
-                ResourceCommandState.Enabled : ResourceCommandState.Disabled,
-            iconName: "Document",
-            iconVariant: IconVariant.Filled);
+            },
+            new CommandOptions
+            {
+                UpdateState = context => context.ResourceSnapshot.HealthStatus == HealthStatus.Healthy ?
+                    ResourceCommandState.Enabled : ResourceCommandState.Disabled,
+                IconName = "Document",
+                IconVariant = IconVariant.Filled
+            });
     }
 }

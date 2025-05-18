@@ -8,7 +8,13 @@ public sealed class User : Entity, IAuditable
 {
     private readonly List<Role> _roles = [];
 
-    private User(Guid id, Username username, Email email, string passwordHash, bool emailVerified)
+    private User(
+        Guid id, 
+        Username username, 
+        Email email, 
+        string passwordHash, 
+        bool emailVerified, 
+        bool hasPublicProfile)
     {
         Ensure.NotNullOrEmpty(id, nameof(id));
         Ensure.NotNull(username, nameof(username));
@@ -21,6 +27,7 @@ public sealed class User : Entity, IAuditable
         Email = email;
         PasswordHash = passwordHash;
         EmailVerified = emailVerified;
+        HasPublicProfile = hasPublicProfile;
     }
 
     /// <summary>
@@ -43,6 +50,8 @@ public sealed class User : Entity, IAuditable
 
     public bool EmailVerified { get; private set; }
 
+    public bool HasPublicProfile { get; private set; }
+
     public Guid? ProfileImageId { get; private set; }
 
     public Guid? BannerImageId { get; private set; }
@@ -53,9 +62,14 @@ public sealed class User : Entity, IAuditable
 
     public DateTime? ModifiedOnUtc { get; set; }
 
-    public static User Create(Username username, Email email, string passwordHash, string verificationLink)
+    public static User Create(
+        Username username, 
+        Email email, 
+        string passwordHash, 
+        string verificationLink,
+        bool hasPublicProfile = false)
     {
-        var user = new User(Guid.CreateVersion7(), username, email, passwordHash, false);
+        var user = new User(Guid.CreateVersion7(), username, email, passwordHash, false, hasPublicProfile);
 
         user.Raise(new UserCreatedDomainEvent(Guid.CreateVersion7(), user.Id, verificationLink));
 

@@ -19,6 +19,7 @@ public sealed class RegisterUserCommandTests
     private readonly IUserFactory _userFactoryMock;
     private readonly IEmailVerificationTokenRepository _emailVerificationTokenRepositoryMock;
     private readonly IUnitOfWork _unitOfWorkMock;
+    private readonly IDateTimeProvider _dateTimeProviderMock;
 
     public RegisterUserCommandTests()
     {
@@ -26,12 +27,14 @@ public sealed class RegisterUserCommandTests
         _userFactoryMock = Substitute.For<IUserFactory>();
         _emailVerificationTokenRepositoryMock = Substitute.For<IEmailVerificationTokenRepository>();
         _unitOfWorkMock = Substitute.For<IUnitOfWork>();
+        _dateTimeProviderMock = Substitute.For<IDateTimeProvider>();
 
         _handler = new RegisterUserCommandHandler(
             _userFactoryMock,
             _userRepositoryMock,
             _emailVerificationTokenRepositoryMock,
-            _unitOfWorkMock);
+            _unitOfWorkMock,
+            _dateTimeProviderMock);
     }
 
     [Fact]
@@ -77,7 +80,7 @@ public sealed class RegisterUserCommandTests
 
         var user = User.Create(
             Username.Create(Command.Username).Value,
-            Email.Create(Command.Email).Value, 
+            Email.Create(Command.Email).Value,
             Command.Password, "link-url");
 
         _userFactoryMock.CreateAsync(Arg.Any<RegisterUserCommand>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>())

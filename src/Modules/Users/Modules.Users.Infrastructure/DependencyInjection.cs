@@ -2,7 +2,6 @@
 using EntityFramework.Exceptions.PostgreSQL;
 using FluentValidation;
 using Infrastructure;
-using Infrastructure.Database;
 using Infrastructure.Database.Interceptors;
 using Infrastructure.Database.Options;
 using Infrastructure.Outbox;
@@ -86,6 +85,8 @@ public static class DependencyInjection
         services.AddScoped<IEmailVerificationTokenRepository, EmailVerificationTokenRepository>();
 
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
+        services.AddScoped<IFollowerRepository, FollowerRepository>();
 
         return services;
     }
