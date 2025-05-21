@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
+  HttpTransportType,
   HubConnection,
   HubConnectionBuilder,
   LogLevel,
@@ -29,6 +30,7 @@ export const useSignalR = () => {
     const connection = new HubConnectionBuilder()
       .withUrl(`${SERVER_URL}/stocks-feed`, {
         accessTokenFactory: () => jwt,
+        transport: HttpTransportType.LongPolling,
       })
       .configureLogging(LogLevel.Information)
       .withAutomaticReconnect()

@@ -4,7 +4,7 @@ using Modules.Stocks.Application.Abstractions.Realtime;
 
 namespace Modules.Stocks.Infrastructure.Realtime;
 
-//[Authorize]
+[Authorize]
 public sealed class StocksFeedHub : Hub<IStocksUpdateClient>
 {
     public Task JoinGroup(string ticker)

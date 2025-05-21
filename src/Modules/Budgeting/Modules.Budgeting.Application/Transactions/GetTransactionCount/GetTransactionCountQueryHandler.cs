@@ -23,7 +23,8 @@ internal sealed class GetTransactionCountQueryHandler(
 
         using IDbConnection connection = await dbConnectionFactory.GetOpenConnectionAsync(cancellationToken);
 
-        TransactionCountResponse response = await TransactionQueries.GetTransactionCountAsync(connection, request.UserId);
+        TransactionCountResponse response = 
+            await TransactionQueries.GetTransactionCountAsync(connection, request.UserId, cancellationToken);
 
         return response;
     }

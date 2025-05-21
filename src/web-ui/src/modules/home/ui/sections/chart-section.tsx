@@ -80,9 +80,15 @@ const ChartSectionSuspense = () => {
 
   const [pending, setPending] = useState(false);
 
-  const defaultTicker = purchasedStockTickers.tickers[0]
-    ? purchasedStockTickers.tickers[0]
-    : "";
+  const getDefaultTicker = useCallback(() => {
+    if (purchasedStockTickers.tickers[0]) {
+      return purchasedStockTickers.tickers[0];
+    }
+
+    return "";
+  }, [purchasedStockTickers.tickers]);
+
+  const defaultTicker = getDefaultTicker();
 
   const [selectedTicker, setSelectedTicker] = useState<string>(defaultTicker);
   const [data, setData] = useState<PricePoint[]>([]);
@@ -152,6 +158,14 @@ const ChartSectionSuspense = () => {
       }
     };
   }, [connection, selectedTicker, handleStockUpdate]);
+
+  useEffect(() => {
+    if (selectedTicker) {
+      return;
+    }
+
+    setSelectedTicker(getDefaultTicker());
+  }, [purchasedStockTickers, selectedTicker, getDefaultTicker]);
 
   if (isLoading) {
     return <ChartSectionLoading />;

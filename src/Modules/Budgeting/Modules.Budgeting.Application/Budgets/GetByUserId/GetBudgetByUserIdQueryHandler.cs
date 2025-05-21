@@ -21,7 +21,8 @@ internal sealed class GetBudgetByUserIdQueryHandler(
 
         using IDbConnection connection = await dbConnectionFactory.GetOpenConnectionAsync(cancellationToken);
 
-        Option<BudgetResponse> optionBudget = await BudgetQueries.GetByUserIdAsync(connection, request.UserId);
+        Option<BudgetResponse> optionBudget = 
+            await BudgetQueries.GetByUserIdAsync(connection, request.UserId, cancellationToken);
         if (!optionBudget.IsSome)
         {
             return Result.Failure<BudgetResponse>(BudgetErrors.NotFoundByUserId(request.UserId));

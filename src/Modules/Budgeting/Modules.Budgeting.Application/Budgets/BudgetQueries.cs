@@ -9,7 +9,8 @@ internal static class BudgetQueries
 {
     public async static Task<Option<BudgetResponse>> GetByUserIdAsync(
         IDbConnection connection,
-        Guid userId)
+        Guid userId,
+        CancellationToken cancellationToken = default)
     {
         const string sql =
            """
@@ -23,10 +24,8 @@ internal static class BudgetQueries
             LIMIT 1;
             """;
 
-        BudgetResponse? budget = await connection.QueryFirstOrDefaultAsync<BudgetResponse>(sql, new
-        {
-            UserId = userId,
-        });
+        BudgetResponse? budget = await connection.QueryFirstOrDefaultAsync<BudgetResponse>(
+            new CommandDefinition(sql, new { UserId = userId }, cancellationToken: cancellationToken));
 
         return Option<BudgetResponse>.Some(budget);
     }

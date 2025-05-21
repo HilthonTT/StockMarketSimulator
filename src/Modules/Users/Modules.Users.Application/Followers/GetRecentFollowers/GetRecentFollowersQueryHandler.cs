@@ -15,7 +15,8 @@ internal sealed class GetRecentFollowersQueryHandler(IDbConnectionFactory dbConn
     {
         using IDbConnection connection = await dbConnectionFactory.GetOpenConnectionAsync(cancellationToken);
 
-        List<FollowerResponse> followers = await FollowerQueries.GetRecentFollowersAsync(connection, query.UserId);
+        List<FollowerResponse> followers =
+            await FollowerQueries.GetRecentFollowersAsync(connection, query.UserId, cancellationToken);
 
         return followers;
     }

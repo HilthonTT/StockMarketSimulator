@@ -16,7 +16,7 @@ internal sealed class GetMeQueryHandler(
     {
         using IDbConnection connection = await dbConnectionFactory.GetOpenConnectionAsync(cancellationToken);
 
-        Option<UserResponse> optionUser = await UserQueries.GetByIdAsync(connection, userContext.UserId);
+        Option<UserResponse> optionUser = await UserQueries.GetByIdAsync(connection, userContext.UserId, cancellationToken);
         if (!optionUser.IsSome)
         {
             return Result.Failure<UserResponse>(UserErrors.NotFound(userContext.UserId));

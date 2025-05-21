@@ -102,13 +102,13 @@ app.MapHealthChecks("health", new HealthCheckOptions
     ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
 });
 
-app.MapHub<StocksFeedHub>("/stocks-feed");
-
 app.UseExceptionHandler();
 
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.MapHub<StocksFeedHub>("/stocks-feed").RequireAuthorization();
 
 // Add the user context enrichment middleware after authentication
 app.UseUserContextEnrichment();

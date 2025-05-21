@@ -42,7 +42,8 @@ public sealed class ProcessStockOutboxMessagesJob(
         using IDbTransaction transaction = connection.BeginTransaction();
 
         stepStopwatch.Restart();
-        IReadOnlyList<OutboxMessageResponse> outboxMessages = await GetOutboxMessagesAsync(connection, transaction);
+        IReadOnlyList<OutboxMessageResponse> outboxMessages =
+            await GetOutboxMessagesAsync(connection, transaction, context.CancellationToken);
 
         if (!outboxMessages.Any())
         {
@@ -105,7 +106,8 @@ public sealed class ProcessStockOutboxMessagesJob(
 
     private static async Task<IReadOnlyList<OutboxMessageResponse>> GetOutboxMessagesAsync(
         IDbConnection connection,
-        IDbTransaction transaction)
+        IDbTransaction transaction,
+        CancellationToken cancellationToken = default)
     {
         const string sql =
             """
@@ -118,9 +120,7 @@ public sealed class ProcessStockOutboxMessagesJob(
             """;
 
         IEnumerable<OutboxMessageResponse> outboxMessages = await connection.QueryAsync<OutboxMessageResponse>(
-            sql,
-            new { BatchSize },
-            transaction: transaction);
+           new CommandDefinition(sql, new { BatchSize }, transaction: transaction, cancellationToken: cancellationToken));
 
         return [.. outboxMessages];
     }

@@ -15,7 +15,8 @@ internal sealed class GetFollowerStatsQueryHandler(IDbConnectionFactory dbConnec
     {
         using IDbConnection connection = await dbConnectionFactory.GetOpenConnectionAsync(cancellationToken);
 
-        FollowerStatsResponse followerStats = await FollowerQueries.GetFollowerStatsAsync(connection, query.UserId);
+        FollowerStatsResponse followerStats = 
+            await FollowerQueries.GetFollowerStatsAsync(connection, query.UserId, cancellationToken);
 
         return followerStats;
     }

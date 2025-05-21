@@ -8,7 +8,8 @@ internal static class FollowerQueries
 {
     internal static async Task<FollowerStatsResponse> GetFollowerStatsAsync(
         IDbConnection connection,
-        Guid userId)
+        Guid userId,
+        CancellationToken cancellationToken = default)
     {
         const string sql =
             """
@@ -26,17 +27,16 @@ internal static class FollowerQueries
                 ) AS FollowingCount
             """;
 
-        FollowerStatsResponse followerStats = await connection.QueryFirstAsync<FollowerStatsResponse>(sql, new
-        {
-            UserId = userId
-        });
+        FollowerStatsResponse followerStats = await connection.QueryFirstAsync<FollowerStatsResponse>(
+            new CommandDefinition(sql, new { UserId = userId }, cancellationToken: cancellationToken));
 
         return followerStats;
     }
 
     internal static async Task<List<FollowerResponse>> GetRecentFollowersAsync(
         IDbConnection connection,
-        Guid userId)
+        Guid userId,
+        CancellationToken cancellationToken = default)
     {
         const string sql =
             """
@@ -51,13 +51,13 @@ internal static class FollowerQueries
             """;
 
         IEnumerable<FollowerResponse> followers = await connection.QueryAsync<FollowerResponse>(
-            sql,
-            new
+            new CommandDefinition(sql, new
             {
                 UserId = userId,
                 Limit = 10
-            });
+            }, 
+            cancellationToken: cancellationToken));
 
-        return followers.ToList();
+        return [.. followers];
     }
 }

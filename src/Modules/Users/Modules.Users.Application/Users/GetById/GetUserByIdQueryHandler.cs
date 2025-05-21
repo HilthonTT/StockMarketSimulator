@@ -14,7 +14,7 @@ internal sealed class GetUserByIdQueryHandler(IDbConnectionFactory dbConnectionF
     {
         using IDbConnection connection = await dbConnectionFactory.GetOpenConnectionAsync(cancellationToken);
 
-        Option<UserResponse> optionUser = await UserQueries.GetByIdAsync(connection, request.UserId);
+        Option<UserResponse> optionUser = await UserQueries.GetByIdAsync(connection, request.UserId, cancellationToken);
         if (!optionUser.IsSome)
         {
             return Result.Failure<UserResponse>(UserErrors.NotFound(request.UserId));

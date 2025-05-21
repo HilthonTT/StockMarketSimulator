@@ -32,6 +32,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Npgsql;
 using SharedKernel;
+using StackExchange.Redis;
 
 namespace Infrastructure;
 
@@ -111,10 +112,20 @@ public static class DependencyInjection
         string? redisConnectionString = configuration.GetConnectionString(ConfigurationNames.Redis);
         Ensure.NotNullOrEmpty(redisConnectionString, nameof(redisConnectionString));
 
-        services.AddStackExchangeRedisCache(options =>
-            options.Configuration = redisConnectionString);
+        try
+        {
+            IConnectionMultiplexer connectionMultiplexer =
+            ConnectionMultiplexer.Connect(redisConnectionString);
 
-        services.AddSingleton<ICacheService, CacheService>();
+            services.AddStackExchangeRedisCache(options =>
+                options.ConnectionMultiplexerFactory = () => Task.FromResult(connectionMultiplexer));
+
+            services.AddSingleton<ICacheService, CacheService>();
+        }
+        catch (Exception)
+        {
+            services.AddSingleton<ICacheService, PostgresCacheService>();
+        }
 
         return services;
     }

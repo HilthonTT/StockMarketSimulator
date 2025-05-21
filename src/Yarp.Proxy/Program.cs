@@ -3,6 +3,14 @@ using Yarp.Proxy;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ConfigureHttpsDefaults(httpsOptions =>
+    {
+        httpsOptions.AllowAnyClientCertificate();
+    });
+});
+
 builder.AddServiceDefaults();
 
 builder.Services.AddOpenApi();
@@ -13,6 +21,18 @@ builder.Services.AddReverseProxy()
 builder.Services.ConfigureRateLimiter();
 
 builder.Services.AddHealthChecks();
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials()
+            .SetIsOriginAllowed(_ => true);
+    });
+});
 
 WebApplication app = builder.Build();
 
@@ -26,6 +46,10 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseRateLimiter();
+
+app.UseCors();
+
+app.UseWebSockets();
 
 app.MapReverseProxy();
 

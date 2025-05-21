@@ -7,9 +7,10 @@ namespace Modules.Users.Application.Users;
 
 internal static class UserQueries
 {
-    public async static Task<Option<UserResponse>> GetByIdAsync(
+    internal async static Task<Option<UserResponse>> GetByIdAsync(
         IDbConnection connection,
-        Guid userId)
+        Guid userId,
+        CancellationToken cancellationToken = default)
     {
         const string sql =
             """
@@ -26,7 +27,8 @@ internal static class UserQueries
             LIMIT 1;
             """;
 
-        UserResponse? user = await connection.QueryFirstOrDefaultAsync<UserResponse>(sql, new { UserId = userId });
+        UserResponse? user = await connection.QueryFirstOrDefaultAsync<UserResponse>(
+            new CommandDefinition(sql, new { UserId = userId }, cancellationToken: cancellationToken));
 
         return Option<UserResponse>.Some(user);
     }
