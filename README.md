@@ -18,6 +18,7 @@ A modular monolithic application simulating stock market trading, budgeting, and
 | 📜 [Serilog](https://serilog.net/)                                                 | Structured logging                             |
 | 🐳 [Docker](https://www.docker.com/)                                               | Containerization                               |
 | 🚀 [.NET Aspire](https://devblogs.microsoft.com/dotnet/introducing-dotnet-aspire/) | Cloud-native orchestration for .NET apps       |
+| ⚛️ [Next.js](https://nextjs.org/)                                                  | React-based frontend framework for UI & SSR    |
 
 
 ## 🧱 Architecture
@@ -35,8 +36,18 @@ Handles email verification, user preferences, etc.
 
 ### 📊 Stocks Module
 Handles stock listings, market simulation, portfolio tracking
-
 Supports buying, selling, and real-time updates via SignalR
 
 ### 💰 Budgeting Module
 Manages income, expenses, and budgeting categories
+
+## NextJS .env
+
+```env
+  AUTH_SECRET=
+
+  NODE_TLS_REJECT_UNAUTHORIZED=0
+  
+  UPSTASH_REDIS_REST_URL=
+  UPSTASH_REDIS_REST_TOKEN=
+```
