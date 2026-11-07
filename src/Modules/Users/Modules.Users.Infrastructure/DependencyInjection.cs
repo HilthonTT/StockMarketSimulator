@@ -95,13 +95,15 @@ public static class DependencyInjection
     {
         services.AddOptionsWithFluentValidation<JwtOptions>(JwtOptions.SettingsKey);
 
-        using var sp = services.BuildServiceProvider();
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
 
-        JwtOptions jwtOptions = sp.GetRequiredService<IOptions<JwtOptions>>().Value;
-
-        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(o =>
+        // Configure the bearer handler from validated options lazily, instead of building a
+        // second service provider during registration.
+        services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+            .Configure<IOptions<JwtOptions>>((o, jwtOptionsAccessor) =>
             {
+                JwtOptions jwtOptions = jwtOptionsAccessor.Value;
+
                 o.RequireHttpsMetadata = false;
                 o.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -109,6 +111,24 @@ public static class DependencyInjection
                     ValidIssuer = jwtOptions.Issuer,
                     ValidAudience = jwtOptions.Audience,
                     ClockSkew = TimeSpan.Zero
+                };
+
+                // Browsers cannot set an Authorization header on WebSocket/SSE connections, so the
+                // SignalR client sends the JWT as the access_token query parameter.
+                o.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        string? accessToken = context.Request.Query["access_token"];
+
+                        if (!string.IsNullOrEmpty(accessToken) &&
+                            context.HttpContext.Request.Path.StartsWithSegments("/stocks-feed"))
+                        {
+                            context.Token = accessToken;
+                        }
+
+                        return Task.CompletedTask;
+                    }
                 };
             });
 

@@ -20,7 +20,7 @@ internal sealed class Update : IEndpoint
             CancellationToken cancellationToken) =>
         {
             return await Result.Create(request, GeneralErrors.UnprocessableRequest)
-                .Map(request => new UpdateUserCommand(userId, request.Username))
+                .Map(request => new UpdateUserCommand(userId, request.Username, request.HasPublicProfile))
                 .Bind(command => sender.Send(command, cancellationToken))
                 .Match(Results.NoContent, CustomResults.Problem);
         })

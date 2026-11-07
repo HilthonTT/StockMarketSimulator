@@ -117,6 +117,18 @@ public sealed class User : Entity, IAuditable
         Raise(new UserNameChangedDomainEvent(Guid.CreateVersion7(), Id));
     }
 
+    public void ChangeProfileVisibility(bool hasPublicProfile)
+    {
+        if (HasPublicProfile == hasPublicProfile)
+        {
+            return;
+        }
+
+        HasPublicProfile = hasPublicProfile;
+
+        Raise(new UserProfileChangedDomainEvent(Guid.CreateVersion7(), Id));
+    }
+
     public void ChangeProfileImage(Guid imageId)
     {
         if (ProfileImageId == imageId)
@@ -125,6 +137,8 @@ public sealed class User : Entity, IAuditable
         }
 
         ProfileImageId = imageId;
+
+        Raise(new UserProfileChangedDomainEvent(Guid.CreateVersion7(), Id));
     }
 
     public void ChangeBannerImage(Guid bannerId)
@@ -135,15 +149,21 @@ public sealed class User : Entity, IAuditable
         }
 
         BannerImageId = bannerId;
+
+        Raise(new UserProfileChangedDomainEvent(Guid.CreateVersion7(), Id));
     }
 
     public void ClearProfileImage()
     {
         ProfileImageId = null;
+
+        Raise(new UserProfileChangedDomainEvent(Guid.CreateVersion7(), Id));
     }
 
     public void ClearBannerImage()
     {
         BannerImageId = null;
+
+        Raise(new UserProfileChangedDomainEvent(Guid.CreateVersion7(), Id));
     }
 }

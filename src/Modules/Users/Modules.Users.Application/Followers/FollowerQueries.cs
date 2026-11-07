@@ -41,12 +41,12 @@ internal static class FollowerQueries
         const string sql =
             """
             SELECT 
-                u.Id AS Id,
-                u.name AS Name
+                u.id AS Id,
+                u.username AS Name
             FROM users.followers f
-            JOIN users.users u on u.id = f.user_id
+            JOIN users.users u ON u.id = f.user_id
             WHERE f.followed_id = @UserId
-            ORDER BY created_on_utc DESC
+            ORDER BY f.created_on_utc DESC
             LIMIT @Limit
             """;
 

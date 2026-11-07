@@ -14,7 +14,8 @@ internal sealed class RoleConfiguration : IEntityTypeConfiguration<Role>
             .WithMany()
             .UsingEntity<RolePermission>();
 
-        builder.HasMany(x => x.Users)
+        // No Role -> Users navigation: it would accumulate users on the shared static Role instances.
+        builder.HasMany<User>()
             .WithMany(x => x.Roles);
 
         builder.HasData(Role.GetValues());

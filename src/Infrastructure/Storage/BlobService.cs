@@ -10,6 +10,8 @@ namespace Infrastructure.Storage;
 
 internal sealed class BlobService : IBlobService
 {
+    private const string OwnerMetadataKey = "owner_id";
+
     private readonly BlobContainerClient _containerClient;
 
     public BlobService(
@@ -37,9 +39,30 @@ internal sealed class BlobService : IBlobService
         return new FileResponse(response.Value.Content.ToStream(), response.Value.Details.ContentType);
     }
 
+    public async Task<Guid?> GetOwnerAsync(Guid fileId, CancellationToken cancellationToken = default)
+    {
+        BlobClient blobClient = _containerClient.GetBlobClient(fileId.ToString());
+
+        try
+        {
+            Response<BlobProperties> properties =
+                await blobClient.GetPropertiesAsync(cancellationToken: cancellationToken);
+
+            return properties.Value.Metadata.TryGetValue(OwnerMetadataKey, out string? owner) &&
+                   Guid.TryParse(owner, out Guid ownerId)
+                ? ownerId
+                : null;
+        }
+        catch (RequestFailedException exception) when (exception.Status == 404)
+        {
+            return null;
+        }
+    }
+
     public async Task<Guid> UploadAsync(
-        Stream stream, 
-        string contentType, 
+        Stream stream,
+        string contentType,
+        Guid? ownerId = null,
         CancellationToken cancellationToken = default)
     {
         Ensure.NotNull(stream, nameof(stream));
@@ -50,7 +73,15 @@ internal sealed class BlobService : IBlobService
 
         var headers = new BlobHttpHeaders { ContentType = contentType };
 
-        await blobClient.UploadAsync(stream, headers, cancellationToken: cancellationToken);
+        var uploadOptions = new BlobUploadOptions
+        {
+            HttpHeaders = headers,
+            Metadata = ownerId is null
+                ? null
+                : new Dictionary<string, string> { [OwnerMetadataKey] = ownerId.Value.ToString() }
+        };
+
+        await blobClient.UploadAsync(stream, uploadOptions, cancellationToken);
 
         return fileId;
     }

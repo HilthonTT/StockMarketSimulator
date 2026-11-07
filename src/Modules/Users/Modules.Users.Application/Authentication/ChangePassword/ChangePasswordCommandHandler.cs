@@ -13,6 +13,7 @@ namespace Modules.Users.Application.Authentication.ChangePassword;
 internal sealed class ChangePasswordCommandHandler(
     IUserContext userContext,
     IUserRepository userRepository,
+    IRefreshTokenRepository refreshTokenRepository,
     IUnitOfWork unitOfWork,
     IPasswordHasher passwordHasher) : ICommandHandler<ChangePasswordCommand>
 {
@@ -48,6 +49,10 @@ internal sealed class ChangePasswordCommandHandler(
         user.ChangePassword(newPasswordHash);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // A password change must end every existing session, otherwise a stolen refresh token
+        // keeps working after the victim changes their password.
+        await refreshTokenRepository.BatchDeleteAsync(user.Id, cancellationToken);
 
         return Result.Success();
     }

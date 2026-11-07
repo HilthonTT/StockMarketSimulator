@@ -39,6 +39,11 @@ internal sealed class UpdateUserCommandHandler(
 
         user.ChangeUsername(username);
 
+        if (request.HasPublicProfile is bool hasPublicProfile)
+        {
+            user.ChangeProfileVisibility(hasPublicProfile);
+        }
+
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result.Success();

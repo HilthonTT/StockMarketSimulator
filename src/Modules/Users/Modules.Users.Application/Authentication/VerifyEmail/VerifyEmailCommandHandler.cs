@@ -36,7 +36,7 @@ internal sealed class VerifyEmailCommandHandler(
 
         token.User.VerifyEmail();
 
-        token.User.AddRole(Role.Registered);
+        token.User.AddRole(Role.Registered.CreateReference());
 
         emailVerificationTokenRepository.Remove(token);
 

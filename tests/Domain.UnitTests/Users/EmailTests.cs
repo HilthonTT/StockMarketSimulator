@@ -46,4 +46,15 @@ public sealed class EmailTests
         Assert.False(result.IsSuccess);
         Assert.Equal(EmailErrors.InvalidFormat, result.Error);
     }
+
+    [Theory]
+    [InlineData("Bob@Example.com")]
+    [InlineData("  bob@example.COM  ")]
+    public void Email_Should_BeNormalized_ToTrimmedLowerCase(string value)
+    {
+        Result<Email> result = Email.Create(value);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("bob@example.com", result.Value.Value);
+    }
 }

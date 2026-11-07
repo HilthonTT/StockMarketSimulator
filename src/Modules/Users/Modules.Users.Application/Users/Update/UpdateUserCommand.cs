@@ -2,4 +2,4 @@
 
 namespace Modules.Users.Application.Users.Update;
 
-public sealed record UpdateUserCommand(Guid UserId, string Username) : ICommand;
+public sealed record UpdateUserCommand(Guid UserId, string Username, bool? HasPublicProfile = null) : ICommand;

@@ -1,4 +1,5 @@
-﻿using Application.Abstractions.Storage;
+﻿using Application.Abstractions.Authentication;
+using Application.Abstractions.Storage;
 using Modules.Users.Domain.Enums;
 using Web.Api.Extensions;
 using Web.Api.Features;
@@ -10,8 +11,9 @@ internal sealed class Upload : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapPost("files/upload", async (
-            IFormFile file, 
+            IFormFile file,
             IBlobService blobService,
+            IUserContext userContext,
             CancellationToken cancellationToken = default) =>
         {
             if (!file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
@@ -21,7 +23,7 @@ internal sealed class Upload : IEndpoint
 
             using Stream stream = file.OpenReadStream();
 
-            Guid fileId = await blobService.UploadAsync(stream, file.ContentType, cancellationToken);
+            Guid fileId = await blobService.UploadAsync(stream, file.ContentType, userContext.UserId, cancellationToken);
 
             return Results.Ok(fileId);
         })

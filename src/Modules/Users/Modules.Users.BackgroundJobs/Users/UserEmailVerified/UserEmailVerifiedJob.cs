@@ -19,7 +19,7 @@ public sealed class UserEmailVerifiedJob(
     IBudgetingApi budgetingApi,
     IValidator<UserEmailVerifiedJobData> validator) : IJob
 {
-    public const string Name = nameof(EmailVerificationJob);
+    public const string Name = nameof(UserEmailVerifiedJob);
 
     public async ValueTask Execute(IJobExecutionContext context, CancellationToken cancellationToken = default)
     {

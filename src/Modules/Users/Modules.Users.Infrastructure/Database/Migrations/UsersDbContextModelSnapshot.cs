@@ -18,7 +18,7 @@ namespace Modules.Users.Infrastructure.Database.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("users")
-                .HasAnnotation("ProductVersion", "9.0.5")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -320,15 +320,15 @@ namespace Modules.Users.Infrastructure.Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("roles_id");
 
-                    b.Property<Guid>("UsersId")
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uuid")
-                        .HasColumnName("users_id");
+                        .HasColumnName("user_id");
 
-                    b.HasKey("RolesId", "UsersId")
+                    b.HasKey("RolesId", "UserId")
                         .HasName("pk_role_user");
 
-                    b.HasIndex("UsersId")
-                        .HasDatabaseName("ix_role_user_users_id");
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_role_user_user_id");
 
                     b.ToTable("role_user", "users");
                 });
@@ -402,10 +402,10 @@ namespace Modules.Users.Infrastructure.Database.Migrations
 
                     b.HasOne("Modules.Users.Domain.Entities.User", null)
                         .WithMany()
-                        .HasForeignKey("UsersId")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_role_user_users_users_id");
+                        .HasConstraintName("fk_role_user_users_user_id");
                 });
 #pragma warning restore 612, 618
         }

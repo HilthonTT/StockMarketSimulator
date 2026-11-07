@@ -50,12 +50,15 @@ public sealed class RefreshToken : Entity
         return new(Guid.CreateVersion7(), token, userId, CalculateExpirationDate());
     }
 
+    /// <summary>
+    /// Rotates the token value. The original absolute expiry is kept on purpose: sliding it on every
+    /// rotation would let a session (or a stolen token) live forever.
+    /// </summary>
     public void Refresh(string newToken)
     {
         Ensure.NotNullOrEmpty(newToken, nameof(newToken));
 
         Token = newToken;
-        ExpiresOnUtc = CalculateExpirationDate();
     }
 
     public bool IsExpired() => DateTime.UtcNow >= ExpiresOnUtc;

@@ -1,4 +1,5 @@
-﻿using Application.Abstractions.Authentication;
+﻿using EntityFramework.Exceptions.Common;
+using Application.Abstractions.Authentication;
 using Application.Abstractions.Messaging;
 using Modules.Users.Application.Abstractions.Data;
 using Modules.Users.Domain.Entities;
@@ -47,7 +48,15 @@ internal sealed class StartFollowingCommandHandler(
 
         followerRepository.Insert(result.Value);
 
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        catch (UniqueConstraintException)
+        {
+            // Two concurrent follow requests: the other one already inserted the row.
+            return Result.Failure(FollowerErrors.AlreadyFollowing);
+        }
 
         return Result.Success();
     }
