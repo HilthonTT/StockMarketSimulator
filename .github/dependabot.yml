@@ -17,6 +17,11 @@ updates:
       frontend:
         patterns: ["*"]
         update-types: [minor, patch]
+    ignore:
+      # typescript-eslint (used by eslint-config-next) only supports TypeScript < 6.1.
+      # Lift this once it supports TypeScript 7.
+      - dependency-name: typescript
+        update-types: [version-update:semver-major, version-update:semver-minor]
 
   - package-ecosystem: github-actions
     directory: /

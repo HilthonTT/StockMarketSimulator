@@ -43,6 +43,9 @@ public sealed class ModuleContractTests
             .AreClasses()
             .And()
             .DoNotHaveNameEndingWith("Assembly")
+            .And()
+            // Coverlet injects a tracker type into instrumented assemblies when tests run with coverage.
+            .DoNotResideInNamespaceStartingWith("Coverlet")
             .Should()
             .ImplementInterface(typeof(IIntegrationEvent))
             .And()
