@@ -3,29 +3,26 @@ using System.Security.Claims;
 
 namespace Web.Api.Middleware;
 
-internal sealed class UserContextEnrichementMiddleware(ILogger<UserContextEnrichementMiddleware> logger) 
+internal sealed class UserContextEnrichementMiddleware(ILogger<UserContextEnrichementMiddleware> logger)
     : IMiddleware
 {
-    public Task InvokeAsync(HttpContext context, RequestDelegate next)
+    public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
         string? userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (!string.IsNullOrWhiteSpace(userId))
+
+        if (string.IsNullOrWhiteSpace(userId))
         {
-            Activity.Current?.SetTag("user.id", userId);
-
-            var data = new Dictionary<string, object>
-            {
-                ["UserId"] = userId,
-            };
-
-            using (logger.BeginScope(data))
-            {
-                return next(context);
-            }
+            await next(context);
+            return;
         }
-        else
+
+        Activity.Current?.SetTag("user.id", userId);
+
+        // The scope must stay open until the rest of the pipeline has completed,
+        // so the call to next has to be awaited inside the using block.
+        using (logger.BeginScope(new Dictionary<string, object> { ["UserId"] = userId }))
         {
-            return next(context);
+            await next(context);
         }
     }
 }

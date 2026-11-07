@@ -1,3 +1,3 @@
 ﻿namespace Infrastructure.Caching;
 
-public sealed record CacheItem(string Key, string Value);
+public sealed record CacheItem(string Key, string Value, DateTime? ExpiresOnUtc);

@@ -71,6 +71,9 @@ builder.Services.AddEndpoints(PresentationAssembly.Instance);
 
 WebApplication app = builder.Build();
 
+// Must be first so exceptions thrown by every later middleware are turned into ProblemDetails.
+app.UseExceptionHandler();
+
 ApiVersionSet apiVersionSet = app.NewApiVersionSet()
     .HasApiVersion(new ApiVersion(ApiVersion))
     .ReportApiVersions()
@@ -101,8 +104,6 @@ app.MapHealthChecks("health", new HealthCheckOptions
 {
     ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
 });
-
-app.UseExceptionHandler();
 
 app.UseAuthentication();
 

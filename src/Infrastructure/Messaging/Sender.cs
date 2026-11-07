@@ -13,7 +13,7 @@ internal sealed class Sender(IServiceProvider serviceProvider) : ISender
         Type commandType = command.GetType();
         Type wrapperType = HandlerTypeDictionary.GetOrAdd(
             commandType,
-            typeof(CommandHandlerWrapper<>).MakeGenericType(commandType));
+            static type => typeof(CommandHandlerWrapper<>).MakeGenericType(type));
 
         IHandlerWrapper? wrapper = (IHandlerWrapper?)Activator.CreateInstance(wrapperType);
         Ensure.NotNull(wrapper, nameof(wrapper));
@@ -26,7 +26,7 @@ internal sealed class Sender(IServiceProvider serviceProvider) : ISender
         Type commandType = command.GetType();
         Type wrapperType = HandlerTypeDictionary.GetOrAdd(
             commandType,
-            typeof(CommandHandlerWrapper<,>).MakeGenericType(commandType, typeof(TResponse)));
+            static type => typeof(CommandHandlerWrapper<,>).MakeGenericType(type, typeof(TResponse)));
 
         IHandlerWrapper<TResponse>? wrapper = (IHandlerWrapper<TResponse>?)Activator.CreateInstance(wrapperType);
         Ensure.NotNull(wrapper, nameof(wrapper));
@@ -39,7 +39,7 @@ internal sealed class Sender(IServiceProvider serviceProvider) : ISender
         Type queryType = query.GetType();
         Type wrapperType = HandlerTypeDictionary.GetOrAdd(
             queryType,
-            _ => typeof(QueryHandlerWrapper<,>).MakeGenericType(queryType, typeof(TResponse)));
+            static type => typeof(QueryHandlerWrapper<,>).MakeGenericType(type, typeof(TResponse)));
 
         IHandlerWrapper<TResponse>? wrapper = (IHandlerWrapper<TResponse>?)Activator.CreateInstance(wrapperType);
         Ensure.NotNull(wrapper, nameof(wrapper));

@@ -18,7 +18,7 @@ namespace Infrastructure.Database.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("general")
-                .HasAnnotation("ProductVersion", "9.0.5")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -29,6 +29,10 @@ namespace Infrastructure.Database.Migrations
                         .HasColumnType("text")
                         .HasColumnName("key");
 
+                    b.Property<DateTime?>("ExpiresOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_on_utc");
+
                     b.Property<string>("Value")
                         .IsRequired()
                         .HasColumnType("jsonb")
@@ -37,27 +41,24 @@ namespace Infrastructure.Database.Migrations
                     b.HasKey("Key")
                         .HasName("pk_cache_items");
 
+                    b.HasIndex("ExpiresOnUtc")
+                        .HasDatabaseName("ix_cache_items_expires_on_utc");
+
                     b.ToTable("cache_items", "general");
                 });
 
             modelBuilder.Entity("Infrastructure.Outbox.OutboxMessageConsumer", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("name");
 
-                    b.HasKey("Id")
+                    b.HasKey("Id", "Name")
                         .HasName("pk_outbox_message_consumers");
-
-                    b.HasIndex("Id", "Name")
-                        .IsUnique()
-                        .HasDatabaseName("ix_outbox_message_consumers_id_name");
 
                     b.ToTable("outbox_message_consumers", "general");
                 });

@@ -1,4 +1,4 @@
-using Aspire.Hosting.Azure;
+﻿using Aspire.Hosting.Azure;
 using StockMarketSimulator.AppHost;
 
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
@@ -18,7 +18,7 @@ IResourceBuilder<AzureBlobStorageResource> storage = builder
     .RunAsEmulator(azurite => azurite.WithLifetime(ContainerLifetime.Persistent))
     .AddBlobs("stockmarketsimulator-blobs"); // <- The connection string
 
-builder.AddProject<Projects.Web_Api>("web-api")
+IResourceBuilder<ProjectResource> webApi = builder.AddProject<Projects.Web_Api>("web-api")
     .WithSwaggerUI()
     .WithScalar()
     .WithRedoc()
@@ -30,6 +30,11 @@ builder.AddProject<Projects.Web_Api>("web-api")
     .WaitFor(redis)
     .WaitFor(rabbitMq);
 
-builder.AddProject<Projects.Yarp_Proxy>("yarp-proxy");
+// The proxy forwards to whatever endpoint Aspire assigns to the API instead of a hard-coded port.
+builder.AddProject<Projects.Yarp_Proxy>("yarp-proxy")
+    .WithEnvironment(
+        "ReverseProxy__Clusters__stock-market-simulator-cluster__Destinations__destination1__Address",
+        webApi.GetEndpoint("https"))
+    .WaitFor(webApi);
 
 await builder.Build().RunAsync();

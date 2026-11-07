@@ -10,8 +10,10 @@ public sealed class OutboxMessageConsumerConfiguration : IEntityTypeConfiguratio
     {
         builder.ToTable("outbox_message_consumers");
 
-        builder.HasKey(x => x.Id);
+        // A single domain event can be consumed by several handlers, so the identity of a
+        // consumption record is the (event id, handler name) pair, not the event id alone.
+        builder.HasKey(x => new { x.Id, x.Name });
 
-        builder.HasIndex(x => new { x.Id, x.Name }).IsUnique();
+        builder.Property(x => x.Id).ValueGeneratedNever();
     }
 }

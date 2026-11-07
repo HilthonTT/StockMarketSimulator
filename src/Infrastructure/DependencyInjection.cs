@@ -114,16 +114,21 @@ public static class DependencyInjection
 
         try
         {
-            IConnectionMultiplexer connectionMultiplexer =
-            ConnectionMultiplexer.Connect(redisConnectionString);
+            // One multiplexer per process: it is shared by the distributed cache, the rate limiter
+            // and anything else that needs Redis. Opening several wastes sockets and doubles reconnect work.
+            IConnectionMultiplexer connectionMultiplexer = ConnectionMultiplexer.Connect(redisConnectionString);
+
+            services.AddSingleton(connectionMultiplexer);
 
             services.AddStackExchangeRedisCache(options =>
                 options.ConnectionMultiplexerFactory = () => Task.FromResult(connectionMultiplexer));
 
             services.AddSingleton<ICacheService, CacheService>();
         }
-        catch (Exception)
+        catch (RedisConnectionException)
         {
+            // Redis is unreachable at startup: fall back to the Postgres-backed cache.
+            services.AddDistributedMemoryCache();
             services.AddSingleton<ICacheService, PostgresCacheService>();
         }
 

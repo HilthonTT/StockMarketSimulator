@@ -24,8 +24,8 @@ public static class MigrationExtensions
     private static void ApplyMigration<TDbContext>(IServiceScope scope)
         where TDbContext : DbContext
     {
-        using TDbContext context = scope.ServiceProvider
-            .GetRequiredService<TDbContext>();
+        // The context is owned by the DI scope; disposing it here would break the scope's own cleanup.
+        TDbContext context = scope.ServiceProvider.GetRequiredService<TDbContext>();
 
         context.Database.Migrate();
     }

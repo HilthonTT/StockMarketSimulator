@@ -12,11 +12,11 @@ public static class ExceptionHandlingDecorator
         : ICommandHandler<TCommand, TResponse>
         where TCommand : ICommand<TResponse>
     {
-        public Task<Result<TResponse>> Handle(TCommand command, CancellationToken cancellationToken)
+        public async Task<Result<TResponse>> Handle(TCommand command, CancellationToken cancellationToken)
         {
             try
             {
-                return innerHandler.Handle(command, cancellationToken);
+                return await innerHandler.Handle(command, cancellationToken);
             }
             catch (Exception exception)
             {
@@ -32,11 +32,11 @@ public static class ExceptionHandlingDecorator
         : ICommandHandler<TCommand>
         where TCommand : ICommand
     {
-        public Task<Result> Handle(TCommand command, CancellationToken cancellationToken)
+        public async Task<Result> Handle(TCommand command, CancellationToken cancellationToken)
         {
             try
             {
-                return innerHandler.Handle(command, cancellationToken);
+                return await innerHandler.Handle(command, cancellationToken);
             }
             catch (Exception exception)
             {
@@ -52,11 +52,11 @@ public static class ExceptionHandlingDecorator
         : IQueryHandler<TQuery, TResponse>
         where TQuery : IQuery<TResponse>
     {
-        public Task<Result<TResponse>> Handle(TQuery query, CancellationToken cancellationToken)
+        public async Task<Result<TResponse>> Handle(TQuery query, CancellationToken cancellationToken)
         {
             try
             {
-                return innerHandler.Handle(query, cancellationToken);
+                return await innerHandler.Handle(query, cancellationToken);
             }
             catch (Exception exception)
             {

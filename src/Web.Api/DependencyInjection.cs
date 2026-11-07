@@ -1,4 +1,5 @@
-﻿using Infrastructure;
+﻿using Microsoft.AspNetCore.RateLimiting;
+using Infrastructure;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.FeatureManagement;
@@ -24,7 +25,7 @@ public static class DependencyInjection
         services.AddCors();
         services.AddExceptionHandling();
         services.AddMiddlewares();
-        services.ConfigureRateLimiter(configuration);
+        services.ConfigureRateLimiter();
 
         services.AddFeatureManagement()
             .WithTargeting<UserTargetingContext>();
@@ -80,20 +81,18 @@ public static class DependencyInjection
         return services;
     }
 
-    private static IServiceCollection ConfigureRateLimiter(this IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection ConfigureRateLimiter(this IServiceCollection services)
     {
-        string? redisConnectionString = configuration.GetConnectionString(ConfigurationNames.Redis);
-        Ensure.NotNullOrEmpty(redisConnectionString, nameof(redisConnectionString));
+        services.AddRateLimiter(_ => { });
 
-        IConnectionMultiplexer connectionMultiplexer = ConnectionMultiplexer.Connect(redisConnectionString);
-
-        services.AddRateLimiter(options =>
+        services.AddOptions<RateLimiterOptions>().Configure<IServiceProvider>((options, serviceProvider) =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
             options.AddRedisTokenBucketLimiter(RateLimiterPolicyNames.GlobalLimiter, limiterOptions =>
             {
-                limiterOptions.ConnectionMultiplexerFactory = () => connectionMultiplexer;
+                // Reuse the process-wide multiplexer registered by the Infrastructure layer.
+                limiterOptions.ConnectionMultiplexerFactory = () => serviceProvider.GetRequiredService<IConnectionMultiplexer>();
                 limiterOptions.TokenLimit = 100;   // Maximum tokens (burst capacity)
                 limiterOptions.TokensPerPeriod = 50; // Refill rate (tokens per period)
                 limiterOptions.ReplenishmentPeriod = TimeSpan.FromSeconds(1); // Refilling interval

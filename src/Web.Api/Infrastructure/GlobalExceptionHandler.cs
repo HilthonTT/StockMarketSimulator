@@ -4,28 +4,47 @@ using SharedKernel;
 
 namespace Web.Api.Infrastructure;
 
-internal sealed class GlobalExceptionHandler(IProblemDetailsService problemDetailsService) : IExceptionHandler
+internal sealed class GlobalExceptionHandler(
+    IProblemDetailsService problemDetailsService,
+    ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {
-    public ValueTask<bool> TryHandleAsync(
+    public async ValueTask<bool> TryHandleAsync(
         HttpContext httpContext,
         Exception exception,
         CancellationToken cancellationToken)
     {
-        var problemDetails = new ProblemDetails
+        int statusCode = exception switch
         {
-            Status = exception switch
-            {
-                ArgumentException => StatusCodes.Status400BadRequest,
-                ApplicationException => StatusCodes.Status400BadRequest,
-                UnauthorizedException => StatusCodes.Status401Unauthorized,
-                _ => StatusCodes.Status500InternalServerError
-            },
-            Title = "An error occurred",
-            Type = exception.GetType().Name,
-            Detail = exception.Message
+            ArgumentException => StatusCodes.Status400BadRequest,
+            DomainException => StatusCodes.Status400BadRequest,
+            ApplicationException => StatusCodes.Status400BadRequest,
+            UnauthorizedException => StatusCodes.Status401Unauthorized,
+            _ => StatusCodes.Status500InternalServerError
         };
 
-        return problemDetailsService.TryWriteAsync(new ProblemDetailsContext
+        if (statusCode >= StatusCodes.Status500InternalServerError)
+        {
+            logger.LogError(exception, "Unhandled exception");
+        }
+
+        // The status written in the body must match the HTTP status; without this the
+        // response kept the middleware's default 500 even when the body said 400/401.
+        httpContext.Response.StatusCode = statusCode;
+
+        var problemDetails = new ProblemDetails
+        {
+            Status = statusCode,
+            Title = statusCode >= StatusCodes.Status500InternalServerError
+                ? "Server failure"
+                : "An error occurred",
+            Type = exception.GetType().Name,
+            // Internal exception messages can leak implementation details; only expose them for client errors.
+            Detail = statusCode >= StatusCodes.Status500InternalServerError
+                ? "An unexpected error occurred"
+                : exception.Message
+        };
+
+        return await problemDetailsService.TryWriteAsync(new ProblemDetailsContext
         {
             Exception = exception,
             HttpContext = httpContext,

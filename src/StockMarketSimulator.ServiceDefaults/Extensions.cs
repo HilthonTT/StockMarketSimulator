@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -61,6 +61,8 @@ public static class Extensions
             .WithTracing(tracing =>
             {
                 tracing.AddSource(builder.Environment.ApplicationName)
+                    // Custom ActivitySources are named "<ApplicationName>.<Area>" (e.g. Web.Api.RequestContext).
+                    .AddSource($"{builder.Environment.ApplicationName}.*")
                     .AddAspNetCoreInstrumentation()
                     .AddEntityFrameworkCoreInstrumentation()
                     .AddNpgsql()

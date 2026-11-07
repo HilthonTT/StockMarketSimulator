@@ -54,7 +54,7 @@ public static class CustomResults
         static int GetStatusCode(ErrorType errorType) =>
             errorType switch
             {
-                ErrorType.Validation => StatusCodes.Status400BadRequest,
+                ErrorType.Validation or ErrorType.Problem => StatusCodes.Status400BadRequest,
                 ErrorType.NotFound => StatusCodes.Status404NotFound,
                 ErrorType.Conflict => StatusCodes.Status409Conflict,
                 ErrorType.Forbidden => StatusCodes.Status403Forbidden,

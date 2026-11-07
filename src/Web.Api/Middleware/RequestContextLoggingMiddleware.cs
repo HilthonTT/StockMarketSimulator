@@ -1,32 +1,38 @@
-﻿using Microsoft.Extensions.Primitives;
+﻿using System.Diagnostics;
+using Microsoft.Extensions.Primitives;
 using OpenTelemetry;
 using OpenTelemetry.Context.Propagation;
-using System.Diagnostics;
 
 namespace Web.Api.Middleware;
 
-internal sealed class RequestContextLoggingMiddleware : IMiddleware
+internal sealed class RequestContextLoggingMiddleware(ILogger<RequestContextLoggingMiddleware> logger) : IMiddleware
 {
     private const string CorrelationIdHeaderName = "X-Correlation-Id";
+
+    // Picked up by the "<ApplicationName>.*" source registration in ServiceDefaults.
     private static readonly ActivitySource ActivitySource = new("Web.Api.RequestContext");
     private static readonly TextMapPropagator Propagator = Propagators.DefaultTextMapPropagator;
 
-    public Task InvokeAsync(HttpContext context, RequestDelegate next)
+    public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
         PropagationContext parentContext = Propagator.Extract(default, context, ExtractHeaderValue);
         Baggage.Current = parentContext.Baggage;
 
+        string correlationId = GetCorrelationId(context);
+
+        // Both the activity and the log scope must live until the downstream pipeline completes.
         using Activity? activity = ActivitySource.StartActivity("Incoming Request", ActivityKind.Server);
+        using IDisposable? scope = logger.BeginScope(
+            new Dictionary<string, object> { ["CorrelationId"] = correlationId });
 
         if (activity is not null)
         {
-            string correlationId = GetCorrelationId(context);
             activity.SetTag("correlation_id", correlationId);
             activity.SetTag("http.method", context.Request.Method);
             activity.SetTag("http.url", context.Request.Path);
         }
 
-        return next(context);
+        await next(context);
     }
 
     private static string GetCorrelationId(HttpContext context)
@@ -38,11 +44,8 @@ internal sealed class RequestContextLoggingMiddleware : IMiddleware
 
     private static IEnumerable<string> ExtractHeaderValue(HttpContext context, string key)
     {
-        if (context.Request.Headers.TryGetValue(key, out var values))
-        {
-            return values;
-        }
-
-        return [];
+        return context.Request.Headers.TryGetValue(key, out StringValues values)
+            ? values.Where(value => value is not null).Select(value => value!)
+            : [];
     }
 }

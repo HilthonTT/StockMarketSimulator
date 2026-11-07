@@ -61,7 +61,7 @@ public static class Ensure
     {
         if (value <= 0)
         {
-            throw new ArgumentOutOfRangeException(paramName, "Value must be greater than or equal to zero.");
+            throw new ArgumentOutOfRangeException(paramName, "Value must be greater than zero.");
         }
     }
 
@@ -71,7 +71,7 @@ public static class Ensure
     {
         if (value <= 0)
         {
-            throw new ArgumentOutOfRangeException(paramName, "Value must be greater than or equal to zero.");
+            throw new ArgumentOutOfRangeException(paramName, "Value must be greater than zero.");
         }
     }
 }

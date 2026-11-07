@@ -38,6 +38,8 @@ internal sealed class UserTargetingContext : ITargetingContextAccessor
             Groups = GetUserGroups(httpContext),
         };
 
+        httpContext.Items[CacheKey] = targetingContext;
+
         return new ValueTask<TargetingContext>(targetingContext);
     }
 
