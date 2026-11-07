@@ -1,157 +1,24 @@
-﻿using System.Collections.Concurrent;
-using System.Data;
-using System.Diagnostics;
+using System.Reflection;
 using Application.Abstractions.Data;
-using Dapper;
 using Infrastructure.DomainEvents;
 using Infrastructure.Outbox;
 using Microsoft.Extensions.Logging;
 using Modules.Users.Domain;
-using Newtonsoft.Json;
-using Polly;
-using Polly.Retry;
-using Quartz;
 using SharedKernel;
 
 namespace Modules.Users.Infrastructure.Outbox;
 
-[DisallowConcurrentExecution]
-public sealed partial class ProcessUserOutboxMessagesJob(
+/// <summary>Processes the <c>users.outbox_messages</c> table. See <see cref="OutboxProcessorJob"/>.</summary>
+public sealed class ProcessUserOutboxMessagesJob(
     IDbConnectionFactory dbConnectionFactory,
     IDomainEventsDispatcher domainEventsDispatcher,
     IDateTimeProvider dateTimeProvider,
-    ILogger<ProcessUserOutboxMessagesJob> logger) : IJob
+    ILogger<ProcessUserOutboxMessagesJob> logger)
+    : OutboxProcessorJob(dbConnectionFactory, domainEventsDispatcher, dateTimeProvider, logger)
 {
     public const string Name = nameof(ProcessUserOutboxMessagesJob);
 
-    private const int BatchSize = 1000;
-    private static readonly JsonSerializerSettings JsonSerializerSettings = new()
-    {
-        TypeNameHandling = TypeNameHandling.All,
-        Converters = { new DomainEventConverter(UsersDomainAssembly.Instance) }
-    };
+    protected override string Schema => "users";
 
-    public async ValueTask Execute(IJobExecutionContext context, CancellationToken cancellationToken = default)
-    {
-        var totalStopwatch = Stopwatch.StartNew();
-        var stepStopwatch = new Stopwatch();
-
-        logger.LogInformation("Beginning to process outbox messages");
-
-        using IDbConnection connection = await dbConnectionFactory.GetOpenConnectionAsync(cancellationToken);
-        using IDbTransaction transaction = connection.BeginTransaction();
-
-        stepStopwatch.Restart();
-        IReadOnlyList<OutboxMessageResponse> outboxMessages =
-            await GetOutboxMessagesAsync(connection, transaction, cancellationToken);
-
-        if (!outboxMessages.Any())
-        {
-            logger.LogInformation("Completed processing outbox messages - no messages to process");
-            return;
-        }
-
-        long queryTime = stepStopwatch.ElapsedMilliseconds;
-
-        var updateQueue = new ConcurrentQueue<OutboxUpdate>();
-
-        stepStopwatch.Restart();
-        List<Task> publishTasks =
-            [.. outboxMessages.Select(message => PublishMessage(message, updateQueue, cancellationToken))];
-
-        await Task.WhenAll(publishTasks);
-        long publishTime = stepStopwatch.ElapsedMilliseconds;
-
-        stepStopwatch.Restart();
-        if (!updateQueue.IsEmpty)
-        {
-            const string updateSql =
-                """
-                UPDATE users.outbox_messages
-                SET processed_on_utc = v.processed_on_utc,
-                    error = v.error
-                FROM (VALUES
-                    {0}
-                ) AS v(id, processed_on_utc, error)
-                WHERE outbox_messages.id = v.id::uuid
-                """;
-
-            List<OutboxUpdate> updates = [.. updateQueue];
-            string valuesList = string.Join(",",
-                updateQueue.Select((_, i) => $"(@Id{i}, @ProcessedOn{i}, @Error{i})"));
-
-            var parameters = new DynamicParameters();
-
-            for (int i = 0; i < updateQueue.Count; i++)
-            {
-                parameters.Add($"Id{i}", updates[i].Id.ToString());
-                parameters.Add($"ProcessedOn{i}", updates[i].ProcessedOnUtc);
-                parameters.Add($"Error{i}", updates[i].Error);
-            }
-
-            string formattedSql = string.Format(updateSql, valuesList);
-
-            await connection.ExecuteAsync(formattedSql, parameters, transaction: transaction);
-        }
-
-        long updateTime = stepStopwatch.ElapsedMilliseconds;
-
-        transaction.Commit();
-
-        totalStopwatch.Stop();
-        var totalTime = totalStopwatch.ElapsedMilliseconds;
-
-        OutboxLoggers.LogProcessingPerformance(logger, totalTime, queryTime, publishTime, updateTime, outboxMessages.Count);
-    }
-
-    private static async Task<IReadOnlyList<OutboxMessageResponse>> GetOutboxMessagesAsync(
-        IDbConnection connection,
-        IDbTransaction transaction, 
-        CancellationToken cancellationToken = default)
-    {
-        const string sql =
-            """
-            SELECT id, content
-            FROM users.outbox_messages
-            WHERE processed_on_utc IS NULL
-            ORDER BY created_on_utc
-            LIMIT @BatchSize
-            FOR UPDATE SKIP LOCKED
-            """;
-
-        IEnumerable<OutboxMessageResponse> outboxMessages = await connection.QueryAsync<OutboxMessageResponse>(
-            new CommandDefinition(sql, new { BatchSize }, transaction: transaction, cancellationToken: cancellationToken));
-
-        return [.. outboxMessages];
-    }
-
-    private async Task PublishMessage(
-        OutboxMessageResponse outboxMessage,
-        ConcurrentQueue<OutboxUpdate> updateQueue,
-        CancellationToken cancellationToken)
-    {
-        const int RetryCount = 3;
-
-        IDomainEvent domainEvent = JsonConvert.DeserializeObject<IDomainEvent>(
-            outboxMessage.Content,
-            JsonSerializerSettings)!;
-
-        AsyncRetryPolicy policy = Policy
-            .Handle<Exception>()
-            .WaitAndRetryAsync(RetryCount, attempt => TimeSpan.FromMilliseconds(50 * attempt));
-
-        PolicyResult result = await policy.ExecuteAndCaptureAsync(() =>
-            domainEventsDispatcher.DispatchAsync(domainEvent!, cancellationToken));
-
-        var outboxUpdate = new OutboxUpdate
-        {
-            Id = outboxMessage.Id,
-            ProcessedOnUtc = dateTimeProvider.UtcNow,
-            Error = result.FinalException?.ToString(),
-        };
-
-        updateQueue.Enqueue(outboxUpdate);
-    }
-
-    private sealed record OutboxMessageResponse(Guid Id, string Content);
+    protected override Assembly DomainAssembly => UsersDomainAssembly.Instance;
 }
