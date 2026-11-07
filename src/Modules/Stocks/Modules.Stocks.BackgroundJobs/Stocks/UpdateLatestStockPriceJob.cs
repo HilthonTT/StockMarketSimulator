@@ -22,7 +22,7 @@ public sealed class UpdateLatestStockPriceJob(
 
     public const string Name = nameof(UpdateLatestStockPriceJob);
 
-    public async Task Execute(IJobExecutionContext context)
+    public async ValueTask Execute(IJobExecutionContext context, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("UpdateLatestStockPriceJob started at {Time}", dateTimeProvider.UtcNow);
 
@@ -34,7 +34,7 @@ public sealed class UpdateLatestStockPriceJob(
 
         DateTime thresholdDate = dateTimeProvider.UtcNow.AddDays(-DaysInPast);
 
-        using IDbTransaction transaction = await dbContext.BeginTransactionAsync(context.CancellationToken);
+        using IDbTransaction transaction = await dbContext.BeginTransactionAsync(cancellationToken);
 
         Dictionary<string, decimal> tickerToPrice = new(StringComparer.OrdinalIgnoreCase);
 
@@ -45,7 +45,7 @@ public sealed class UpdateLatestStockPriceJob(
                     (s.ModifiedOnUtc.HasValue && s.ModifiedOnUtc < thresholdDate) ||
                     (!s.ModifiedOnUtc.HasValue && s.CreatedOnUtc < thresholdDate))
                 .Take(BatchSize)
-                .ToListAsync(context.CancellationToken);
+                .ToListAsync(cancellationToken);
 
             logger.LogInformation("Found {Count} outdated stock(s) to update.", outdatedStocks.Count);
 
@@ -54,7 +54,7 @@ public sealed class UpdateLatestStockPriceJob(
                 if (!tickerToPrice.TryGetValue(outdatedStock.Ticker, out decimal price))
                 {
                     StockPriceResponse? priceResponse = 
-                        await stocksClient.GetDataForTickerAsync(outdatedStock.Ticker, context.CancellationToken);
+                        await stocksClient.GetDataForTickerAsync(outdatedStock.Ticker, cancellationToken);
 
                     if (priceResponse is null)
                     {
@@ -69,7 +69,7 @@ public sealed class UpdateLatestStockPriceJob(
                 outdatedStock.ChangePrice(price);
             }
 
-            await unitOfWork.SaveChangesAsync(context.CancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
 
             transaction.Commit();
 

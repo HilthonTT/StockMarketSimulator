@@ -18,9 +18,9 @@ public sealed class StocksFeedUpdater(
 {
     public const string Name = nameof(StocksFeedUpdater);
 
-    public Task Execute(IJobExecutionContext context)
+    public async ValueTask Execute(IJobExecutionContext context, CancellationToken cancellationToken = default)
     {
-        return UpdateStockPricesAsync(context.CancellationToken);
+        await UpdateStockPricesAsync(cancellationToken);
     }
 
     private async Task UpdateStockPricesAsync(CancellationToken cancellationToken = default)

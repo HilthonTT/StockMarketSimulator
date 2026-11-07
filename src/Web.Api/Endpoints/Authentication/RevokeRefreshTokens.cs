@@ -21,7 +21,6 @@ internal sealed class RevokeRefreshTokens : IEndpoint
                 .Bind(command => sender.Send(command, cancellationToken))
                 .Match(Results.NoContent, CustomResults.Problem);
         })
-        .WithOpenApi()
         .WithTags(Tags.Authentication)
         .HasPermission(Permission.Write, Permission.Read)
         .RequireFeature(FeatureFlags.UseV1UsersApi)

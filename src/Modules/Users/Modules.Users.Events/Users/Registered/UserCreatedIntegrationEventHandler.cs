@@ -38,7 +38,7 @@ internal sealed class UserCreatedIntegrationEventHandler(
 
         IJobDetail job = JobBuilder.Create<EmailVerificationJob>()
             .WithIdentity($"reminder-{Guid.CreateVersion7()}", "email-reminders")
-            .SetJobData(jobData)
+            .UsingJobData(jobData)
             .Build();
 
         ITrigger trigger = TriggerBuilder.Create()
@@ -46,6 +46,6 @@ internal sealed class UserCreatedIntegrationEventHandler(
             .StartNow()
             .Build();
 
-        await scheduler.ScheduleJob(job, trigger, cancellationToken);
+        await scheduler.ScheduleJob(job, trigger, cancellationToken: cancellationToken);
     }
 }

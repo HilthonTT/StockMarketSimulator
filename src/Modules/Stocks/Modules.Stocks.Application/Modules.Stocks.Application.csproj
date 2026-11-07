@@ -1,12 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-
-  <ItemGroup>
+<Project Sdk="Microsoft.NET.Sdk">
+<ItemGroup>
     <ProjectReference Include="..\..\..\Application\Application.csproj" />
     <ProjectReference Include="..\..\Budgeting\Modules.Budgeting.Api\Modules.Budgeting.Api.csproj" />
     <ProjectReference Include="..\Modules.Stocks.Contracts\Modules.Stocks.Contracts.csproj" />

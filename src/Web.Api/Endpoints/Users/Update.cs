@@ -24,7 +24,6 @@ internal sealed class Update : IEndpoint
                 .Bind(command => sender.Send(command, cancellationToken))
                 .Match(Results.NoContent, CustomResults.Problem);
         })
-        .WithOpenApi()
         .HasPermission(Permission.Read, Permission.Write)
         .WithTags(Tags.Users)
         .RequireFeature(FeatureFlags.UseV1UsersApi)

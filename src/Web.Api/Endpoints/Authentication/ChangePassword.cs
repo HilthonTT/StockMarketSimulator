@@ -24,7 +24,6 @@ internal sealed class ChangePassword : IEndpoint
                 .Bind(command => sender.Send(command, cancellationToken))
                 .Match(Results.NoContent, CustomResults.Problem);
         })
-        .WithOpenApi()
         .WithTags(Tags.Authentication)
         .HasPermission(Permission.Read, Permission.Write)
         .RequireFeature(FeatureFlags.UseV1UsersApi)

@@ -24,7 +24,6 @@ internal sealed class Sell : IEndpoint
                 .Bind(command => sender.Send(command, cancellationToken))
                 .Match(Results.Ok, CustomResults.Problem);
         })
-        .WithOpenApi()
         .WithTags(Tags.Transactions)
         .HasPermission(Permission.Read, Permission.Write)
         .AddEndpointFilter<IdempotencyFilter>()

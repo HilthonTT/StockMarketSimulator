@@ -57,7 +57,7 @@ internal sealed class TransactionSoldIntegrationEventHandler(
 
         IJobDetail job = JobBuilder.Create<TransactionSoldJob>()
            .WithIdentity($"notifier-{Guid.CreateVersion7()}", "email-notifier")
-           .SetJobData(jobData)
+           .UsingJobData(jobData)
            .Build();
 
         ITrigger trigger = TriggerBuilder.Create()
@@ -65,6 +65,6 @@ internal sealed class TransactionSoldIntegrationEventHandler(
             .StartNow()
             .Build();
 
-        await scheduler.ScheduleJob(job, trigger, cancellationToken);
+        await scheduler.ScheduleJob(job, trigger, cancellationToken: cancellationToken);
     }
 }

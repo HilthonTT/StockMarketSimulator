@@ -1,4 +1,5 @@
 ﻿using FluentValidation.Results;
+using Infrastructure.BackgroundJobs;
 using Quartz;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
@@ -17,10 +18,10 @@ public sealed class PasswordChangedJob(
 {
     public const string Name = nameof(PasswordChangedJob);
 
-    public async Task Execute(IJobExecutionContext context)
+    public async ValueTask Execute(IJobExecutionContext context, CancellationToken cancellationToken = default)
     {
         JobDataMap data = context.MergedJobDataMap;
-        CancellationToken ct = context.CancellationToken;
+        CancellationToken ct = cancellationToken;
 
         var jobData = new PasswordChangedJobData
         {

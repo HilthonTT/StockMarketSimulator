@@ -13,17 +13,39 @@ namespace Web.Api.Extensions;
 
 public static class BackgroundJobExtensions
 {
+    private static readonly TimeSpan OutboxInterval = TimeSpan.FromSeconds(5);
+
     public static IServiceCollection AddBackgroundJobs(this IServiceCollection services)
     {
-        services.AddQuartz(configure =>
+        services.AddQuartz(quartz =>
         {
-            ConfigureUserOutboxJob(configure);
-            ConfigureStockOutboxJob(configure);
-            ConfigureBudgetingOutboxJob(configure);
-            ConfigureRevokeExpiredTokensJob(configure);
-            ConfigureStocksFeedUpdaterJob(configure, services);
-            ConfigureIntegrationEventProcessorJob(configure);
-            ConfigureUpdateLatestStockPriceJob(configure);
+            // Outbox processors (one per module schema)
+            quartz.AddRecurringJob<ProcessUserOutboxMessagesJob>(OutboxInterval);
+            quartz.AddRecurringJob<ProcessStockOutboxMessagesJob>(OutboxInterval);
+            quartz.AddRecurringJob<ProcessBudgetingOutboxMessagesJob>(OutboxInterval);
+
+            // Cross-module integration events (RabbitMQ consumer)
+            quartz.AddRecurringJob<IntegrationEventProcessorJob>(TimeSpan.FromSeconds(5));
+
+            // Maintenance
+            quartz.AddRecurringJob<RevokeExpiredRefreshTokenJob>(TimeSpan.FromSeconds(20));
+            quartz.AddRecurringJob<UpdateLatestStockPriceJob>(TimeSpan.FromMinutes(1));
+
+            // Real-time price feed: the interval comes from validated options, resolved from the
+            // real container instead of building a throw-away second service provider.
+            quartz.ScheduleJob<StocksFeedUpdater>(
+                (serviceProvider, trigger) =>
+                {
+                    StockUpdateOptions options =
+                        serviceProvider.GetRequiredService<IOptions<StockUpdateOptions>>().Value;
+
+                    trigger
+                        .WithIdentity($"{StocksFeedUpdater.Name}-trigger")
+                        .WithSimpleSchedule(schedule => schedule
+                            .WithInterval(TimeSpan.FromSeconds(options.UpdateIntervalInSeconds))
+                            .RepeatForever());
+                },
+                (_, job) => job.WithIdentity(StocksFeedUpdater.Name));
         });
 
         services.AddQuartzHostedService(options =>
@@ -34,75 +56,15 @@ public static class BackgroundJobExtensions
         return services;
     }
 
-    private static void ConfigureUserOutboxJob(IServiceCollectionQuartzConfigurator configure)
+    private static void AddRecurringJob<TJob>(this IQuartzBuilder quartz, TimeSpan interval)
+        where TJob : class, IJob
     {
-        JobKey jobKey = JobKey.Create(ProcessUserOutboxMessagesJob.Name);
-        configure
-            .AddJob<ProcessUserOutboxMessagesJob>(jobKey)
-            .AddTrigger(trigger => trigger.ForJob(jobKey).WithSimpleSchedule(
-                schedule => schedule.WithIntervalInSeconds(5).RepeatForever()));
-    }
+        string name = typeof(TJob).Name;
 
-    private static void ConfigureStockOutboxJob(IServiceCollectionQuartzConfigurator configure)
-    {
-        JobKey jobKey = JobKey.Create(ProcessStockOutboxMessagesJob.Name);
-        configure
-            .AddJob<ProcessStockOutboxMessagesJob>(jobKey)
-            .AddTrigger(trigger => trigger.ForJob(jobKey).WithSimpleSchedule(
-                schedule => schedule.WithIntervalInSeconds(5).RepeatForever()));
-    }
-
-    private static void ConfigureBudgetingOutboxJob(IServiceCollectionQuartzConfigurator configure)
-    {
-        JobKey jobKey = JobKey.Create(ProcessBudgetingOutboxMessagesJob.Name);
-        configure
-            .AddJob<ProcessBudgetingOutboxMessagesJob>(jobKey)
-            .AddTrigger(trigger => trigger.ForJob(jobKey).WithSimpleSchedule(
-                schedule => schedule.WithIntervalInSeconds(5).RepeatForever()));
-    }
-
-    private static void ConfigureRevokeExpiredTokensJob(IServiceCollectionQuartzConfigurator configure)
-    {
-        JobKey jobKey = JobKey.Create(RevokeExpiredRefreshTokenJob.Name);
-        configure
-            .AddJob<RevokeExpiredRefreshTokenJob>(jobKey)
-            .AddTrigger(trigger => trigger.ForJob(jobKey).WithSimpleSchedule(
-                schedule => schedule.WithIntervalInSeconds(20).RepeatForever()));
-    }
-
-    private static void ConfigureStocksFeedUpdaterJob(
-        IServiceCollectionQuartzConfigurator configure, 
-        IServiceCollection services)
-    {
-        using IServiceScope scope = services.BuildServiceProvider().CreateScope();
-        var stockUpdateOptions = scope.ServiceProvider.GetRequiredService<IOptions<StockUpdateOptions>>().Value;
-
-        JobKey jobKey = JobKey.Create(StocksFeedUpdater.Name);
-
-        configure.AddJob<StocksFeedUpdater>(jobKey)
-          .AddTrigger(trigger =>
-                trigger.ForJob(jobKey)
-                    .WithSimpleSchedule(schedule =>
-                        schedule.WithIntervalInSeconds(stockUpdateOptions.UpdateIntervalInSeconds).RepeatForever()));
-    }
-
-    private static void ConfigureIntegrationEventProcessorJob(IServiceCollectionQuartzConfigurator configure)
-    {
-        JobKey jobKey = JobKey.Create(IntegrationEventProcessorJob.Name);
-
-        configure
-            .AddJob<IntegrationEventProcessorJob>(jobKey)
-            .AddTrigger(trigger => trigger.ForJob(jobKey).WithSimpleSchedule(
-                schedule => schedule.WithIntervalInSeconds(5).RepeatForever()));
-    }
-
-    private static void ConfigureUpdateLatestStockPriceJob(IServiceCollectionQuartzConfigurator configure)
-    {
-        JobKey jobKey = JobKey.Create(UpdateLatestStockPriceJob.Name);
-
-        configure
-            .AddJob<UpdateLatestStockPriceJob>(jobKey)
-            .AddTrigger(trigger => trigger.ForJob(jobKey).WithSimpleSchedule(
-                schedule => schedule.WithIntervalInMinutes(1).RepeatForever()));
+        quartz.ScheduleJob<TJob>(
+            trigger => trigger
+                .WithIdentity($"{name}-trigger")
+                .WithSimpleSchedule(schedule => schedule.WithInterval(interval).RepeatForever()),
+            job => job.WithIdentity(name));
     }
 }

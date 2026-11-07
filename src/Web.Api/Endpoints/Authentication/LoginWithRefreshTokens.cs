@@ -22,7 +22,6 @@ internal sealed class LoginWithRefreshTokens : IEndpoint
                 .Bind(command => sender.Send(command, cancellationToken))
                 .Match(Results.Ok, CustomResults.Problem);
         })
-        .WithOpenApi()
         .WithTags(Tags.Authentication)
         .RequireFeature(FeatureFlags.UseV1UsersApi)
         .RequireRateLimiting(RateLimiterPolicyNames.GlobalLimiter);

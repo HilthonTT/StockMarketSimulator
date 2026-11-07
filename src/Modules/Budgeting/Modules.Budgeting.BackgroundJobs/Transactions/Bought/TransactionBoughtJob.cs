@@ -1,4 +1,5 @@
 ﻿using Application.Abstractions.Notifications;
+using Infrastructure.BackgroundJobs;
 using Contracts.Emails;
 using FluentValidation;
 using FluentValidation.Results;
@@ -23,15 +24,15 @@ public sealed class TransactionBoughtJob(
 {
     public const string Name = nameof(TransactionBoughtJob);
 
-    public async Task Execute(IJobExecutionContext context)
+    public async ValueTask Execute(IJobExecutionContext context, CancellationToken cancellationToken = default)
     {
-        CancellationToken ct = context.CancellationToken;
+        CancellationToken ct = cancellationToken;
         JobDataMap data = context.MergedJobDataMap;
 
         var jobData = new BuyConfirmedJobData
         {
             TransactionId = data.GetGuid("transaction-id"),
-            TotalAmount = (decimal)data.GetDouble("total-amount"),
+            TotalAmount = data.GetDecimal("total-amount"),
             Quantity = data.GetInt("quantity"),
             CreatedOnUtc = data.GetDateTime("created-on-utc"),
             UserEmail = data.GetString("user-email") ?? string.Empty,

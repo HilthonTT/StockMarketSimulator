@@ -35,10 +35,10 @@ public sealed class IntegrationEventProcessorJob(
     private IConnection? _connection;
     private IChannel? _channel;
 
-    public async Task Execute(IJobExecutionContext context)
+    public async ValueTask Execute(IJobExecutionContext context, CancellationToken cancellationToken = default)
     {
-        _connection ??= await _connectionFactory.CreateConnectionAsync(context.CancellationToken);
-        _channel ??= await _connection.CreateChannelAsync(cancellationToken: context.CancellationToken);
+        _connection ??= await _connectionFactory.CreateConnectionAsync(cancellationToken);
+        _channel ??= await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
 
         await _channel.QueueDeclareAsync(
             queue: _options.QueueName,
@@ -46,10 +46,10 @@ public sealed class IntegrationEventProcessorJob(
             exclusive: false,
             autoDelete: false,
             arguments: null,
-            cancellationToken: context.CancellationToken);
+            cancellationToken: cancellationToken);
 
         BasicGetResult? result =
-            await _channel.BasicGetAsync(_options.QueueName, autoAck: false, cancellationToken: context.CancellationToken);
+            await _channel.BasicGetAsync(_options.QueueName, autoAck: false, cancellationToken: cancellationToken);
 
         if (result is null)
         {
@@ -71,9 +71,9 @@ public sealed class IntegrationEventProcessorJob(
         using IServiceScope scope = serviceProvider.CreateScope();
         var dispatcher = scope.ServiceProvider.GetRequiredService<IIntegrationEventsDispatcher>();
 
-        await dispatcher.DispatchAsync(integrationEvent, context.CancellationToken);
+        await dispatcher.DispatchAsync(integrationEvent, cancellationToken);
 
-        await _channel.BasicAckAsync(result.DeliveryTag, multiple: false, cancellationToken: context.CancellationToken);
+        await _channel.BasicAckAsync(result.DeliveryTag, multiple: false, cancellationToken: cancellationToken);
     }
 
     public async ValueTask DisposeAsync()

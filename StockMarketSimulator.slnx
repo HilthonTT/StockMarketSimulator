@@ -1,0 +1,57 @@
+<Solution>
+  <Folder Name="/aspire/">
+    <Project Path="src/StockMarketSimulator.AppHost/StockMarketSimulator.AppHost.csproj" />
+    <Project Path="src/StockMarketSimulator.ServiceDefaults/StockMarketSimulator.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/src/api/">
+    <Project Path="src/Application/Application.csproj" />
+    <Project Path="src/Contracts/Contracts.csproj" />
+    <Project Path="src/Infrastructure/Infrastructure.csproj" />
+    <Project Path="src/SharedKernel/SharedKernel.csproj" />
+    <Project Path="src/Web.Api/Web.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/api/Modules/" />
+  <Folder Name="/src/api/Modules/Budgeting/">
+    <Project Path="src/Modules/Budgeting/Modules.Budgeting.Api/Modules.Budgeting.Api.csproj" />
+    <Project Path="src/Modules/Budgeting/Modules.Budgeting.Application/Modules.Budgeting.Application.csproj" />
+    <Project Path="src/Modules/Budgeting/Modules.Budgeting.BackgroundJobs/Modules.Budgeting.BackgroundJobs.csproj" />
+    <Project Path="src/Modules/Budgeting/Modules.Budgeting.Contracts/Modules.Budgeting.Contracts.csproj" />
+    <Project Path="src/Modules/Budgeting/Modules.Budgeting.Domain/Modules.Budgeting.Domain.csproj" />
+    <Project Path="src/Modules/Budgeting/Modules.Budgeting.Events/Modules.Budgeting.Events.csproj" />
+    <Project Path="src/Modules/Budgeting/Modules.Budgeting.Infrastructure/Modules.Budgeting.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/api/Modules/Stocks/">
+    <Project Path="src/Modules/Stocks/Modules.Stocks.Api/Modules.Stocks.Api.csproj" />
+    <Project Path="src/Modules/Stocks/Modules.Stocks.Application/Modules.Stocks.Application.csproj" />
+    <Project Path="src/Modules/Stocks/Modules.Stocks.BackgroundJobs/Modules.Stocks.BackgroundJobs.csproj" />
+    <Project Path="src/Modules/Stocks/Modules.Stocks.Contracts/Modules.Stocks.Contracts.csproj" />
+    <Project Path="src/Modules/Stocks/Modules.Stocks.Domain/Modules.Stocks.Domain.csproj" />
+    <Project Path="src/Modules/Stocks/Modules.Stocks.Infrastructure/Modules.Stocks.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/api/Modules/Users/">
+    <Project Path="src/Modules/Users/Modules.Users.Api/Modules.Users.Api.csproj" />
+    <Project Path="src/Modules/Users/Modules.Users.Application/Modules.Users.Application.csproj" />
+    <Project Path="src/Modules/Users/Modules.Users.BackgroundJobs/Modules.Users.BackgroundJobs.csproj" />
+    <Project Path="src/Modules/Users/Modules.Users.Contracts/Modules.Users.Contracts.csproj" />
+    <Project Path="src/Modules/Users/Modules.Users.Domain/Modules.Users.Domain.csproj" />
+    <Project Path="src/Modules/Users/Modules.Users.Events/Modules.Users.Events.csproj" />
+    <Project Path="src/Modules/Users/Modules.Users.Infrastructure/Modules.Users.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/yarp/">
+    <Project Path="src/Yarp.Proxy/Yarp.Proxy.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Api.FunctionalTests/Api.FunctionalTests.csproj" />
+    <Project Path="tests/Application.IntegrationTests/Application.IntegrationTests.csproj" />
+    <Project Path="tests/Application.UnitTests/Application.UnitTests.csproj" />
+    <Project Path="tests/ArchitectureTests/ArchitectureTests.csproj" />
+    <Project Path="tests/Domain.UnitTests/Domain.UnitTests.csproj" />
+  </Folder>
+</Solution>

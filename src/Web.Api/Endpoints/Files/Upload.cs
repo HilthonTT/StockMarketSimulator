@@ -25,7 +25,6 @@ internal sealed class Upload : IEndpoint
 
             return Results.Ok(fileId);
         })
-        .WithOpenApi()
         .DisableAntiforgery()
         .WithTags(Tags.Files)
         .HasPermission(Permission.Read, Permission.Write)

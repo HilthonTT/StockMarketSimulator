@@ -9,23 +9,19 @@ namespace Api.FunctionalTests.Abstractions;
 
 public sealed class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder()
-       .WithImage("postgres:latest")
+    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder("postgres:17-alpine")
        .WithDatabase("runtrackr")
        .WithUsername("postgres")
        .WithPassword("postgres")
        .Build();
 
-    private readonly RedisContainer _redisContainer = new RedisBuilder()
-        .WithImage("redis:latest")
+    private readonly RedisContainer _redisContainer = new RedisBuilder("redis:7.4-alpine")
         .Build();
 
-    private readonly RabbitMqContainer _rabbitMqContainer = new RabbitMqBuilder()
-       .WithImage(RabbitMqBuilder.RabbitMqImage)
+    private readonly RabbitMqContainer _rabbitMqContainer = new RabbitMqBuilder("rabbitmq:4-management-alpine")
        .Build();
 
-    private readonly AzuriteContainer _azuriteContainer = new AzuriteBuilder()
-        .WithImage(AzuriteBuilder.AzuriteImage)
+    private readonly AzuriteContainer _azuriteContainer = new AzuriteBuilder("mcr.microsoft.com/azure-storage/azurite:3.35.0")
         .Build();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)

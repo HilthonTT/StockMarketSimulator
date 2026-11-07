@@ -20,7 +20,6 @@ internal sealed class Delete : IEndpoint
                 .Bind(query => handler.Handle(query, cancellationToken))
                 .Match(Results.NoContent, CustomResults.Problem);
         })
-        .WithOpenApi()
         .WithTags(Tags.AuditLogs)
         .RequireFeature(FeatureFlags.UseV1UsersApi)
         .RequireRateLimiting(RateLimiterPolicyNames.GlobalLimiter);

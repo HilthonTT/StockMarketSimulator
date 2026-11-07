@@ -22,7 +22,6 @@ internal sealed class GetTopPerfomer : IEndpoint
                .Bind(query => sender.Send(query, cancellationToken))
                .Match(Results.Ok, CustomResults.Problem);
         })
-        .WithOpenApi()
         .WithTags(Tags.Stocks)
         .HasPermission(Permission.Read)
         .RequireRateLimiting(RateLimiterPolicyNames.GlobalLimiter)

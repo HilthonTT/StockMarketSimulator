@@ -31,19 +31,19 @@ public sealed partial class ProcessUserOutboxMessagesJob(
         Converters = { new DomainEventConverter(UsersDomainAssembly.Instance) }
     };
 
-    public async Task Execute(IJobExecutionContext context)
+    public async ValueTask Execute(IJobExecutionContext context, CancellationToken cancellationToken = default)
     {
         var totalStopwatch = Stopwatch.StartNew();
         var stepStopwatch = new Stopwatch();
 
         logger.LogInformation("Beginning to process outbox messages");
 
-        using IDbConnection connection = await dbConnectionFactory.GetOpenConnectionAsync(context.CancellationToken);
+        using IDbConnection connection = await dbConnectionFactory.GetOpenConnectionAsync(cancellationToken);
         using IDbTransaction transaction = connection.BeginTransaction();
 
         stepStopwatch.Restart();
         IReadOnlyList<OutboxMessageResponse> outboxMessages =
-            await GetOutboxMessagesAsync(connection, transaction, context.CancellationToken);
+            await GetOutboxMessagesAsync(connection, transaction, cancellationToken);
 
         if (!outboxMessages.Any())
         {
@@ -57,7 +57,7 @@ public sealed partial class ProcessUserOutboxMessagesJob(
 
         stepStopwatch.Restart();
         List<Task> publishTasks =
-            [.. outboxMessages.Select(message => PublishMessage(message, updateQueue, context.CancellationToken))];
+            [.. outboxMessages.Select(message => PublishMessage(message, updateQueue, cancellationToken))];
 
         await Task.WhenAll(publishTasks);
         long publishTime = stepStopwatch.ElapsedMilliseconds;

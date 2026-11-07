@@ -20,7 +20,6 @@ internal sealed class Create : IEndpoint
                 .Bind(command => sender.Send(command, cancellationToken))
                 .Match(Results.Ok, CustomResults.Problem);
         })
-        .WithOpenApi()
         .WithTags(Tags.Shorten)
         .RequireFeature(FeatureFlags.UseV1ShortenApi)
         .RequireRateLimiting(RateLimiterPolicyNames.GlobalLimiter);

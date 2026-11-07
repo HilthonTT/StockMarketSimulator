@@ -17,7 +17,6 @@ internal sealed class Get : IEndpoint
 
             return Results.File(fileResponse.Stream, fileResponse.ContentType);
         })
-        .WithOpenApi()
         .WithTags(Tags.Files)
         .RequireRateLimiting(RateLimiterPolicyNames.GlobalLimiter)
         .RequireFeature(FeatureFlags.UseV1FilesApi);

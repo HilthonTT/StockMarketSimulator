@@ -9,23 +9,19 @@ namespace Application.IntegrationTests.Abstractions;
 
 public sealed class IntegrationTestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder()
-        .WithImage(PostgreSqlBuilder.PostgreSqlImage)
+    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder("postgres:17-alpine")
         .WithDatabase("stockmarketsimulator")
         .WithUsername("postgres")
         .WithPassword("postgres")
         .Build();
 
-    private readonly RedisContainer _redisContainer = new RedisBuilder()
-        .WithImage(RedisBuilder.RedisImage)
+    private readonly RedisContainer _redisContainer = new RedisBuilder("redis:7.4-alpine")
         .Build();
 
-    private readonly RabbitMqContainer _rabbitMqContainer = new RabbitMqBuilder()
-        .WithImage(RabbitMqBuilder.RabbitMqImage)
+    private readonly RabbitMqContainer _rabbitMqContainer = new RabbitMqBuilder("rabbitmq:4-management-alpine")
         .Build();
 
-    private readonly AzuriteContainer _azuriteContainer = new AzuriteBuilder()
-        .WithImage(AzuriteBuilder.AzuriteImage)
+    private readonly AzuriteContainer _azuriteContainer = new AzuriteBuilder("mcr.microsoft.com/azure-storage/azurite:3.35.0")
         .Build();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)

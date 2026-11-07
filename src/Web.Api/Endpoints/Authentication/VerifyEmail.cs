@@ -21,7 +21,6 @@ internal sealed class VerifyEmail : IEndpoint
                 .Bind(command => sender.Send(command, cancellationToken))
                 .Match(Results.NoContent, CustomResults.Problem);
         })
-        .WithOpenApi()
         .WithTags(Tags.Authentication)
         .WithName(UserEndpoints.VerifyEmail)
         .RequireFeature(FeatureFlags.UseV1UsersApi)

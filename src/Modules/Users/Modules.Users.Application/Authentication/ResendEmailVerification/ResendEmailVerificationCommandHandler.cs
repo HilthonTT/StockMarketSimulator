@@ -59,7 +59,7 @@ internal sealed class ResendEmailVerificationCommandHandler(
 
         IJobDetail job = JobBuilder.Create<EmailVerificationJob>()
             .WithIdentity($"reminder-{Guid.CreateVersion7()}", "email-reminders")
-            .SetJobData(jobData)
+            .UsingJobData(jobData)
             .Build();
 
         ITrigger trigger = TriggerBuilder.Create()
@@ -67,7 +67,7 @@ internal sealed class ResendEmailVerificationCommandHandler(
             .StartNow()
             .Build();
 
-        await scheduler.ScheduleJob(job, trigger, cancellationToken);
+        await scheduler.ScheduleJob(job, trigger, cancellationToken: cancellationToken);
 
         return Result.Success();
     }

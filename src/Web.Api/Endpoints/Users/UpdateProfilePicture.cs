@@ -27,7 +27,6 @@ internal sealed class UpdateProfilePicture : IEndpoint
                .Bind(query => sender.Send(query, cancellationToken))
                .Match(Results.NoContent, CustomResults.Problem);
         })
-        .WithOpenApi()
         .DisableAntiforgery()
         .HasPermission(Permission.Read, Permission.Write)
         .WithTags(Tags.Users)

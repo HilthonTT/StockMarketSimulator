@@ -21,7 +21,6 @@ internal sealed class GetFollowerStats : IEndpoint
                 .Bind(query => sender.Send(query, cancellationToken))
                 .Match(Results.Ok, CustomResults.Problem);
         })
-        .WithOpenApi()
         .WithTags(Tags.Users)
         .HasPermission(Permission.Write, Permission.Read)
         .RequireFeature(FeatureFlags.UseV1UsersApi)

@@ -1,4 +1,5 @@
 ﻿using Application.Abstractions.Notifications;
+using Infrastructure.BackgroundJobs;
 using Contracts.Emails;
 using FluentValidation;
 using FluentValidation.Results;
@@ -16,10 +17,10 @@ public sealed class EmailVerificationJob(
 {
     public const string Name = nameof(EmailVerificationJob);
 
-    public async Task Execute(IJobExecutionContext context)
+    public async ValueTask Execute(IJobExecutionContext context, CancellationToken cancellationToken = default)
     {
         JobDataMap data = context.MergedJobDataMap;
-        CancellationToken ct = context.CancellationToken;
+        CancellationToken ct = cancellationToken;
 
         var jobData = new EmailVerificationJobData
         {

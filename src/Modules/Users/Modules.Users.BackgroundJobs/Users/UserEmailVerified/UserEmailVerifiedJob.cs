@@ -1,4 +1,5 @@
 ﻿using Application.Abstractions.Notifications;
+using Infrastructure.BackgroundJobs;
 using Contracts.Emails;
 using FluentValidation;
 using FluentValidation.Results;
@@ -20,10 +21,10 @@ public sealed class UserEmailVerifiedJob(
 {
     public const string Name = nameof(EmailVerificationJob);
 
-    public async Task Execute(IJobExecutionContext context)
+    public async ValueTask Execute(IJobExecutionContext context, CancellationToken cancellationToken = default)
     {
         JobDataMap data = context.MergedJobDataMap;
-        CancellationToken ct = context.CancellationToken;
+        CancellationToken ct = cancellationToken;
 
         var jobData = new UserEmailVerifiedJobData
         {
@@ -51,8 +52,8 @@ public sealed class UserEmailVerifiedJob(
 
             var request = new WelcomeEmail(jobData.Email, jobData.Username);
 
-            Task sendWelcomeTask = notificationService.SendWelcomeAsync(request, context.CancellationToken);
-            Task addBudgetTask = budgetingApi.AddBudgetAsync(jobData.UserId, Currency.Usd.Code, context.CancellationToken);
+            Task sendWelcomeTask = notificationService.SendWelcomeAsync(request, cancellationToken);
+            Task addBudgetTask = budgetingApi.AddBudgetAsync(jobData.UserId, Currency.Usd.Code, cancellationToken);
 
             await Task.WhenAll(sendWelcomeTask, addBudgetTask);
 

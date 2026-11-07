@@ -18,7 +18,6 @@ internal sealed class Delete : IEndpoint
 
             return Results.NoContent();
         })
-        .WithOpenApi()
         .WithTags(Tags.Files)
         .HasPermission(Permission.Write)
         .RequireRateLimiting(RateLimiterPolicyNames.GlobalLimiter)

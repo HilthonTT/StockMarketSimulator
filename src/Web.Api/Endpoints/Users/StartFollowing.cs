@@ -22,7 +22,6 @@ internal sealed class StartFollowing : IEndpoint
                 .Bind(query => sender.Send(query, cancellationToken))
                 .Match(Results.NoContent, CustomResults.Problem);
         })
-        .WithOpenApi()
         .WithTags(Tags.Users)
         .HasPermission(Permission.Write, Permission.Read)
         .RequireFeature(FeatureFlags.UseV1UsersApi)
