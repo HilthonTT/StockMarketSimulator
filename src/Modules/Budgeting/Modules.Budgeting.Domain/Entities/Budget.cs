@@ -60,7 +60,7 @@ public sealed class Budget : Entity, IAuditable
 
         if (Money.Amount < moneyToDecrease.Amount)
         {
-            return Result.Failure(BudgetErrors.NegativeAmountNotAllowed);
+            return Result.Failure(BudgetErrors.InsufficientBuyingPower);
         }
 
         Money -= moneyToDecrease;

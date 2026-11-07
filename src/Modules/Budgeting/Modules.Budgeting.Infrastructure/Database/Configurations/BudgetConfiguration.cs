@@ -19,7 +19,13 @@ internal sealed class BudgetConfiguration : IEntityTypeConfiguration<Budget>
 
         builder.HasIndex(x => x.UserId).IsUnique();
 
+        // Optimistic concurrency via PostgreSQL's xmin system column: every buy/sell rewrites the
+        // budget row, so two concurrent trades for the same user cannot both commit (no double spend,
+        // no overselling) - the loser gets a DbUpdateConcurrencyException.
+        builder.Property<uint>("Version").IsRowVersion();
+
+        // A balance of exactly zero is valid (the user spent everything).
         builder.ToTable(tb =>
-            tb.HasCheckConstraint("CK_buying_power_NotNegative", "buying_power > 0"));
+            tb.HasCheckConstraint("CK_budgets_money_amount_NotNegative", "money_amount >= 0"));
     }
 }

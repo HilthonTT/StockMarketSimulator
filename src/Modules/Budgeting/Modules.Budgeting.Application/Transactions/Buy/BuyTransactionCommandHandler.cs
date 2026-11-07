@@ -1,4 +1,5 @@
-﻿using Application.Abstractions.Authentication;
+﻿using Microsoft.EntityFrameworkCore;
+using Application.Abstractions.Authentication;
 using Application.Abstractions.Caching;
 using Application.Abstractions.Messaging;
 using Modules.Budgeting.Application.Abstractions.Data;
@@ -58,7 +59,15 @@ internal sealed class BuyTransactionCommandHandler(
 
         transactionRepository.Insert(transaction);
 
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            // Another trade for the same user committed first (see the budget's xmin row version).
+            return Result.Failure<Guid>(BudgetErrors.ConcurrentModification);
+        }
 
         await TransactionCacheInvalidator.InvalidateAsync(
             cacheService,

@@ -18,7 +18,7 @@ namespace Modules.Budgeting.Infrastructure.Database.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("budgeting")
-                .HasAnnotation("ProductVersion", "9.0.4")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -144,6 +144,12 @@ namespace Modules.Budgeting.Infrastructure.Database.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("user_id");
 
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.HasKey("Id")
                         .HasName("pk_budgets");
 
@@ -153,7 +159,7 @@ namespace Modules.Budgeting.Infrastructure.Database.Migrations
 
                     b.ToTable("budgets", "budgeting", t =>
                         {
-                            t.HasCheckConstraint("CK_buying_power_NotNegative", "buying_power > 0");
+                            t.HasCheckConstraint("CK_budgets_money_amount_NotNegative", "money_amount >= 0");
                         });
                 });
 

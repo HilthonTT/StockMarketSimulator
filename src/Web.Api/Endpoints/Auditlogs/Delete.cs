@@ -1,5 +1,6 @@
 ﻿using Application.Abstractions.Messaging;
 using Modules.Budgeting.Application.Auditlogs.Delete;
+using Modules.Users.Domain.Enums;
 using SharedKernel;
 using Web.Api.Extensions;
 using Web.Api.Features;
@@ -13,15 +14,16 @@ internal sealed class Delete : IEndpoint
     {
         app.MapDelete("auditlogs/{auditlogId:guid}", async (
             Guid auditlogId,
-            ICommandHandler<DeleteAuditlogCommand> handler,
+            ISender sender,
             CancellationToken cancellationToken = default) =>
         {
             return await Result.Success(new DeleteAuditlogCommand(auditlogId))
-                .Bind(query => handler.Handle(query, cancellationToken))
+                .Bind(command => sender.Send(command, cancellationToken))
                 .Match(Results.NoContent, CustomResults.Problem);
         })
         .WithTags(Tags.AuditLogs)
-        .RequireFeature(FeatureFlags.UseV1UsersApi)
+        .HasPermission(Permission.Read, Permission.Write)
+        .RequireFeature(FeatureFlags.UseV1BudgetingApi)
         .RequireRateLimiting(RateLimiterPolicyNames.GlobalLimiter);
     }
 }

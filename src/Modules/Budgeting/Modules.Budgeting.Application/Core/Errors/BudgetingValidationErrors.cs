@@ -25,6 +25,10 @@ internal static class BudgetingValidationErrors
         public static readonly Error PageSizeMustBeAtMostOneHundred = Error.Problem(
             "GetAuditlogsByUserId.PageSizeMustBeAtMostOneHundred",
             "The page size must be at most 100.");
+
+        public static readonly Error PageSizeMustBePositive = Error.Problem(
+            "GetAuditlogsByUserId.PageSizeMustBePositive",
+            "The page size must be a positive number.");
     }
 
     public static class GetBudgetByUserId
@@ -66,6 +70,10 @@ internal static class BudgetingValidationErrors
         public static readonly Error PageSizeMustBeAtMostOneHundred = Error.Problem(
             "GetTransactionsByUserId.PageSizeMustBeAtMostOneHundred",
             "The page size must be at most 100.");
+
+        public static readonly Error PageSizeMustBePositive = Error.Problem(
+            "GetTransactionsByUserId.PageSizeMustBePositive",
+            "The page size must be a positive number.");
     }
 
     public static class SellTransaction

@@ -27,17 +27,23 @@ internal sealed class BudgetingApi(BudgetingDbContext context) : IBudgetingApi
             .FirstOrDefaultAsync(b => b.UserId == userId, cancellationToken);
     }
 
-    public Task<List<string>> GetPurchasedTickersAsync(Guid userId, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Returns the tickers the user currently holds (net bought quantity &gt; 0).
+    /// </summary>
+    public async Task<List<string>> GetPurchasedTickersAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        List<string> tickers = [.. context.Transactions
+        // Only the three columns needed are loaded; the type is a value-converted enumeration,
+        // so the signed sum is computed in memory.
+        var rows = await context.Transactions
             .AsNoTracking()
             .Where(t => t.UserId == userId)
-            .AsEnumerable() // Force client-side evaluation from here
-            .Where(t => t.Type.Id == TransactionType.Expense.Id)
-            .Select(t => t.Ticker)
-            .Distinct()];
+            .Select(t => new { t.Ticker, t.Type, t.Quantity })
+            .ToListAsync(cancellationToken);
 
-        return Task.FromResult(tickers);
+        return [.. rows
+            .GroupBy(r => r.Ticker)
+            .Where(g => g.Sum(r => r.Type == TransactionType.Expense ? r.Quantity : -r.Quantity) > 0)
+            .Select(g => g.Key)];
     }
 
     public Task<List<TransactionApiResponse>> GetTransactionsByUserIdAsync(

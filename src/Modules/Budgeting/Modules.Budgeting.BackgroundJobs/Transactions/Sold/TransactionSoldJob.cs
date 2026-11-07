@@ -17,7 +17,7 @@ namespace Modules.Budgeting.BackgroundJobs.Transactions.Sold;
 
 [DisallowConcurrentExecution]
 public sealed class TransactionSoldJob(
-    ILogger<TransactionBoughtJob> logger,
+    ILogger<TransactionSoldJob> logger,
     INotificationService notificationService,
     IDateTimeProvider dateTimeProvider,
     IServiceScopeFactory serviceScopeFactory,
@@ -70,7 +70,7 @@ public sealed class TransactionSoldJob(
 
             var auditLog = AuditLog.Create(
                 userId: jobData.UserId,
-                logType: AuditLogType.BuyStock,
+                logType: AuditLogType.SellStock,
                 action: $"Sold {jobData.Quantity} shares",
                 description: $"TransactionId={jobData.TransactionId}; Total={jobData.TotalAmount:C}; Time={jobData.CreatedOnUtc:O}",
                 relatedEntityId: jobData.TransactionId,

@@ -13,7 +13,7 @@ internal sealed class GetAuditlogsByUserId : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPost("users/{userId:guid}/auditlogs", async (
+        app.MapGet("users/{userId:guid}/auditlogs", async (
            Guid userId,
            [FromQuery] int page,
            [FromQuery] int pageSize,

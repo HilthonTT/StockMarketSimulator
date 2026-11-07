@@ -17,6 +17,7 @@ internal sealed class GetAuditlogsByUserIdQueryValidator : AbstractValidator<Get
 
         RuleFor(x => x.PageSize)
             .NotEmpty().WithError(BudgetingValidationErrors.GetAuditlogsByUserId.PageSizeIsRequired)
+            .GreaterThan(0).WithError(BudgetingValidationErrors.GetAuditlogsByUserId.PageSizeMustBePositive)
             .LessThanOrEqualTo(100).WithError(BudgetingValidationErrors.GetAuditlogsByUserId.PageSizeMustBeAtMostOneHundred);
     }
 }

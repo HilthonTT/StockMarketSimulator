@@ -13,6 +13,7 @@ internal sealed class GetTransactionsByUserIdQueryValidator : AbstractValidator<
 
         RuleFor(x => x.PageSize)
             .NotEmpty().WithError(BudgetingValidationErrors.GetTransactionsByUserId.PageSizeIsRequired)
+            .GreaterThan(0).WithError(BudgetingValidationErrors.GetTransactionsByUserId.PageSizeMustBePositive)
             .LessThanOrEqualTo(100).WithError(BudgetingValidationErrors.GetTransactionsByUserId.PageSizeMustBeAtMostOneHundred);
     }
 }

@@ -66,12 +66,16 @@ public sealed class Transaction : Entity, IAuditable
         int quantity)
     {
         Ensure.NotNull(budget, nameof(budget));
+        Ensure.GreaterThanZero(quantity, nameof(quantity));
 
         var transaction = new Transaction(Guid.CreateVersion7(), budget.UserId, ticker, money, type, quantity);
 
+        // 'money' is the per-share price; the budget moves by price x quantity.
+        var totalMoney = new Money(transaction.TotalAmount, money.Currency);
+
         if (type == TransactionType.Expense)
         {
-            Result result = budget.DecreaseMoney(money);
+            Result result = budget.DecreaseMoney(totalMoney);
             if (result.IsFailure)
             {
                 return Result.Failure<Transaction>(result.Error);
@@ -81,7 +85,7 @@ public sealed class Transaction : Entity, IAuditable
         }
         else if (type == TransactionType.Income)
         {
-            Result result = budget.IncreaseMoney(money);
+            Result result = budget.IncreaseMoney(totalMoney);
             if (result.IsFailure)
             {
                 return Result.Failure<Transaction>(result.Error);
