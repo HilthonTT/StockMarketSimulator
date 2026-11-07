@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 <ItemGroup>
     <ProjectReference Include="..\..\..\Application\Application.csproj" />
-    <ProjectReference Include="..\Modules.Users.BackgroundJobs\Modules.Users.BackgroundJobs.csproj" />
+    <ProjectReference Include="..\Modules.Users.IntegrationEvents\Modules.Users.IntegrationEvents.csproj" />
     <ProjectReference Include="..\Modules.Users.Contracts\Modules.Users.Contracts.csproj" />
     <ProjectReference Include="..\Modules.Users.Domain\Modules.Users.Domain.csproj" />
   </ItemGroup>

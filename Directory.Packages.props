@@ -8,6 +8,7 @@
   <ItemGroup>
     <PackageVersion Include="Asp.Versioning.Http" Version="10.2.3" />
     <PackageVersion Include="Asp.Versioning.Mvc.ApiExplorer" Version="10.2.1" />
+    <PackageVersion Include="Asp.Versioning.OpenApi" Version="10.2.3" />
     <PackageVersion Include="Aspire.Hosting.Azure.Storage" Version="13.6.4" />
     <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.6.4" />
     <PackageVersion Include="Aspire.Hosting.RabbitMQ" Version="13.6.4" />
@@ -56,7 +57,7 @@
     <PackageVersion Include="Scalar.AspNetCore" Version="2.19.0" />
     <PackageVersion Include="Scrutor" Version="7.0.0" />
     <PackageVersion Include="Sentry.AspNetCore" Version="6.12.1" />
-    <PackageVersion Include="Sentry.OpenTelemetry" Version="6.12.1" />
+    <PackageVersion Include="Sentry.OpenTelemetry.Exporter" Version="6.12.1" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.3.1" />
     <PackageVersion Include="Swashbuckle.AspNetCore.ReDoc" Version="10.3.1" />
     <PackageVersion Include="Testcontainers.Azurite" Version="4.16.0" />

@@ -44,11 +44,11 @@ public sealed class Transaction : Entity, IAuditable
 
     public Guid UserId { get; private set; }
 
-    public string Ticker { get; private set; }
+    public string Ticker { get; private set; } = null!;
 
-    public TransactionType Type { get; private set; }
+    public TransactionType Type { get; private set; } = null!;
 
-    public Money Money { get; private set; }
+    public Money Money { get; private set; } = null!;
 
     public int Quantity { get; private set; }
 

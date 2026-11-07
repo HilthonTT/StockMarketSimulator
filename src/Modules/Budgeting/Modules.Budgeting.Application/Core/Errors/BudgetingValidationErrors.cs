@@ -38,6 +38,13 @@ internal static class BudgetingValidationErrors
             "The user identifier is required.");
     }
 
+    public static class GetPositionsByUserId
+    {
+        public static readonly Error UserIdIsRequired = Error.Problem(
+            "GetPositionsByUserId.UserIdIsRequired",
+            "The user identifier is required.");
+    }
+
     public static class BuyTransaction
     {
         public static readonly Error UserIdIsRequired = Error.Problem(

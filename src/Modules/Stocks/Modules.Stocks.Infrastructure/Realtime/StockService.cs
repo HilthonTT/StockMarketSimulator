@@ -17,8 +17,14 @@ internal sealed class StockService(
     ILogger<StockService> logger,
     IDateTimeProvider dateTimeProvider) : IStockService
 {
+    public Task<Option<StockPriceResponse>> GetLatestStockPriceAsync(
+        string ticker,
+        CancellationToken cancellationToken = default) =>
+        GetLatestStockPriceAsync(ticker, trackActivity: true, cancellationToken);
+
     public async Task<Option<StockPriceResponse>> GetLatestStockPriceAsync(
-        string ticker, 
+        string ticker,
+        bool trackActivity,
         CancellationToken cancellationToken = default)
     {
         // Tickers are stored and broadcast upper-case; "aapl" and "AAPL" must be the same stock.
@@ -32,7 +38,10 @@ internal sealed class StockService(
             StockPriceResponse? dbPrice = await GetLatestPriceFromDatabaseAsync(connection, ticker);
             if (dbPrice is not null)
             {
-                activeTickerManager.AddTicker(ticker);
+                if (trackActivity)
+                {
+                    activeTickerManager.AddTicker(ticker);
+                }
 
                 return Option<StockPriceResponse>.Some(dbPrice);
             }
@@ -48,7 +57,10 @@ internal sealed class StockService(
             // Save the new price to the database
             await SavePriceToDatabaseAsync(connection, apiPrice);
 
-            activeTickerManager.AddTicker(ticker);
+            if (trackActivity)
+            {
+                activeTickerManager.AddTicker(ticker);
+            }
 
             return Option<StockPriceResponse>.Some(apiPrice);
         }
@@ -87,9 +99,7 @@ internal sealed class StockService(
                 created_on_utc AS CreatedOnUtc,
                 modified_on_utc AS ModifiedOnUtc
             FROM stocks.stocks
-            WHERE ticker = @Ticker
-            ORDER BY created_on_utc DESC
-            LIMIT 1;
+            WHERE ticker = @Ticker;
             """;
 
         Stock? result = await connection.QueryFirstOrDefaultAsync<Stock>(
@@ -112,7 +122,10 @@ internal sealed class StockService(
         const string sql =
             """
             INSERT INTO stocks.stocks (id, ticker, price, created_on_utc)
-            VALUES (@Id, @Ticker, @Price, @CreatedOnUtc);
+            VALUES (@Id, @Ticker, @Price, @CreatedOnUtc)
+            ON CONFLICT (ticker) DO UPDATE
+            SET price = EXCLUDED.price,
+                modified_on_utc = EXCLUDED.created_on_utc;
             """;
 
         return connection.ExecuteAsync(

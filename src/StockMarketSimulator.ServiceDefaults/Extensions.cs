@@ -8,7 +8,6 @@ using Npgsql;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
-using Sentry.OpenTelemetry;
 
 namespace StockMarketSimulator.ServiceDefaults;
 
@@ -51,6 +50,8 @@ public static class Extensions
             logging.IncludeScopes = true;
         });
 
+        string? sentryDsn = builder.Configuration["Sentry:Dsn"];
+
         builder.Services.AddOpenTelemetry()
             .WithMetrics(metrics =>
             {
@@ -66,10 +67,15 @@ public static class Extensions
                     .AddAspNetCoreInstrumentation()
                     .AddEntityFrameworkCoreInstrumentation()
                     .AddNpgsql()
-                    .AddSentry()
                     // Uncomment the following line to enable gRPC instrumentation (requires the OpenTelemetry.Instrumentation.GrpcNetClient package)
                     //.AddGrpcClientInstrumentation()
                     .AddHttpClientInstrumentation();
+
+                // Sends traces to Sentry's OTLP endpoint. Paired with SentryOptions.UseOtlp() in Web.Api.
+                if (!string.IsNullOrWhiteSpace(sentryDsn))
+                {
+                    tracing.AddSentryOtlpExporter(sentryDsn);
+                }
             });
 
         builder.AddOpenTelemetryExporters();

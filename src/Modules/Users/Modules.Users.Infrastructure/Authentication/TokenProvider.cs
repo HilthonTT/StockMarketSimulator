@@ -48,4 +48,6 @@ internal sealed class TokenProvider(
     {
         return Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
     }
+
+    public string HashRefreshToken(string refreshToken) => RefreshTokenHasher.Hash(refreshToken);
 }

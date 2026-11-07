@@ -17,7 +17,9 @@ internal sealed class LoginUserWithRefreshTokenCommandHandler(
     public async Task<Result<TokenResponse>> Handle(LoginUserWithRefreshTokenCommand request, CancellationToken cancellationToken)
     {
         Option<RefreshToken> optionRefreshToken = 
-            await refreshTokenRepository.GetByTokenAsync(request.RefreshToken, cancellationToken);
+            await refreshTokenRepository.GetByTokenHashAsync(
+                tokenProvider.HashRefreshToken(request.RefreshToken),
+                cancellationToken);
 
         if (!optionRefreshToken.IsSome)
         {
@@ -32,10 +34,12 @@ internal sealed class LoginUserWithRefreshTokenCommandHandler(
 
         string accessToken = tokenProvider.Create(refreshToken.User);
 
-        refreshToken.Refresh(tokenProvider.GenerateRefreshToken());
+        string newPlainRefreshToken = tokenProvider.GenerateRefreshToken();
+
+        refreshToken.Refresh(tokenProvider.HashRefreshToken(newPlainRefreshToken));
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return new TokenResponse(accessToken, refreshToken.Token);
+        return new TokenResponse(accessToken, newPlainRefreshToken);
     }
 }

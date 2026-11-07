@@ -16,7 +16,6 @@ using Modules.Users.Application;
 using Modules.Users.BackgroundJobs;
 using Modules.Users.Events;
 using Modules.Users.Infrastructure;
-using Sentry.OpenTelemetry;
 using SharedKernel;
 using StockMarketSimulator.ServiceDefaults;
 using Web.Api;
@@ -33,7 +32,12 @@ builder.WebHost.UseSentry(options =>
     options.Dsn = builder.Configuration["Sentry:Dsn"];
     options.SendDefaultPii = true;
     options.SampleRate = 1.0f;
-    options.UseOpenTelemetry();
+
+    // Tracing goes through OpenTelemetry; ServiceDefaults adds the matching Sentry OTLP exporter.
+    if (!string.IsNullOrWhiteSpace(options.Dsn))
+    {
+        options.UseOtlp();
+    }
 });
 
 builder.Services
@@ -89,7 +93,7 @@ app.MapEndpoints(versionedGroup);
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.MapOpenApi().WithDocumentPerVersion();
 
     app.UseSwaggerWithUi();
 

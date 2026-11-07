@@ -15,6 +15,8 @@ public sealed class BudgetingDbContext(DbContextOptions<BudgetingDbContext> opti
 
     public DbSet<AuditLog> AuditLogs { get; set; }
 
+    public DbSet<Position> Positions { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(BudgetingDbContext).Assembly);

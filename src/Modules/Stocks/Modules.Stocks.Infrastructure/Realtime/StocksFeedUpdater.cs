@@ -65,7 +65,7 @@ public sealed class StocksFeedUpdater(
     private async Task UpdateTickerAsync(IStockService stockService, string ticker, CancellationToken cancellationToken)
     {
         Option<StockPriceResponse> optionCurrentPrice =
-            await stockService.GetLatestStockPriceAsync(ticker, cancellationToken);
+            await stockService.GetLatestStockPriceAsync(ticker, trackActivity: false, cancellationToken);
 
         if (!optionCurrentPrice.IsSome)
         {

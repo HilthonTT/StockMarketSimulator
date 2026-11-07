@@ -67,11 +67,15 @@ public static class DependencyInjection
 
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<BudgetingDbContext>());
 
+        // Monitored by the outbox health check and re-drivable through OutboxAdministration.
+        services.AddOutboxSchema(Schemas.Budgeting);
+
         services.AddScoped<IDbContext>(sp => sp.GetRequiredService<BudgetingDbContext>());
 
         services.AddScoped<IBudgetRepository, BudgetRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+        services.AddScoped<IPositionRepository, PositionRepository>();
 
         return services;
     }

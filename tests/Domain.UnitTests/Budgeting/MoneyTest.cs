@@ -12,10 +12,10 @@ public sealed class MoneyTest
         Currency? currency = null;
 
         // Act
-        Action action = () => new Money(default, currency);
+        Action action = () => new Money(default, currency!);
 
         // Assert
-        var exception = Assert.Throws<ArgumentNullException>(() => new Money(default, currency));
+        var exception = Assert.Throws<ArgumentNullException>(() => new Money(default, currency!));
 
         Assert.Equal("currency", exception.ParamName);
     }

@@ -32,9 +32,7 @@ internal sealed class UpdateUserBannerPictureCommandHandler(
 
         Guid? previousImageId = user.BannerImageId;
 
-        using Stream stream = request.File.OpenReadStream();
-
-        Guid newImageId = await blobService.UploadAsync(stream, request.File.ContentType, request.UserId, cancellationToken);
+        Guid newImageId = await blobService.UploadAsync(request.Content, request.ContentType, request.UserId, cancellationToken);
 
         user.ChangeBannerImage(newImageId);
 

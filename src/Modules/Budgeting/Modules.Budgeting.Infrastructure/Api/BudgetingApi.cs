@@ -2,7 +2,6 @@
 using Modules.Budgeting.Api.Api;
 using Modules.Budgeting.Api.Responses;
 using Modules.Budgeting.Domain.Entities;
-using Modules.Budgeting.Domain.Enums;
 using Modules.Budgeting.Domain.ValueObjects;
 using Modules.Budgeting.Infrastructure.Database;
 
@@ -28,22 +27,32 @@ internal sealed class BudgetingApi(BudgetingDbContext context) : IBudgetingApi
     }
 
     /// <summary>
-    /// Returns the tickers the user currently holds (net bought quantity &gt; 0).
+    /// Returns the tickers the user currently holds (position quantity &gt; 0).
     /// </summary>
-    public async Task<List<string>> GetPurchasedTickersAsync(Guid userId, CancellationToken cancellationToken = default)
+    public Task<List<string>> GetPurchasedTickersAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        // Only the three columns needed are loaded; the type is a value-converted enumeration,
-        // so the signed sum is computed in memory.
-        var rows = await context.Transactions
+        return context.Positions
             .AsNoTracking()
-            .Where(t => t.UserId == userId)
-            .Select(t => new { t.Ticker, t.Type, t.Quantity })
+            .Where(p => p.UserId == userId && p.Quantity > 0)
+            .OrderBy(p => p.Ticker)
+            .Select(p => p.Ticker)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<List<PositionApiResponse>> GetOpenPositionsAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        var positions = await context.Positions
+            .AsNoTracking()
+            .Where(p => p.UserId == userId && p.Quantity > 0)
+            .OrderBy(p => p.Ticker)
+            .Select(p => new { p.Ticker, p.Quantity, p.TotalCost })
             .ToListAsync(cancellationToken);
 
-        return [.. rows
-            .GroupBy(r => r.Ticker)
-            .Where(g => g.Sum(r => r.Type == TransactionType.Expense ? r.Quantity : -r.Quantity) > 0)
-            .Select(g => g.Key)];
+        return [.. positions.Select(p => new PositionApiResponse(
+            p.Ticker,
+            p.Quantity,
+            Math.Round(p.TotalCost / p.Quantity, Position.CostDecimals),
+            p.TotalCost))];
     }
 
     public Task<List<TransactionApiResponse>> GetTransactionsByUserIdAsync(

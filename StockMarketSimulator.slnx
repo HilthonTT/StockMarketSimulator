@@ -29,6 +29,7 @@
     <Project Path="src/Modules/Budgeting/Modules.Budgeting.Domain/Modules.Budgeting.Domain.csproj" />
     <Project Path="src/Modules/Budgeting/Modules.Budgeting.Events/Modules.Budgeting.Events.csproj" />
     <Project Path="src/Modules/Budgeting/Modules.Budgeting.Infrastructure/Modules.Budgeting.Infrastructure.csproj" />
+    <Project Path="src/Modules/Budgeting/Modules.Budgeting.IntegrationEvents/Modules.Budgeting.IntegrationEvents.csproj" />
   </Folder>
   <Folder Name="/src/api/Modules/Stocks/">
     <Project Path="src/Modules/Stocks/Modules.Stocks.Api/Modules.Stocks.Api.csproj" />
@@ -46,6 +47,7 @@
     <Project Path="src/Modules/Users/Modules.Users.Domain/Modules.Users.Domain.csproj" />
     <Project Path="src/Modules/Users/Modules.Users.Events/Modules.Users.Events.csproj" />
     <Project Path="src/Modules/Users/Modules.Users.Infrastructure/Modules.Users.Infrastructure.csproj" />
+    <Project Path="src/Modules/Users/Modules.Users.IntegrationEvents/Modules.Users.IntegrationEvents.csproj" />
   </Folder>
   <Folder Name="/src/yarp/">
     <Project Path="src/Yarp.Proxy/Yarp.Proxy.csproj" />

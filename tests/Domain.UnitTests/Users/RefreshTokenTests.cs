@@ -12,7 +12,7 @@ public sealed class RefreshTokenTests
 
         token.Refresh("rotated-token");
 
-        Assert.Equal("rotated-token", token.Token);
+        Assert.Equal("rotated-token", token.TokenHash);
         Assert.Equal(originalExpiry, token.ExpiresOnUtc);
     }
 }

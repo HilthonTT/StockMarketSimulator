@@ -3,7 +3,6 @@ using Infrastructure;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.FeatureManagement;
-using RedisRateLimiting.AspNetCore;
 using SharedKernel;
 using StackExchange.Redis;
 using System.Diagnostics;
@@ -13,6 +12,7 @@ using Web.Api.Endpoints;
 using Web.Api.Features;
 using Web.Api.Infrastructure;
 using Web.Api.Middleware;
+using Web.Api.RateLimiting;
 
 namespace Web.Api;
 
@@ -20,7 +20,6 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddPresentation(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddOpenApi();
         services.AddSwaggerServices();
         services.AddCors();
         services.AddExceptionHandling();
@@ -89,14 +88,14 @@ public static class DependencyInjection
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-            options.AddRedisTokenBucketLimiter(RateLimiterPolicyNames.GlobalLimiter, limiterOptions =>
-            {
-                // Reuse the process-wide multiplexer registered by the Infrastructure layer.
-                limiterOptions.ConnectionMultiplexerFactory = () => serviceProvider.GetRequiredService<IConnectionMultiplexer>();
-                limiterOptions.TokenLimit = 100;   // Maximum tokens (burst capacity)
-                limiterOptions.TokensPerPeriod = 50; // Refill rate (tokens per period)
-                limiterOptions.ReplenishmentPeriod = TimeSpan.FromSeconds(1); // Refilling interval
-            });
+            // The process-wide multiplexer from the Infrastructure layer. It is missing when Redis was
+            // unreachable at start-up (Postgres-cache fallback mode); the limiter then runs in-process.
+            IConnectionMultiplexer? connectionMultiplexer = serviceProvider.GetService<IConnectionMultiplexer>();
+            ILogger logger = serviceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Web.Api.RateLimiting");
+
+            options.AddPolicy(RateLimiterPolicyNames.GlobalLimiter, _ =>
+                RateLimitPartition.Get(RateLimiterPolicyNames.GlobalLimiter, key =>
+                    GlobalLimiterFactory.Create(key, connectionMultiplexer, logger)));
 
             options.OnRejected = async (context, cancellationToken) =>
             {

@@ -16,9 +16,9 @@ internal sealed class RefreshTokenRepository(UsersDbContext context) : IRefreshT
             .ExecuteDeleteAsync(cancellationToken);
     }
 
-    public async Task<Option<RefreshToken>> GetByTokenAsync(string token, CancellationToken cancellationToken = default)
+    public async Task<Option<RefreshToken>> GetByTokenHashAsync(string tokenHash, CancellationToken cancellationToken = default)
     {
-        RefreshToken? refreshToken = await ApplySpecification(new RefreshTokenByTokenSpecification(token))
+        RefreshToken? refreshToken = await ApplySpecification(new RefreshTokenByTokenHashSpecification(tokenHash))
             .FirstOrDefaultAsync(cancellationToken);
 
         return Option<RefreshToken>.Some(refreshToken);

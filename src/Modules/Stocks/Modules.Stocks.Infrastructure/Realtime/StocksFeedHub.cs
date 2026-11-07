@@ -7,19 +7,32 @@ namespace Modules.Stocks.Infrastructure.Realtime;
 [Authorize]
 public sealed class StocksFeedHub(IActiveTickerManager activeTickerManager) : Hub<IStocksUpdateClient>
 {
-    public Task JoinGroup(string ticker)
+    public async Task JoinGroup(string ticker)
     {
         string normalizedTicker = Normalize(ticker);
 
-        // Subscribing is enough to start receiving simulated updates for a ticker.
-        activeTickerManager.AddTicker(normalizedTicker);
+        await Groups.AddToGroupAsync(Context.ConnectionId, normalizedTicker);
 
-        return Groups.AddToGroupAsync(Context.ConnectionId, normalizedTicker);
+        // Subscribing is enough to start receiving simulated updates for a ticker. Subscriptions are
+        // reference-counted per connection, so the ticker stops being simulated once nobody listens.
+        activeTickerManager.Subscribe(Context.ConnectionId, normalizedTicker);
     }
 
-    public Task LeaveGroup(string ticker)
+    public async Task LeaveGroup(string ticker)
     {
-        return Groups.RemoveFromGroupAsync(Context.ConnectionId, Normalize(ticker));
+        string normalizedTicker = Normalize(ticker);
+
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, normalizedTicker);
+
+        activeTickerManager.Unsubscribe(Context.ConnectionId, normalizedTicker);
+    }
+
+    public override Task OnDisconnectedAsync(Exception? exception)
+    {
+        // SignalR drops the connection's group memberships itself; release its subscriptions too.
+        activeTickerManager.RemoveConnection(Context.ConnectionId);
+
+        return base.OnDisconnectedAsync(exception);
     }
 
     // Groups and broadcasts use upper-case tickers (see StockService).

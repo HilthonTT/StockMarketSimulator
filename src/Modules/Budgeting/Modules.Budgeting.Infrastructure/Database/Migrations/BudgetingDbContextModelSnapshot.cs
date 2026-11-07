@@ -163,6 +163,54 @@ namespace Modules.Budgeting.Infrastructure.Database.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Modules.Budgeting.Domain.Entities.Position", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_on_utc");
+
+                    b.Property<DateTime?>("ModifiedOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_on_utc");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<string>("Ticker")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("ticker");
+
+                    b.Property<decimal>("TotalCost")
+                        .HasColumnType("numeric")
+                        .HasColumnName("total_cost");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_positions");
+
+                    b.HasIndex("UserId", "Ticker")
+                        .IsUnique()
+                        .HasDatabaseName("ix_positions_user_id_ticker");
+
+                    b.ToTable("positions", "budgeting", t =>
+                        {
+                            t.HasCheckConstraint("CK_positions_quantity_NotNegative", "quantity >= 0");
+
+                            t.HasCheckConstraint("CK_positions_total_cost_NotNegative", "total_cost >= 0");
+                        });
+                });
+
             modelBuilder.Entity("Modules.Budgeting.Domain.Entities.Transaction", b =>
                 {
                     b.Property<Guid>("Id")

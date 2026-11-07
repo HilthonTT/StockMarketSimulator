@@ -28,7 +28,7 @@ public sealed class Stock : Entity, IAuditable
 
     public Guid Id { get; private set; }
 
-    public string Ticker { get; private set; }
+    public string Ticker { get; private set; } = null!;
 
     public decimal Price { get; private set; }
 

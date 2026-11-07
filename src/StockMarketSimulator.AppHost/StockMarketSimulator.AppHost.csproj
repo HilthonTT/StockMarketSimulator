@@ -3,6 +3,14 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <UserSecretsId>7a806a70-e332-426e-a4a8-de6b44235856</UserSecretsId>
+    <!--
+      The AppHost runs with the DCP/dashboard packages restored by NuGet, not the Aspire CLI bundle,
+      so CI and contributors don't need the Aspire CLI installed. ASPIRE010 only reports that choice.
+      Set AspireUseCliBundle=true (and remove the suppression) once the CLI is part of the toolchain.
+    -->
+    <AspireUseCliBundle>false</AspireUseCliBundle>
+    <NoWarn>$(NoWarn);ASPIRE010</NoWarn>
+    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);ASPIRE010</MSBuildWarningsAsMessages>
   </PropertyGroup>
 
   <ItemGroup>

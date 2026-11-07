@@ -29,6 +29,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using Npgsql;
 using SharedKernel;
@@ -147,10 +148,22 @@ public static class DependencyInjection
 
     private static IServiceCollection AddHealthChecks(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddSingleton<OutboxAdministration>();
+
         services
             .AddHealthChecks()
             .AddNpgSql(configuration.GetConnectionString(ConfigurationNames.Database)!)
-            .AddRedis(configuration.GetConnectionString(ConfigurationNames.Redis)!);
+            .AddRedis(configuration.GetConnectionString(ConfigurationNames.Redis)!)
+            // Degraded (not unhealthy) while outbox messages have errors: the API still serves traffic.
+            .AddCheck<OutboxHealthCheck>(OutboxHealthCheck.Name, HealthStatus.Degraded, [OutboxHealthCheck.Tag]);
+
+        // Runs the outbox check in the background and logs while it isn't healthy (log-based alerting).
+        services.AddSingleton<IHealthCheckPublisher, OutboxHealthLogPublisher>();
+        services.Configure<HealthCheckPublisherOptions>(options =>
+        {
+            options.Period = TimeSpan.FromSeconds(30);
+            options.Predicate = registration => registration.Tags.Contains(OutboxHealthCheck.Tag);
+        });
 
         return services;
     }

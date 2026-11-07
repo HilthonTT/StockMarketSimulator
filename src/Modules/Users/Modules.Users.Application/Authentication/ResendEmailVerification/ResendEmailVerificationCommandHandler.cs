@@ -1,19 +1,18 @@
 ﻿using Application.Abstractions.Messaging;
 using Modules.Users.Application.Abstractions.Authentication;
 using Modules.Users.Application.Abstractions.Data;
-using Modules.Users.BackgroundJobs.Users.EmailVerification;
+using Modules.Users.Application.Abstractions.BackgroundJobs;
 using Modules.Users.Domain.Entities;
 using Modules.Users.Domain.Errors;
 using Modules.Users.Domain.Repositories;
 using Modules.Users.Domain.ValueObjects;
-using Quartz;
 using SharedKernel;
 
 namespace Modules.Users.Application.Authentication.ResendEmailVerification;
 
 internal sealed class ResendEmailVerificationCommandHandler(
     IUserRepository userRepository,
-    ISchedulerFactory schedulerFactory,
+    IUserJobScheduler userJobScheduler,
     IEmailVerificationLinkFactory emailVerificationLinkFactory,
     IEmailVerificationTokenRepository emailVerificationTokenRepository,
     IUnitOfWork unitOfWork,
@@ -40,8 +39,6 @@ internal sealed class ResendEmailVerificationCommandHandler(
             return Result.Failure(UserErrors.EmailAlreadyVerified);
         }
 
-        IScheduler scheduler = await schedulerFactory.GetScheduler(cancellationToken);
-
         Guid emailVerificationTokenId = Guid.CreateVersion7();
         string verificationLink = emailVerificationLinkFactory.Create(emailVerificationTokenId);
 
@@ -50,24 +47,11 @@ internal sealed class ResendEmailVerificationCommandHandler(
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        var jobData = new JobDataMap
-        {
-            { "userId", user.Id },
-            { "email", user.Email.Value },
-            { "verification-link", verificationLink }
-        };
-
-        IJobDetail job = JobBuilder.Create<EmailVerificationJob>()
-            .WithIdentity($"reminder-{Guid.CreateVersion7()}", "email-reminders")
-            .UsingJobData(jobData)
-            .Build();
-
-        ITrigger trigger = TriggerBuilder.Create()
-            .WithIdentity($"trigger-{Guid.CreateVersion7()}", "email-reminders")
-            .StartNow()
-            .Build();
-
-        await scheduler.ScheduleJob(job, trigger, cancellationToken: cancellationToken);
+        await userJobScheduler.ScheduleEmailVerificationAsync(
+            user.Id,
+            user.Email.Value,
+            verificationLink,
+            cancellationToken);
 
         return Result.Success();
     }

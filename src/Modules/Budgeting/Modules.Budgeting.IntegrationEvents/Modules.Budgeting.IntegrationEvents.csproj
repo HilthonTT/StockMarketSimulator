@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Public contract of the Budgeting module's integration events (messages published on RabbitMQ).
+    It must stay dependency-free apart from the shared IIntegrationEvent abstraction, so other modules
+    can consume these events without referencing the Budgeting module's Application or Domain layers.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Application\Application.csproj" />
+  </ItemGroup>
+
+</Project>

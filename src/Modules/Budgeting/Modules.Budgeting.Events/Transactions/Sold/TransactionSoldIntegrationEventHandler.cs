@@ -1,4 +1,5 @@
-﻿using Application.Abstractions.Messaging;
+﻿using Modules.Budgeting.IntegrationEvents;
+using Application.Abstractions.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using Modules.Budgeting.Application.Transactions.Sell;
 using Modules.Budgeting.BackgroundJobs.Transactions.Sold;

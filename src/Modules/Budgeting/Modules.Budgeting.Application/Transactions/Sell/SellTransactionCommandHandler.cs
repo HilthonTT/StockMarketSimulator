@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EntityFramework.Exceptions.Common;
+using Microsoft.EntityFrameworkCore;
 using Application.Abstractions.Authentication;
 using Application.Abstractions.Caching;
 using Application.Abstractions.Messaging;
@@ -17,6 +18,7 @@ namespace Modules.Budgeting.Application.Transactions.Sell;
 internal sealed class SellTransactionCommandHandler(
     IBudgetRepository budgetRepository,
     ITransactionRepository transactionRepository,
+    IPositionRepository positionRepository,
     IStocksApi stocksApi,
     IUserContext userContext,
     IUnitOfWork unitOfWork,
@@ -37,28 +39,36 @@ internal sealed class SellTransactionCommandHandler(
 
         Budget budget = optionBudget.ValueOrThrow();
 
-        Option<StockApiResponse> optionStockInfo = await stocksApi.GetByTickerAsync(request.Ticker, cancellationToken);
+        // Tickers are upper-case everywhere (stocks, positions, transactions).
+        string ticker = Position.NormalizeTicker(request.Ticker);
+
+        Option<StockApiResponse> optionStockInfo = await stocksApi.GetByTickerAsync(ticker, cancellationToken);
         if (!optionStockInfo.IsSome)
         {
-            return Result.Failure<Guid>(StockErrors.NotFound(request.Ticker));
+            return Result.Failure<Guid>(StockErrors.NotFound(ticker));
         }
 
         StockApiResponse stockInfo = optionStockInfo.ValueOrThrow();
 
-        int totalOwned = await transactionRepository.CalculateNetPurchasedQuantityAsync(
-            request.UserId, 
-            request.Ticker, 
-            cancellationToken);
-
-        if (totalOwned < request.Quantity)
+        // The position row is the source of truth for holdings (no replay of the transaction history).
+        Option<Position> optionPosition = await positionRepository.GetAsync(request.UserId, ticker, cancellationToken);
+        if (!optionPosition.IsSome)
         {
             return Result.Failure<Guid>(TransactionErrors.InsufficientStock);
+        }
+
+        Position position = optionPosition.ValueOrThrow();
+
+        Result positionResult = position.Sell(request.Quantity);
+        if (positionResult.IsFailure)
+        {
+            return Result.Failure<Guid>(positionResult.Error);
         }
 
         var money = new Money(stockInfo.Price, Currency.Usd);
 
         Result<Transaction> transactionResult =
-            Transaction.Create(budget, request.Ticker, money, TransactionType.Income, request.Quantity);
+            Transaction.Create(budget, ticker, money, TransactionType.Income, request.Quantity);
 
         if (transactionResult.IsFailure)
         {
@@ -73,9 +83,10 @@ internal sealed class SellTransactionCommandHandler(
         {
             await unitOfWork.SaveChangesAsync(cancellationToken);
         }
-        catch (DbUpdateConcurrencyException)
+        catch (Exception exception) when (exception is DbUpdateConcurrencyException or UniqueConstraintException)
         {
-            // Another trade for the same user committed first (see the budget's xmin row version).
+            // Another trade for the same user committed first: either the budget's xmin row version
+            // changed, or a concurrent first buy of this ticker already created the position row.
             return Result.Failure<Guid>(BudgetErrors.ConcurrentModification);
         }
 

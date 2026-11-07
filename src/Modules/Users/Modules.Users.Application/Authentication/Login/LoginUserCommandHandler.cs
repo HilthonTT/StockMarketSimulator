@@ -45,12 +45,15 @@ internal sealed class LoginUserCommandHandler(
 
         string token = tokenProvider.Create(user);
 
-        var refreshToken = RefreshToken.Create(tokenProvider.GenerateRefreshToken(), user.Id);
+        // Only the hash is stored; the plain token goes back to the client once.
+        string plainRefreshToken = tokenProvider.GenerateRefreshToken();
+
+        var refreshToken = RefreshToken.Create(tokenProvider.HashRefreshToken(plainRefreshToken), user.Id);
 
         refreshTokenRepository.Insert(refreshToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return new TokenResponse(token, refreshToken.Token);
+        return new TokenResponse(token, plainRefreshToken);
     }
 }

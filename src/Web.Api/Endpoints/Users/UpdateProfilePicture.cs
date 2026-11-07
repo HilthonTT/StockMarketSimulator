@@ -23,7 +23,9 @@ internal sealed class UpdateProfilePicture : IEndpoint
                 return Results.BadRequest("Only image files are allowed.");
             }
 
-            return await Result.Success(new UpdateUserProfilePictureCommand(userId, file))
+            await using Stream content = file.OpenReadStream();
+
+            return await Result.Success(new UpdateUserProfilePictureCommand(userId, content, file.FileName, file.ContentType))
                .Bind(query => sender.Send(query, cancellationToken))
                .Match(Results.NoContent, CustomResults.Problem);
         })

@@ -24,7 +24,7 @@ public sealed class RegisterUserTests : BaseFunctionalTest
         var request = new RegisterRequest("", "username", "password");
 
         // Act
-        HttpResponseMessage response = await Client.PostAsJsonAsync("api/v1/users/register", request);
+        HttpResponseMessage response = await Client.PostAsJsonAsync("api/v1/authentication/register", request);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -43,7 +43,7 @@ public sealed class RegisterUserTests : BaseFunctionalTest
         var request = new RegisterRequest("not-an-email", "username", "password");
 
         // Act
-        HttpResponseMessage response = await Client.PostAsJsonAsync("api/v1/users/register", request);
+        HttpResponseMessage response = await Client.PostAsJsonAsync("api/v1/authentication/register", request);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -62,7 +62,7 @@ public sealed class RegisterUserTests : BaseFunctionalTest
         var request = new RegisterRequest("email@email.com", "", "password");
 
         // Act
-        HttpResponseMessage response = await Client.PostAsJsonAsync("api/v1/users/register", request);
+        HttpResponseMessage response = await Client.PostAsJsonAsync("api/v1/authentication/register", request);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -81,7 +81,7 @@ public sealed class RegisterUserTests : BaseFunctionalTest
         var request = new RegisterRequest("email@email.com", "username", "");
 
         // Act
-        HttpResponseMessage response = await Client.PostAsJsonAsync("api/v1/users/register", request);
+        HttpResponseMessage response = await Client.PostAsJsonAsync("api/v1/authentication/register", request);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -101,7 +101,7 @@ public sealed class RegisterUserTests : BaseFunctionalTest
         var request = new RegisterRequest("email@email.com", "username", "short");
 
         // Act
-        HttpResponseMessage response = await Client.PostAsJsonAsync("api/v1/users/register", request);
+        HttpResponseMessage response = await Client.PostAsJsonAsync("api/v1/authentication/register", request);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -117,10 +117,10 @@ public sealed class RegisterUserTests : BaseFunctionalTest
         await CleanDatabaseAsync();
 
         // Arrange
-        var request = new RegisterRequest("email@email.com", "username", "password");
+        var request = new RegisterRequest("email@email.com", "username", "Passw0rd!");
 
         // Act
-        HttpResponseMessage response = await Client.PostAsJsonAsync("api/v1/users/register", request);
+        HttpResponseMessage response = await Client.PostAsJsonAsync("api/v1/authentication/register", request);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -132,12 +132,12 @@ public sealed class RegisterUserTests : BaseFunctionalTest
         await CleanDatabaseAsync();
 
         // Arrange
-        var request = new RegisterRequest("email@email.com", "username", "password");
+        var request = new RegisterRequest("email@email.com", "username", "Passw0rd!");
 
         // Act
-        await Client.PostAsJsonAsync("api/v1/users/register", request);
+        await Client.PostAsJsonAsync("api/v1/authentication/register", request);
 
-        HttpResponseMessage response = await Client.PostAsJsonAsync("api/v1/users/register", request);
+        HttpResponseMessage response = await Client.PostAsJsonAsync("api/v1/authentication/register", request);
 
         // Assert
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);

@@ -23,34 +23,14 @@ internal sealed class GetTopPerformerQueryHandler(
             return Result.Failure<StockPriceResponse>(UserErrors.Unauthorized);
         }
 
-        List<TransactionApiResponse> transactions = await budgetingApi.GetTransactionsByUserIdAsync(
+        // Cost basis comes from the Budgeting positions (average-cost method), maintained with every trade.
+        List<PositionApiResponse> openPositions = await budgetingApi.GetOpenPositionsAsync(
             userContext.UserId,
             cancellationToken);
 
-        const int BuyType = 1; // TransactionType.Expense
-
-        // Cost basis per open position: the quantity-weighted average buy price.
-        // Positions that have been fully sold are not "performers" any more.
-        var openPositions = transactions
-            .GroupBy(t => t.Ticker)
-            .Select(g =>
-            {
-                List<TransactionApiResponse> buys = [.. g.Where(t => t.Type == BuyType)];
-                int boughtQuantity = buys.Sum(t => t.Quantity);
-                int netQuantity = boughtQuantity - g.Where(t => t.Type != BuyType).Sum(t => t.Quantity);
-
-                decimal averageCost = boughtQuantity == 0
-                    ? 0
-                    : buys.Sum(t => t.Amount * t.Quantity) / boughtQuantity;
-
-                return (Ticker: g.Key, NetQuantity: netQuantity, AverageCost: averageCost);
-            })
-            .Where(p => p.NetQuantity > 0 && p.AverageCost > 0)
-            .ToList();
-
         List<(StockPriceResponse Stock, decimal Performance)> performances = [];
 
-        foreach ((string ticker, _, decimal averageCost) in openPositions)
+        foreach ((string ticker, _, decimal averageCost, _) in openPositions.Where(p => p.AverageCost > 0))
         {
             Option<StockPriceResponse> stockOption = await stockService.GetLatestStockPriceAsync(
                 ticker,

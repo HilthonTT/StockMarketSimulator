@@ -17,7 +17,7 @@ public sealed record Email : ValueObject
 
     private Email(string value) => Value = value;
 
-    public string Value { get; }
+    public string Value { get; } = null!;
 
     public static implicit operator string(Email email) => email?.Value ?? string.Empty;
 

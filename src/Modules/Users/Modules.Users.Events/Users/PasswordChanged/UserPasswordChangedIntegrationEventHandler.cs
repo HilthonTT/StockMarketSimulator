@@ -1,18 +1,18 @@
-﻿using Application.Abstractions.Messaging;
+﻿using Modules.Users.IntegrationEvents;
+using Application.Abstractions.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using Modules.Users.Application.Authentication.ChangePassword;
-using Modules.Users.BackgroundJobs.Users.PasswordChanged;
+using Modules.Users.Application.Abstractions.BackgroundJobs;
 using Modules.Users.Domain.Entities;
 using Modules.Users.Domain.Errors;
 using Modules.Users.Domain.Repositories;
-using Quartz;
 using SharedKernel;
 
 namespace Modules.Users.Events.Users.PasswordChanged;
 
 internal sealed class UserPasswordChangedIntegrationEventHandler(
     IServiceScopeFactory serviceScopeFactory,
-    ISchedulerFactory schedulerFactory) : IIntegrationEventHandler<UserPasswordChangedIntegrationEvent>
+    IUserJobScheduler userJobScheduler) : IIntegrationEventHandler<UserPasswordChangedIntegrationEvent>
 {
     public async Task Handle(UserPasswordChangedIntegrationEvent notification, CancellationToken cancellationToken)
     {
@@ -26,24 +26,9 @@ internal sealed class UserPasswordChangedIntegrationEventHandler(
         }
         User user = optionUser.ValueOrThrow();
 
-        IScheduler scheduler = await schedulerFactory.GetScheduler(cancellationToken);
-
-        var jobData = new JobDataMap
-        {
-            { "userId", notification.UserId },
-            { "email", user.Email.Value },
-        };
-
-        IJobDetail job = JobBuilder.Create<PasswordChangedJob>()
-            .WithIdentity($"reminder-{Guid.CreateVersion7()}", "email-reminders")
-            .UsingJobData(jobData)
-            .Build();
-
-        ITrigger trigger = TriggerBuilder.Create()
-            .WithIdentity($"trigger-{Guid.CreateVersion7()}", "email-reminders")
-            .StartNow()
-            .Build();
-
-        await scheduler.ScheduleJob(job, trigger, cancellationToken: cancellationToken);
+        await userJobScheduler.SchedulePasswordChangedAsync(
+            notification.UserId,
+            user.Email.Value,
+            cancellationToken);
     }
 }

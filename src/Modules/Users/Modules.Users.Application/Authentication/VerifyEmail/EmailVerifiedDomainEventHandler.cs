@@ -1,4 +1,5 @@
-﻿using Application.Abstractions.Events;
+﻿using Modules.Users.IntegrationEvents;
+using Application.Abstractions.Events;
 using Modules.Users.Domain.DomainEvents;
 using SharedKernel;
 

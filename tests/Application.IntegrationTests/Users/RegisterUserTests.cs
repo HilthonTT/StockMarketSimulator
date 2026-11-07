@@ -14,16 +14,15 @@ public sealed class RegisterUserTests : BaseIntegrationTest
     public RegisterUserTests(IntegrationTestWebAppFactory factory)
         : base(factory)
     {
-        var services = factory.Services;
-
-        _handler = factory.Services.GetRequiredService<ICommandHandler<RegisterUserCommand, Guid>>();
+        // Handlers are scoped; resolving them from the root provider throws.
+        _handler = ScopedServices.GetRequiredService<ICommandHandler<RegisterUserCommand, Guid>>();
     }
 
     [Fact]
     public async Task Handle_Should_RegisterUser_WhenCommandIsValid()
     {
         // Arrange
-        var command = new RegisterUserCommand(Faker.Internet.Email(), Faker.Internet.UserName(), Faker.Internet.Password());
+        var command = new RegisterUserCommand(Faker.Internet.Email(), Faker.Internet.UserName(), "Passw0rd!" + Faker.Random.AlphaNumeric(6));
 
         // Act
         Result<Guid> result = await _handler.Handle(command, default);
@@ -36,7 +35,7 @@ public sealed class RegisterUserTests : BaseIntegrationTest
     public async Task Handle_Should_AddUserToDatabase_WhenCommandIsValid()
     {
         // Arrange
-        var command = new RegisterUserCommand(Faker.Internet.Email(), Faker.Internet.UserName(), Faker.Internet.Password());
+        var command = new RegisterUserCommand(Faker.Internet.Email(), Faker.Internet.UserName(), "Passw0rd!" + Faker.Random.AlphaNumeric(6));
 
         // Act
         Result<Guid> result = await _handler.Handle(command, default);

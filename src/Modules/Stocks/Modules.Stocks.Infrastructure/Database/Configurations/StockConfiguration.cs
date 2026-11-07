@@ -12,7 +12,8 @@ internal sealed class StockConfiguration : IEntityTypeConfiguration<Stock>
 
         builder.Property(x => x.Ticker).HasMaxLength(10);
 
-        builder.HasIndex(x => x.Ticker);
+        // One row per ticker: concurrent first lookups upsert instead of inserting duplicates.
+        builder.HasIndex(x => x.Ticker).IsUnique();
         builder.HasIndex(x => x.CreatedOnUtc);
     }
 }

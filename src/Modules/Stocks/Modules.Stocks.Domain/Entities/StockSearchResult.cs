@@ -49,21 +49,21 @@ public sealed class StockSearchResult : Entity, IAuditable
 
     public Guid Id { get; private set; }
 
-    public string Ticker { get; private set; }
+    public string Ticker { get; private set; } = null!;
 
-    public string Name { get; private set; }
+    public string Name { get; private set; } = null!;
 
-    public string Type { get; private set; }
+    public string Type { get; private set; } = null!;
 
-    public string Region { get; private set; }
+    public string Region { get; private set; } = null!;
 
-    public string MarketOpen { get; private set; }
+    public string MarketOpen { get; private set; } = null!;
 
-    public string MarketClose { get; private set; }
+    public string MarketClose { get; private set; } = null!;
 
-    public string Timezone { get; private set; }
+    public string Timezone { get; private set; } = null!;
 
-    public string Currency { get; private set; }
+    public string Currency { get; private set; } = null!;
 
     public DateTime CreatedOnUtc { get; set; }
 

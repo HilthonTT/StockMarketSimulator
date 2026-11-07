@@ -13,7 +13,7 @@ public sealed record Password : ValueObject
 
     public static implicit operator string(Password? password) => password?.Value ?? string.Empty;
 
-    public string Value { get; }
+    public string Value { get; } = null!;
 
     public static Result<Password> Create(string? password) =>
         Result.Create(password, EmailErrors.Empty)

@@ -1,9 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 <ItemGroup>
     <ProjectReference Include="..\..\..\Application\Application.csproj" />
     <ProjectReference Include="..\..\Stocks\Modules.Stocks.Api\Modules.Stocks.Api.csproj" />
     <ProjectReference Include="..\Modules.Budgeting.Contracts\Modules.Budgeting.Contracts.csproj" />
     <ProjectReference Include="..\Modules.Budgeting.Domain\Modules.Budgeting.Domain.csproj" />
+    <ProjectReference Include="..\Modules.Budgeting.IntegrationEvents\Modules.Budgeting.IntegrationEvents.csproj" />
   </ItemGroup>
 
   <ItemGroup>

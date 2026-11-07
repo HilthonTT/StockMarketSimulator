@@ -5,4 +5,5 @@ public enum Permission
     Read = 1,
     Write = 2,
     UpdateUsers = 3,
+    ManageOutbox = 4,
 }

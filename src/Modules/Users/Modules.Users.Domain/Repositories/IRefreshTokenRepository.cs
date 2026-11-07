@@ -5,7 +5,7 @@ namespace Modules.Users.Domain.Repositories;
 
 public interface IRefreshTokenRepository
 {
-    Task<Option<RefreshToken>> GetByTokenAsync(string token, CancellationToken cancellationToken = default);
+    Task<Option<RefreshToken>> GetByTokenHashAsync(string tokenHash, CancellationToken cancellationToken = default);
 
     Task<int> BatchDeleteAsync(Guid userId, CancellationToken cancellationToken = default);
 

@@ -36,7 +36,7 @@ public sealed class Budget : Entity, IAuditable
 
     public Guid UserId { get; private set; }
 
-    public Money Money { get; private set; }
+    public Money Money { get; private set; } = null!;
 
     public DateTime CreatedOnUtc { get; set; }
 

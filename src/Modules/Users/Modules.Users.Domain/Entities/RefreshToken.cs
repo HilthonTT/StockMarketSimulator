@@ -6,15 +6,15 @@ public sealed class RefreshToken : Entity
 {
     private const int DefaultExpirationDays = 7;
 
-    private RefreshToken(Guid id, string token, Guid userId, DateTime expiresOnUtc)
+    private RefreshToken(Guid id, string tokenHash, Guid userId, DateTime expiresOnUtc)
     {
         Ensure.NotNullOrEmpty(id, nameof(id));
-        Ensure.NotNullOrEmpty(token, nameof(token));
+        Ensure.NotNullOrEmpty(tokenHash, nameof(tokenHash));
         Ensure.NotNullOrEmpty(userId, nameof(userId));
         Ensure.NotNull(expiresOnUtc, nameof(expiresOnUtc));
 
         Id = id;
-        Token = token;
+        TokenHash = tokenHash;
         UserId = userId;
         ExpiresOnUtc = expiresOnUtc;
     }
@@ -31,7 +31,11 @@ public sealed class RefreshToken : Entity
 
     public Guid Id { get; private set; }
 
-    public string Token { get; private set; }
+    /// <summary>
+    /// The SHA-256 hash of the refresh token. The plain token is only ever returned to the client,
+    /// so a database leak doesn't hand out working sessions.
+    /// </summary>
+    public string TokenHash { get; private set; } = null!;
 
     public Guid UserId { get; private set; }
 
@@ -45,20 +49,20 @@ public sealed class RefreshToken : Entity
     /// </remarks>
     public User User { get; set; } = null!;
 
-    public static RefreshToken Create(string token, Guid userId)
+    public static RefreshToken Create(string tokenHash, Guid userId)
     {
-        return new(Guid.CreateVersion7(), token, userId, CalculateExpirationDate());
+        return new(Guid.CreateVersion7(), tokenHash, userId, CalculateExpirationDate());
     }
 
     /// <summary>
     /// Rotates the token value. The original absolute expiry is kept on purpose: sliding it on every
     /// rotation would let a session (or a stolen token) live forever.
     /// </summary>
-    public void Refresh(string newToken)
+    public void Refresh(string newTokenHash)
     {
-        Ensure.NotNullOrEmpty(newToken, nameof(newToken));
+        Ensure.NotNullOrEmpty(newTokenHash, nameof(newTokenHash));
 
-        Token = newToken;
+        TokenHash = newTokenHash;
     }
 
     public bool IsExpired() => DateTime.UtcNow >= ExpiresOnUtc;

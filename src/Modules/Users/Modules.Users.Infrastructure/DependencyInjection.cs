@@ -80,6 +80,9 @@ public static class DependencyInjection
 
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<UsersDbContext>());
 
+        // Monitored by the outbox health check and re-drivable through OutboxAdministration.
+        services.AddOutboxSchema(Schemas.Users);
+
         services.AddScoped<IUserRepository, UserRepository>();
 
         services.AddScoped<IEmailVerificationTokenRepository, EmailVerificationTokenRepository>();

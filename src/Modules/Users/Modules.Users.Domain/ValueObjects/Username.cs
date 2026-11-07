@@ -11,7 +11,7 @@ public sealed record Username : ValueObject
 
     private Username(string value) => Value = value;
 
-    public string Value { get; }
+    public string Value { get; } = null!;
 
     public static implicit operator string(Username? username) => username?.Value ?? string.Empty;
 

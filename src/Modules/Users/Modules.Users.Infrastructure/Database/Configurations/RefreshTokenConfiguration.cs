@@ -14,6 +14,12 @@ internal sealed class RefreshTokenConfiguration : IEntityTypeConfiguration<Refre
             .WithMany()
             .HasForeignKey(x => x.UserId);
 
-        builder.HasIndex(x => x.Token).IsUnique();
+        // SHA-256 as 64 lower-case hex characters.
+        builder.Property(x => x.TokenHash).HasMaxLength(64).IsRequired();
+
+        builder.HasIndex(x => x.TokenHash).IsUnique();
+
+        // Used by the cleanup job (expired tokens, per-user cap).
+        builder.HasIndex(x => new { x.UserId, x.ExpiresOnUtc });
     }
 }

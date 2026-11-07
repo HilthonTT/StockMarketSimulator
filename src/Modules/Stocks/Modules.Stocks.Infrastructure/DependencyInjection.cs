@@ -80,6 +80,9 @@ public static class DependencyInjection
 
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<StocksDbContext>());
 
+        // Monitored by the outbox health check and re-drivable through OutboxAdministration.
+        services.AddOutboxSchema(Schemas.Stocks);
+
         services.AddScoped<IDbContext>(sp => sp.GetRequiredService<StocksDbContext>());
 
         services.AddScoped<IStockSearchResultRepository, StockSearchResultRepository>();

@@ -150,6 +150,11 @@ namespace Modules.Users.Infrastructure.Database.Migrations
                         {
                             Id = 3,
                             Name = "UpdateUsers"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "ManageOutbox"
                         });
                 });
 
@@ -164,10 +169,11 @@ namespace Modules.Users.Infrastructure.Database.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("expires_on_utc");
 
-                    b.Property<string>("Token")
+                    b.Property<string>("TokenHash")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("token");
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("token_hash");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid")
@@ -176,12 +182,12 @@ namespace Modules.Users.Infrastructure.Database.Migrations
                     b.HasKey("Id")
                         .HasName("pk_refresh_tokens");
 
-                    b.HasIndex("Token")
+                    b.HasIndex("TokenHash")
                         .IsUnique()
-                        .HasDatabaseName("ix_refresh_tokens_token");
+                        .HasDatabaseName("ix_refresh_tokens_token_hash");
 
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("ix_refresh_tokens_user_id");
+                    b.HasIndex("UserId", "ExpiresOnUtc")
+                        .HasDatabaseName("ix_refresh_tokens_user_id_expires_on_utc");
 
                     b.ToTable("refresh_tokens", "users");
                 });
@@ -251,6 +257,11 @@ namespace Modules.Users.Infrastructure.Database.Migrations
                         {
                             RoleId = 2,
                             PermissionId = 3
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 4
                         });
                 });
 

@@ -1,7 +1,6 @@
 ﻿using Infrastructure.Database.Specifications;
 using Microsoft.EntityFrameworkCore;
 using Modules.Budgeting.Domain.Entities;
-using Modules.Budgeting.Domain.Enums;
 using Modules.Budgeting.Domain.Repositories;
 using Modules.Budgeting.Infrastructure.Database;
 using Modules.Budgeting.Infrastructure.Specifications;
@@ -17,19 +16,6 @@ internal sealed class TransactionRepository(BudgetingDbContext context) : ITrans
             .FirstOrDefaultAsync(cancellationToken);
 
         return Option<Transaction>.Some(transaction);
-    }
-
-    public async Task<int> CalculateNetPurchasedQuantityAsync(
-        Guid userId, 
-        string ticker,
-        CancellationToken cancellationToken = default)
-    {
-        var transactions = await ApplySpecification(
-            new CalculateNetPurchasedQuantitySpecification(userId, ticker))
-            .ToListAsync(cancellationToken);
-
-        return transactions.Sum(t =>
-            t.Type == TransactionType.Expense ? t.Quantity : -t.Quantity);
     }
 
     public void Insert(Transaction transaction)

@@ -1,4 +1,4 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi;
 using Web.Api.OpenApi;
@@ -48,7 +48,9 @@ public static class ServiceCollectionExtensions
         {
             options.GroupNameFormat = "'v'V";
             options.SubstituteApiVersionInUrl = true;
-        });
+        })
+        // Registers Microsoft.AspNetCore.OpenApi with one document per API version (openapi/v1.json, ...).
+        .AddOpenApi();
 
         services.ConfigureOptions<ConfigureSwaggerGenOptions>();
 

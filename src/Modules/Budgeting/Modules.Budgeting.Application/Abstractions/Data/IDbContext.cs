@@ -10,4 +10,6 @@ public interface IDbContext
     DbSet<Budget> Budgets { get; }
 
     DbSet<AuditLog> AuditLogs { get; }
+
+    DbSet<Position> Positions { get; }
 }

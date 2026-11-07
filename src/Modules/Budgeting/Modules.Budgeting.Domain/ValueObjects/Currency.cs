@@ -59,7 +59,7 @@ public sealed class Currency : Enumeration<Currency>
     {
     }
 
-    public string Code { get; init; }
+    public string Code { get; init; } = null!;
 
     public static Currency FromCode(string code)
     {

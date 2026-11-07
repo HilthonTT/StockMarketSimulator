@@ -42,11 +42,11 @@ public sealed class User : Entity, IAuditable
 
     public Guid Id { get; private set; }
 
-    public Username Username { get; private set; }
+    public Username Username { get; private set; } = null!;
 
-    public Email Email { get; private set; }
+    public Email Email { get; private set; } = null!;
 
-    public string PasswordHash { get; private set; }
+    public string PasswordHash { get; private set; } = null!;
 
     public bool EmailVerified { get; private set; }
 

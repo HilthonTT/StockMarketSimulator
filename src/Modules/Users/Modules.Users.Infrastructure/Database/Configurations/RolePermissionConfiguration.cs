@@ -13,7 +13,8 @@ internal sealed class RolePermissionConfiguration : IEntityTypeConfiguration<Rol
         builder.HasData(
             Create(Role.Registered, Domain.Enums.Permission.Read),
             Create(Role.Registered, Domain.Enums.Permission.Write),
-            Create(Role.Admin, Domain.Enums.Permission.UpdateUsers));
+            Create(Role.Admin, Domain.Enums.Permission.UpdateUsers),
+            Create(Role.Admin, Domain.Enums.Permission.ManageOutbox));
     }
 
     private static RolePermission Create(

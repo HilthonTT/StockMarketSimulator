@@ -18,7 +18,7 @@ namespace Modules.Stocks.Infrastructure.Database.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("stocks")
-                .HasAnnotation("ProductVersion", "9.0.4")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -126,6 +126,7 @@ namespace Modules.Stocks.Infrastructure.Database.Migrations
                         .HasDatabaseName("ix_stocks_created_on_utc");
 
                     b.HasIndex("Ticker")
+                        .IsUnique()
                         .HasDatabaseName("ix_stocks_ticker");
 
                     b.ToTable("stocks", "stocks");
