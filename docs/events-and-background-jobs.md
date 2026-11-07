@@ -1,4 +1,4 @@
-# Events and background jobs
+﻿# Events and background jobs
 
 ## Domain events and the transactional outbox
 
@@ -25,6 +25,14 @@ sequenceDiagram
    - **records failures per message**. A message that can't be deserialised, or whose handlers keep failing, is stamped with its error instead of failing the whole batch, so a poison message can't block the outbox;
    - stamps the whole batch in a single `UPDATE ... FROM (VALUES ...)`.
 
+### Failed messages: alerting and re-drive
+
+A message that still fails after its retries keeps `error IS NOT NULL`. Each module registers its schema with `AddOutboxSchema`, and:
+
+- the **`outbox` health check** (`OutboxHealthCheck`) reports `Degraded` with the failed count per schema (`/health` still returns 200);
+- **`OutboxHealthLogPublisher`** runs that check every 30 seconds and logs a warning while failures exist, so a log-based alert can fire without anyone polling `/health`;
+- **`GET api/v1/outbox/failures`** lists failed counts per schema, and **`POST api/v1/outbox/{schema}/redrive`** clears `processed_on_utc` and `error` so the next outbox run dispatches them again. Both need the `ManageOutbox` permission (`Admin` role). Handlers that already succeeded for a message are skipped by the idempotent consumer table, so only the failed ones run again. Fix the cause first.
+
 ### Idempotent consumers
 
 Every `IDomainEventHandler<T>` is wrapped in `IdempotentDomainEventHandler<T>`. Before handling an event it checks `general.outbox_message_consumers` for the pair *(event id, handler name)*, and records it afterwards.
@@ -34,7 +42,7 @@ Every `IDomainEventHandler<T>` is wrapped in `IdempotentDomainEventHandler<T>`. 
 
 ## Integration events (RabbitMQ)
 
-Some domain event handlers publish **integration events** through `IEventBus`, for example `UserCreatedIntegrationEvent` and `TransactionBoughtIntegrationEvent`.
+Some domain event handlers publish **integration events** through `IEventBus`, for example `UserCreatedIntegrationEvent` and `TransactionBoughtIntegrationEvent`. The event records are the module's public contract and live in `Modules.Users.IntegrationEvents` and `Modules.Budgeting.IntegrationEvents`. The serialized `$type` includes the CLR type name, so moving or renaming an event breaks messages already in the queue: drain it before deploying such a change.
 
 | Piece | Behaviour |
 | --- | --- |
@@ -43,7 +51,7 @@ Some domain event handlers publish **integration events** through `IEventBus`, f
 | `IntegrationEventProcessorJob` (every 5 s) | Opens one connection per run and drains up to 100 messages. Undeserialisable messages are rejected without requeue. When a handler fails, the message is requeued and the run stops, so the queue doesn't spin on it |
 | `IntegrationEventsDispatcher` | Resolves every `IIntegrationEventHandler<T>` for the event in a fresh scope |
 
-Integration event handlers live in `Modules.<Module>.Events`. They mostly schedule one-off Quartz jobs (emails, audit logs, budget creation) with job data.
+Integration event handlers live in `Modules.<Module>.Events`. They mostly schedule one-off Quartz jobs (emails, audit logs, budget creation) with job data. In the Users module, scheduling goes through `IUserJobScheduler` (Application abstraction, Quartz implementation `UserJobScheduler` in `Modules.Users.BackgroundJobs`), so the Application layer, e.g. "resend verification email", never touches Quartz.
 
 ## Quartz jobs
 
@@ -53,7 +61,7 @@ Recurring jobs are registered in `Web.Api/Extensions/BackgroundJobExtensions.cs`
 | --- | --- | --- |
 | `ProcessUserOutboxMessagesJob` / `ProcessStockOutboxMessagesJob` / `ProcessBudgetingOutboxMessagesJob` | 5 s | Outbox processing per schema |
 | `IntegrationEventProcessorJob` | 5 s | RabbitMQ consumer |
-| `RevokeExpiredRefreshTokenJob` | 20 s | Refresh-token cleanup |
+| `RevokeExpiredRefreshTokenJob` | 20 s | Deletes expired refresh tokens and caps live tokens at 10 per user (closest to expiry go first). Unexpired tokens of other devices are kept |
 | `UpdateLatestStockPriceJob` | 1 min | Refreshes stale stored prices from Alpha Vantage, oldest first. Failures are isolated per ticker |
 | `StocksFeedUpdater` | `StockUpdateOptions:UpdateIntervalInSeconds` | Real-time GBM price step and SignalR broadcast ([details](price-simulation.md)) |
 

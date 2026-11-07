@@ -82,10 +82,10 @@ dotnet user-secrets --project src/Web.Api set "Jwt:Secret"   "<32+ random charac
 # 2. Backend + PostgreSQL, Redis, RabbitMQ, Azurite (Aspire dashboard opens)
 dotnet run --project src/StockMarketSimulator.AppHost
 
-# 3. Web UI (needs src/web-ui/.env, see docs)
-cd src/web-ui
+# 3. Front end (copy frontend/.env.example to frontend/.env first)
+cd frontend
 bun install
-bun run dev
+bun run dev      # http://localhost:3000
 ```
 
 In Development, database migrations apply automatically. The Aspire dashboard has shortcuts to Swagger UI, Scalar and ReDoc.
@@ -103,6 +103,8 @@ Domain, application and architecture tests run anywhere. The integration and fun
 ## 📂 Repository layout
 
 ```
+.github/                       CI/CD workflows, Dependabot, issue and PR templates
+frontend/                      Next.js 16 front end (own README, Dockerfile)
 src/
   Modules/{Users,Stocks,Budgeting}/   Domain · Application · Infrastructure · Contracts · Api · Events · BackgroundJobs
   SharedKernel/  Application/  Infrastructure/  Contracts/   shared building blocks
@@ -110,7 +112,6 @@ src/
   Yarp.Proxy/                  reverse proxy
   StockMarketSimulator.AppHost/          .NET Aspire orchestration
   StockMarketSimulator.ServiceDefaults/  telemetry, health checks, resilience
-  web-ui/                      Next.js front end
 tests/                         unit, architecture, integration and functional tests
 docs/                          documentation
 ```
@@ -121,7 +122,9 @@ Build settings and package versions are centralised in `Directory.Build.props` a
 
 | Document | Covers |
 | --- | --- |
-| [Getting started](docs/getting-started.md) | Prerequisites, configuration, migrations, tests, web UI |
+| [Getting started](docs/getting-started.md) | Prerequisites, configuration, migrations, tests, front end |
+| [Front end](frontend/README.md) | Pages, module layout, live price feed, environment |
+| [CI/CD](docs/ci-cd.md) | GitHub Actions workflows and published images |
 | [Architecture](docs/architecture.md) | Modules, layers, request pipeline, persistence, caching, security |
 | [Events and background jobs](docs/events-and-background-jobs.md) | Outbox, RabbitMQ integration events, Quartz jobs |
 | [Price simulation](docs/price-simulation.md) | The Geometric Brownian Motion model and the live feed |

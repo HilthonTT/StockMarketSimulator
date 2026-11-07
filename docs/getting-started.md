@@ -6,8 +6,8 @@
 | --- | --- | --- |
 | .NET SDK | 10.0.100 or later | Pinned in [`global.json`](../global.json) (`rollForward: latestFeature`) |
 | Docker | Recent Docker Desktop / Engine | Aspire runs PostgreSQL, Redis, RabbitMQ and Azurite as containers. The integration and functional tests use Testcontainers |
-| Bun | 1.x | Package manager for the Next.js web UI (`src/web-ui/bun.lock`) |
-| Node.js | 24.x | Runtime for the web UI |
+| Bun | 1.x | Package manager for the Next.js front end (`frontend/bun.lock`) |
+| Node.js | 24.x | Runtime for the front end |
 
 ## Run the backend with .NET Aspire
 
@@ -92,23 +92,18 @@ dotnet test StockMarketSimulator.slnx
 | `tests/Application.IntegrationTests` | Handlers against real containers | Yes |
 | `tests/Api.FunctionalTests` | HTTP endpoints through `WebApplicationFactory` | Yes |
 
-## Web UI
+## Front end
 
 ```bash
-cd src/web-ui
+cd frontend
+cp .env.example .env   # set AUTH_SECRET (bunx auth secret)
 bun install
-bun run dev      # http://localhost:3000
-bun run build    # production build, including the type check
-bun run lint     # ESLint (flat config from eslint-config-next)
+bun run dev        # http://localhost:3000
+bun run build      # production build
+bun run lint       # ESLint (flat config from eslint-config-next)
+bun run typecheck  # tsc --noEmit
 ```
 
-The UI expects a `.env` file:
-
-```env
-AUTH_SECRET=
-NODE_TLS_REJECT_UNAUTHORIZED=0
-UPSTASH_REDIS_REST_URL=
-UPSTASH_REDIS_REST_TOKEN=
-```
+Every variable is documented in `frontend/.env.example`. Only `AUTH_SECRET` is required; Upstash rate limiting is optional and switched off when its variables are empty. See [frontend/README.md](../frontend/README.md) for the pages and code layout.
 
 The live price chart connects to the `/stocks-feed` SignalR hub. The JWT is sent with `accessTokenFactory`, and the API accepts it from the `access_token` query string on that path.

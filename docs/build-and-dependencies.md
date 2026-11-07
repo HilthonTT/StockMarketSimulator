@@ -1,4 +1,4 @@
-# Build and dependencies
+﻿# Build and dependencies
 
 ## Target framework and solution
 
@@ -30,6 +30,10 @@ Notable major upgrades and the code changes they required:
 | Scrutor, FluentValidation, Polly, RabbitMQ.Client, MailKit, Sentry, OpenTelemetry, Asp.Versioning, xUnit runner, Test SDK, ... | | latest stable | No code changes |
 
 `OpenTelemetry.Instrumentation.EntityFrameworkCore` has no stable release yet and stays on its beta line.
+
+Sentry tracing uses **`Sentry.OpenTelemetry.Exporter`** (the replacement for the obsolete `Sentry.OpenTelemetry` integration): `SentryOptions.UseOtlp()` in `Web.Api/Program.cs` and `AddSentryOtlpExporter(dsn)` in ServiceDefaults, both only when `Sentry:Dsn` is set. **`Asp.Versioning.OpenApi`** wires the built-in OpenAPI generator to API versioning.
+
+The backend builds with **zero warnings**. `ASPIRE010` (Aspire CLI bundle disabled) is suppressed in the AppHost on purpose; see [known issues](known-issues.md).
 
 ## Tools
 

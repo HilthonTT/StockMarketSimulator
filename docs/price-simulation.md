@@ -1,4 +1,4 @@
-# Price simulation
+﻿# Price simulation
 
 Between real quotes from Alpha Vantage, prices move with a **Geometric Brownian Motion (GBM)** model, and every tick is pushed to clients over SignalR.
 
@@ -28,7 +28,9 @@ The function is pure (the random draw is passed in), so `tests/Domain.UnitTests/
 
 `StocksFeedUpdater` (Quartz, every `UpdateIntervalInSeconds`):
 
-1. Reads the active tickers from `ActiveTickerManager`. A ticker becomes active when it's quoted over REST or when a client calls the hub's `JoinGroup`.
+1. Reads the active tickers from `ActiveTickerManager`. A ticker is active while at least one SignalR connection is subscribed to it, or for 5 minutes after it was last quoted over REST:
+   - `JoinGroup`/`LeaveGroup` add and remove the connection's subscription, and `OnDisconnectedAsync` releases all of them. Subscriptions are counted per connection, so joining twice counts once;
+   - the feed reads prices with `trackActivity: false`, so its own reads don't keep a ticker alive. When the last subscriber leaves and the lease runs out, the ticker drops out and the feed stops updating it.
 2. For each ticker, with up to 5 in parallel and **errors isolated per ticker**:
    - load the latest stored price;
    - compute the next GBM price;
@@ -44,7 +46,7 @@ Tickers are normalised to upper case everywhere (REST, hub groups, storage, `ISt
 
 ## Real quotes
 
-`StockService.GetLatestStockPriceAsync` serves the stored price. When the ticker is unknown, it fetches the latest **close** of the most recent 15-minute bar from Alpha Vantage and stores it. `UpdateLatestStockPriceJob` refreshes stored prices that haven't changed for a while; prices the feed is actively updating aren't stale, so they aren't reset.
+`StockService.GetLatestStockPriceAsync` serves the stored price. When the ticker is unknown, it fetches the latest **close** of the most recent 15-minute bar from Alpha Vantage and stores it with an upsert (`stocks.stocks.ticker` is unique, so concurrent first lookups can't create duplicates). `UpdateLatestStockPriceJob` refreshes stored prices that haven't changed for a while; prices the feed is actively updating aren't stale, so they aren't reset.
 
 ## Tuning
 
