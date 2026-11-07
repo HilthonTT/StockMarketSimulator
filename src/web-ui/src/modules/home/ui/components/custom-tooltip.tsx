@@ -1,4 +1,4 @@
-import type { TooltipProps } from "recharts";
+import type { TooltipContentProps } from "recharts";
 
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency } from "@/lib/utils";
@@ -12,7 +12,7 @@ type PayloadItem = {
 export const CustomToolTip = ({
   active,
   payload,
-}: TooltipProps<number, string>) => {
+}: Partial<TooltipContentProps<number, string>>) => {
   if (!active || !payload || payload.length === 0 || !payload[0].payload) {
     return null;
   }

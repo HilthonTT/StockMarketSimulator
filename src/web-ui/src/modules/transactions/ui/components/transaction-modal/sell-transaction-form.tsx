@@ -60,7 +60,7 @@ export const SellTransactionForm = ({
 
         await Promise.all([
           queryClient.invalidateQueries(
-            trpc.transactions.getMany.infiniteQueryOptions({
+            trpc.transactions.getMany.infiniteQueryFilter({
               pageSize: PAGE_SIZE,
               ...filters,
             })

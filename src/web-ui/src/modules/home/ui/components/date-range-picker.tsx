@@ -59,7 +59,7 @@ export const DateRangePicker = ({
     <div
       className={cn(
         "flex items-center justify-center gap-2 shrink-0 ",
-        className
+        className,
       )}
     >
       <Popover>
@@ -68,9 +68,9 @@ export const DateRangePicker = ({
             id="date"
             variant="outline"
             className={cn(
-              "lg:w-[270px] justify-start text-left font-normal rounded-full shrink-0 relative",
+              "lg:w-67.5 justify-start text-left font-normal rounded-full shrink-0 relative",
               !date && "text-muted-foreground",
-              hasValue ? "w-[70px] lg:w-[290px]" : "w-auto"
+              hasValue ? "w-17.5 lg:w-72.5" : "w-auto",
             )}
           >
             <CalendarIcon className="shrink-0" />
@@ -93,7 +93,7 @@ export const DateRangePicker = ({
               onClick={handleClear}
               className={cn(
                 "absolute right-3 top-1/2 -translate-y-1/2 [&_svg]:size-5 rounded-full transition hidden cursor-default",
-                hasValue && "block cursor-pointer"
+                hasValue && "block cursor-pointer",
               )}
               aria-label="Clear search"
             >
@@ -103,7 +103,7 @@ export const DateRangePicker = ({
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
-            initialFocus
+            autoFocus
             mode="range"
             defaultMonth={date?.from}
             selected={date}

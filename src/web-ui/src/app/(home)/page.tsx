@@ -25,10 +25,15 @@ const Page = async ({ searchParams }: PageProps) => {
   void queryClient.prefetchQuery(trpc.budgets.getOne.queryOptions());
   void queryClient.prefetchQuery(trpc.stocks.getTopPerfomer.queryOptions());
   void queryClient.prefetchInfiniteQuery(
-    trpc.transactions.getMany.infiniteQueryOptions({
-      pageSize: PAGE_SIZE,
-      ...filters,
-    })
+    trpc.transactions.getMany.infiniteQueryOptions(
+      {
+        pageSize: PAGE_SIZE,
+        ...filters,
+      },
+      {
+        getNextPageParam: (lastPage) => lastPage.cursor ?? undefined,
+      }
+    )
   );
   void queryClient.prefetchQuery(
     trpc.users.getPurchasedStockTickers.queryOptions()

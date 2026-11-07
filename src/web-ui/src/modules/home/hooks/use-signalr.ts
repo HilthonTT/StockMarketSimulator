@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   HttpTransportType,
   HubConnection,
@@ -14,20 +14,25 @@ export const SIGNALR_JOIN_GROUP = "JoinGroup";
 export const SIGNALR_LEAVE_GROUP = "LeaveGroup";
 export const SIGNALR_STOCK_UPDATE_EVENT = "ReceiveStockPriceUpdate";
 
+/**
+ * Opens a connection to the stocks feed hub for the lifetime of the calling component.
+ * The connection is exposed only once it has started, and it is stopped on unmount or
+ * when the JWT changes (previously it leaked on every navigation).
+ */
 export const useSignalR = () => {
   const trpc = useTRPC();
   const { data: jwt } = useSuspenseQuery(trpc.auth.getJwt.queryOptions());
 
-  const connectionRef = useRef<HubConnection | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(false);
+  const [connection, setConnection] = useState<HubConnection | null>(null);
 
   useEffect(() => {
-    if (!jwt || connectionRef.current) {
+    if (!jwt) {
       return;
     }
 
-    const connection = new HubConnectionBuilder()
+    let disposed = false;
+
+    const hubConnection = new HubConnectionBuilder()
       .withUrl(`${SERVER_URL}/stocks-feed`, {
         accessTokenFactory: () => jwt,
         transport: HttpTransportType.LongPolling,
@@ -36,26 +41,28 @@ export const useSignalR = () => {
       .withAutomaticReconnect()
       .build();
 
-    connectionRef.current = connection;
-    setIsConnecting(true);
+    hubConnection
+      .start()
+      .then(() => {
+        if (!disposed) {
+          setConnection(hubConnection);
+        }
+      })
+      .catch((err) => {
+        if (!disposed) {
+          console.error("SignalR connection error:", err);
+        }
+      });
 
-    const startConnection = async () => {
-      try {
-        await connection.start();
-        setIsConnected(true);
-      } catch (err) {
-        console.error("SignalR connection error:", err);
-        connectionRef.current = null;
-      } finally {
-        setIsConnecting(false);
-      }
+    return () => {
+      disposed = true;
+      setConnection(null);
+      void hubConnection.stop();
     };
-
-    startConnection();
   }, [jwt]);
 
   return {
-    connection: isConnected ? connectionRef.current : null,
-    isLoading: isConnecting || !isConnected,
+    connection,
+    isLoading: connection === null,
   };
 };
