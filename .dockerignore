@@ -28,3 +28,6 @@ README.md
 !.git/config
 !.git/packed-refs
 !.git/refs/heads/**
+# The front end has its own build context and Dockerfile.
+frontend
+**/.next

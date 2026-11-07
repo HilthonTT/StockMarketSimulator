@@ -1,0 +1,29 @@
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      dotnet:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
+  - package-ecosystem: bun
+    directory: /frontend
+    schedule:
+      interval: weekly
+    groups:
+      frontend:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+
+  - package-ecosystem: docker
+    directories: [/src/Web.Api, /frontend]
+    schedule:
+      interval: monthly
