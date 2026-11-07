@@ -14,7 +14,7 @@ internal sealed class LoggingDelegatingHandler(ILogger<LoggingDelegatingHandler>
 
         try
         {
-            logger.LogInformation("Sending HTTP request: {Method} {Url}", request.Method, request.RequestUri);
+            logger.LogInformation("Sending HTTP request: {Method} {Url}", request.Method, Redact(request.RequestUri));
 
             if (request.Content is not null)
             {
@@ -29,7 +29,7 @@ internal sealed class LoggingDelegatingHandler(ILogger<LoggingDelegatingHandler>
             stopwatch.Stop();
 
             logger.LogInformation("Received HTTP response: {StatusCode} {Url} (Elapsed: {ElapsedMilliseconds}ms)",
-                response.StatusCode, request.RequestUri, stopwatch.ElapsedMilliseconds);
+                response.StatusCode, Redact(request.RequestUri), stopwatch.ElapsedMilliseconds);
 
             LogHeaders("Response Headers", response.Headers);
 
@@ -47,10 +47,16 @@ internal sealed class LoggingDelegatingHandler(ILogger<LoggingDelegatingHandler>
         {
             stopwatch.Stop();
             logger.LogError(e, "HTTP request failed after {ElapsedMilliseconds}ms: {Method} {Url}",
-                stopwatch.ElapsedMilliseconds, request.Method, request.RequestUri);
+                stopwatch.ElapsedMilliseconds, request.Method, Redact(request.RequestUri));
             throw;
         }
     }
+
+    /// <summary>
+    /// Strips the query string before logging: it carries the API key (and user search terms).
+    /// </summary>
+    private static string? Redact(Uri? uri) =>
+        uri is null ? null : uri.IsAbsoluteUri ? uri.GetLeftPart(UriPartial.Path) : uri.OriginalString.Split('?')[0];
 
     private void LogHeaders(string message, HttpHeaders headers)
     {

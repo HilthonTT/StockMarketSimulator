@@ -11,7 +11,9 @@ internal sealed class StocksApi(StocksDbContext context) : IStocksApi
     private static readonly Func<StocksDbContext, string, Task<StockApiResponse?>> GetStockByTicker =
         EF.CompileAsyncQuery((StocksDbContext dbContext, string id) =>
             dbContext.Stocks
+                .AsNoTracking()
                 .Where(s => s.Ticker == id)
+                .OrderByDescending(s => s.ModifiedOnUtc ?? s.CreatedOnUtc)
                 .Select(s => new StockApiResponse(s.Ticker, s.Price))
                 .FirstOrDefault());
 
@@ -19,7 +21,8 @@ internal sealed class StocksApi(StocksDbContext context) : IStocksApi
         string ticker, 
         CancellationToken cancellationToken = default)
     {
-        StockApiResponse? stockApi = await GetStockByTicker(context, ticker);
+        // Tickers are stored upper-case (see StockService).
+        StockApiResponse? stockApi = await GetStockByTicker(context, ticker.Trim().ToUpperInvariant());
 
         return Option<StockApiResponse>.Some(stockApi);
     }

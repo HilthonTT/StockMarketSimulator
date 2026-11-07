@@ -44,6 +44,7 @@ public sealed class UpdateLatestStockPriceJob(
                 .Where(s =>
                     (s.ModifiedOnUtc.HasValue && s.ModifiedOnUtc < thresholdDate) ||
                     (!s.ModifiedOnUtc.HasValue && s.CreatedOnUtc < thresholdDate))
+                .OrderBy(s => s.ModifiedOnUtc ?? s.CreatedOnUtc) // oldest first, so every stock gets its turn
                 .Take(BatchSize)
                 .ToListAsync(cancellationToken);
 
@@ -53,13 +54,23 @@ public sealed class UpdateLatestStockPriceJob(
             {
                 if (!tickerToPrice.TryGetValue(outdatedStock.Ticker, out decimal price))
                 {
-                    StockPriceResponse? priceResponse = 
-                        await stocksClient.GetDataForTickerAsync(outdatedStock.Ticker, cancellationToken);
+                    StockPriceResponse? priceResponse;
 
-                    if (priceResponse is null)
+                    try
                     {
-                        logger.LogWarning("No price data returned for ticker '{Ticker}'. Skipping.", outdatedStock.Ticker);
-                        continue; // skip if no price found
+                        priceResponse = await stocksClient.GetDataForTickerAsync(outdatedStock.Ticker, cancellationToken);
+                    }
+                    catch (Exception exception) when (exception is not OperationCanceledException)
+                    {
+                        // One ticker failing (rate limit, delisting, ...) must not roll back the whole batch.
+                        logger.LogWarning(exception, "Fetching price for ticker '{Ticker}' failed. Skipping.", outdatedStock.Ticker);
+                        continue;
+                    }
+
+                    if (priceResponse is null || priceResponse.Price <= 0)
+                    {
+                        logger.LogWarning("No valid price data returned for ticker '{Ticker}'. Skipping.", outdatedStock.Ticker);
+                        continue;
                     }
 
                     price = priceResponse.Price;

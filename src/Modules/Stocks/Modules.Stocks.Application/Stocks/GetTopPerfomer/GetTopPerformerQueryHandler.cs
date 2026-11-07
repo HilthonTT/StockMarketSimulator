@@ -27,17 +27,33 @@ internal sealed class GetTopPerformerQueryHandler(
             userContext.UserId,
             cancellationToken);
 
-        List<TransactionApiResponse> buyTransactions = [.. transactions
-            .Where(t => t.Type == 1) // TransactionType.Expense
+        const int BuyType = 1; // TransactionType.Expense
+
+        // Cost basis per open position: the quantity-weighted average buy price.
+        // Positions that have been fully sold are not "performers" any more.
+        var openPositions = transactions
             .GroupBy(t => t.Ticker)
-            .Select(g => g.OrderByDescending(t => t.Amount).First())];
+            .Select(g =>
+            {
+                List<TransactionApiResponse> buys = [.. g.Where(t => t.Type == BuyType)];
+                int boughtQuantity = buys.Sum(t => t.Quantity);
+                int netQuantity = boughtQuantity - g.Where(t => t.Type != BuyType).Sum(t => t.Quantity);
+
+                decimal averageCost = boughtQuantity == 0
+                    ? 0
+                    : buys.Sum(t => t.Amount * t.Quantity) / boughtQuantity;
+
+                return (Ticker: g.Key, NetQuantity: netQuantity, AverageCost: averageCost);
+            })
+            .Where(p => p.NetQuantity > 0 && p.AverageCost > 0)
+            .ToList();
 
         List<(StockPriceResponse Stock, decimal Performance)> performances = [];
 
-        foreach (TransactionApiResponse tx in buyTransactions)
+        foreach ((string ticker, _, decimal averageCost) in openPositions)
         {
             Option<StockPriceResponse> stockOption = await stockService.GetLatestStockPriceAsync(
-                tx.Ticker, 
+                ticker,
                 cancellationToken);
 
             if (!stockOption.IsSome)
@@ -47,7 +63,7 @@ internal sealed class GetTopPerformerQueryHandler(
 
             StockPriceResponse stock = stockOption.ValueOrThrow();
 
-            decimal performance = (stock.Price - tx.Amount) / tx.Amount;
+            decimal performance = (stock.Price - averageCost) / averageCost;
 
             performances.Add((stock, performance));
         }

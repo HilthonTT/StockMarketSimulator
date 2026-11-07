@@ -53,7 +53,7 @@ internal sealed class BudgetingApi(BudgetingDbContext context) : IBudgetingApi
         return context.Transactions
             .AsNoTracking()
             .Where(t => t.UserId == userId)
-            .Select(t => new TransactionApiResponse(t.Id, t.Ticker, t.Type.Id, t.Money.Amount, t.Money.Currency.Code))
+            .Select(t => new TransactionApiResponse(t.Id, t.Ticker, t.Type.Id, t.Money.Amount, t.Money.Currency.Code, t.Quantity))
             .ToListAsync(cancellationToken);
     }
 }

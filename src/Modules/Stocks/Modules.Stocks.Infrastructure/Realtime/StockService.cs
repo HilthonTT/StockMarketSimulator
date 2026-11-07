@@ -21,6 +21,9 @@ internal sealed class StockService(
         string ticker, 
         CancellationToken cancellationToken = default)
     {
+        // Tickers are stored and broadcast upper-case; "aapl" and "AAPL" must be the same stock.
+        ticker = ticker.Trim().ToUpperInvariant();
+
         try
         {
             using IDbConnection connection = await dbConnectionFactory.GetOpenConnectionAsync(cancellationToken);
@@ -47,13 +50,31 @@ internal sealed class StockService(
 
             activeTickerManager.AddTicker(ticker);
 
-            return Option<StockPriceResponse>.Some(dbPrice);
+            return Option<StockPriceResponse>.Some(apiPrice);
         }
         catch (Exception exception)
         {
             logger.LogError(exception, "Error occured while fetching stock price for ticker: {Ticker}", ticker);
             throw;
         }
+    }
+
+    public async Task UpdatePriceAsync(string ticker, decimal price, CancellationToken cancellationToken = default)
+    {
+        using IDbConnection connection = await dbConnectionFactory.GetOpenConnectionAsync(cancellationToken);
+
+        const string sql =
+            """
+            UPDATE stocks.stocks
+            SET price = @Price,
+                modified_on_utc = @UtcNow
+            WHERE ticker = @Ticker;
+            """;
+
+        await connection.ExecuteAsync(new CommandDefinition(
+            sql,
+            new { Ticker = ticker.Trim().ToUpperInvariant(), Price = price, dateTimeProvider.UtcNow },
+            cancellationToken: cancellationToken));
     }
 
     private static async Task<StockPriceResponse?> GetLatestPriceFromDatabaseAsync(IDbConnection connection, string ticker)

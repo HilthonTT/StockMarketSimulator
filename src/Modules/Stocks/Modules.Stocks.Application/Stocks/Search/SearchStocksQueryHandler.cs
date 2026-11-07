@@ -49,20 +49,30 @@ internal sealed class SearchStocksQueryHandler(
             request.PageSize,
             cancellationToken);
 
-        // If there are results, return them
-        if (stockSearches.Items.Count != 0 && string.IsNullOrWhiteSpace(request.SearchTerm)) 
+        // Local results win. Only fall back to the external API (and cache its matches) when a
+        // search term found nothing locally; an empty term never calls the API.
+        if (stockSearches.Items.Count != 0 || string.IsNullOrWhiteSpace(request.SearchTerm))
         {
             return stockSearches;
         }
 
-        AlphaVantageSearchData? result = await stocksClient.SearchTickerAsync(request.SearchTerm ?? "", cancellationToken);
+        AlphaVantageSearchData? result = await stocksClient.SearchTickerAsync(request.SearchTerm, cancellationToken);
 
         if (result is null || result.BestMatches.Count == 0)
         {
             return stockSearches;
         }
 
-        IEnumerable<StockSearchResult> newStockSearchResults = result.BestMatches
+        List<string> matchedTickers = [.. result.BestMatches.Select(m => m.Symbol).Distinct()];
+
+        HashSet<string> knownTickers = [.. await dbContext.StockSearchResults
+            .Where(s => matchedTickers.Contains(s.Ticker))
+            .Select(s => s.Ticker)
+            .ToListAsync(cancellationToken)];
+
+        List<StockSearchResult> newStockSearchResults = [.. result.BestMatches
+            .DistinctBy(m => m.Symbol)
+            .Where(m => !knownTickers.Contains(m.Symbol))
             .Select(m => StockSearchResult.Create(
                 m.Symbol,
                 m.Name,
@@ -71,22 +81,26 @@ internal sealed class SearchStocksQueryHandler(
                 m.MarketOpen,
                 m.MarketClose,
                 m.TimeZone,
+                m.Currency))];
+
+        if (newStockSearchResults.Count != 0)
+        {
+            stockSearchResultRepository.AddRange(newStockSearchResults);
+
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+
+        IEnumerable<StockSearchResponse> responses = result.BestMatches
+            .DistinctBy(m => m.Symbol)
+            .Select(m => new StockSearchResponse(
+                m.Symbol,
+                m.Name,
+                m.Type,
+                m.Region,
+                m.MarketOpen,
+                m.TimeZone,
                 m.Currency));
 
-        stockSearchResultRepository.AddRange(newStockSearchResults);
-
-        await unitOfWork.SaveChangesAsync(cancellationToken);
-
-        IEnumerable<StockSearchResponse> newStockSearchResponses = newStockSearchResults
-            .Select(s => new StockSearchResponse(
-                s.Ticker,
-                s.Name,
-                s.Type,
-                s.Region,
-                s.MarketOpen,
-                s.Timezone,
-                s.Currency));
-
-        return PagedList<StockSearchResponse>.Create(newStockSearchResponses, request.Page, request.PageSize);
+        return PagedList<StockSearchResponse>.Create(responses, request.Page, request.PageSize);
     }
 }

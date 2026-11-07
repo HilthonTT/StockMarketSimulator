@@ -80,19 +80,26 @@ internal sealed class StocksClient(
         Ensure.NotNullOrEmpty(apiKey, nameof(apiKey));
 
         string queryString =
-            $"?function=TIME_SERIES_INTRADAY&symbol={ticker}&interval=15min&apikey={apiKey}";
+            $"?function=TIME_SERIES_INTRADAY&symbol={Uri.EscapeDataString(ticker)}&interval=15min&apikey={Uri.EscapeDataString(apiKey)}";
 
         string tickerDataString = await httpClient.GetStringAsync(queryString, cancellationToken);
 
         AlphaVantageData? tickerData = JsonConvert.DeserializeObject<AlphaVantageData>(tickerDataString);
 
-        AlphaVantageTimeSeriesEntry? lastPrice = tickerData?.TimeSeries.FirstOrDefault().Value;
+        // Keys are "yyyy-MM-dd HH:mm:ss" timestamps, so the lexicographically largest key is the latest
+        // bar; don't rely on JSON/dictionary ordering.
+        AlphaVantageTimeSeriesEntry? lastPrice = tickerData?.TimeSeries
+            .OrderByDescending(entry => entry.Key, StringComparer.Ordinal)
+            .Select(entry => entry.Value)
+            .FirstOrDefault();
+
         if (lastPrice is null)
         {
             return null;
         }
 
-        return new StockPriceResponse(ticker, decimal.Parse(lastPrice.High, CultureInfo.InvariantCulture));
+        // The latest traded price is the bar's close (the high overstated every price).
+        return new StockPriceResponse(ticker, decimal.Parse(lastPrice.Close, CultureInfo.InvariantCulture));
     }
 
     private async Task<AlphaVantageSearchData?> SearchStocksAsync(
@@ -103,7 +110,7 @@ internal sealed class StocksClient(
         Ensure.NotNullOrEmpty(apiKey, nameof(apiKey));
 
         string queryString =
-            $"?function=SYMBOL_SEARCH&keywords={searchTerm}&apikey={apiKey}";
+            $"?function=SYMBOL_SEARCH&keywords={Uri.EscapeDataString(searchTerm)}&apikey={Uri.EscapeDataString(apiKey)}";
 
         string matchesDataString = await httpClient.GetStringAsync(queryString, cancellationToken);
 

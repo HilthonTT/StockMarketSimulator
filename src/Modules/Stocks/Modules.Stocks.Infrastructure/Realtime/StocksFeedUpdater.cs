@@ -1,34 +1,46 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Modules.Stocks.Application.Abstractions.Realtime;
 using Modules.Stocks.Contracts.Stocks;
+using Modules.Stocks.Domain.Services;
+using Modules.Stocks.Infrastructure.Realtime.Options;
 using Quartz;
 using SharedKernel;
 
 namespace Modules.Stocks.Infrastructure.Realtime;
 
+/// <summary>
+/// Advances the simulated price of every active ticker by one GBM step and pushes it to SignalR clients.
+/// </summary>
+/// <remarks>
+/// Each new price is persisted, so the next tick continues from it (a real random walk) and the
+/// buy/sell handlers trade at exactly the price users see on the feed.
+/// </remarks>
 [DisallowConcurrentExecution]
 public sealed class StocksFeedUpdater(
     IActiveTickerManager activeTickerManager,
     IServiceScopeFactory serviceScopeFactory,
     IHubContext<StocksFeedHub, IStocksUpdateClient> hubContext,
+    IOptions<StockUpdateOptions> options,
     ILogger<StocksFeedUpdater> logger,
     IStockVolatilityProvider stockVolatilityProvider) : IJob
 {
     public const string Name = nameof(StocksFeedUpdater);
 
+    private readonly StockUpdateOptions _options = options.Value;
+
     public async ValueTask Execute(IJobExecutionContext context, CancellationToken cancellationToken = default)
     {
-        await UpdateStockPricesAsync(cancellationToken);
-    }
+        IReadOnlyCollection<string> tickers = activeTickerManager.GetAllTickers();
+        if (tickers.Count == 0)
+        {
+            return;
+        }
 
-    private async Task UpdateStockPricesAsync(CancellationToken cancellationToken = default)
-    {
         using IServiceScope scope = serviceScopeFactory.CreateScope();
         IStockService stockService = scope.ServiceProvider.GetRequiredService<IStockService>();
-
-        IReadOnlyCollection<string> tickers = activeTickerManager.GetAllTickers();
 
         var parallelOptions = new ParallelOptions
         {
@@ -38,69 +50,46 @@ public sealed class StocksFeedUpdater(
 
         await Parallel.ForEachAsync(tickers, parallelOptions, async (ticker, token) =>
         {
-            Option<StockPriceResponse> optionCurrentPrice =
-                    await stockService.GetLatestStockPriceAsync(ticker, token);
-
-            if (!optionCurrentPrice.IsSome)
+            // One failing ticker must not cancel the update of all the others.
+            try
             {
-                return;
+                await UpdateTickerAsync(stockService, ticker, token);
             }
-
-            StockPriceResponse currentPrice = optionCurrentPrice.ValueOrThrow();
-
-            decimal newPrice = CalculateNewPrice(currentPrice);
-
-            var update = new StockPriceUpdate(ticker, newPrice);
-
-            await hubContext.Clients.Group(ticker).ReceiveStockPriceUpdate(update, token);
-
-            logger.LogInformation("Updated {Ticker} price to {Price}", ticker, newPrice);
+            catch (Exception exception) when (exception is not OperationCanceledException)
+            {
+                logger.LogError(exception, "Failed to update simulated price for {Ticker}", ticker);
+            }
         });
     }
 
-    private decimal CalculateNewPrice(StockPriceResponse currentPrice)
+    private async Task UpdateTickerAsync(IStockService stockService, string ticker, CancellationToken cancellationToken)
     {
-        const double dt = 1.0 / 252; // Daily step assuming 252 trading days/year
+        Option<StockPriceResponse> optionCurrentPrice =
+            await stockService.GetLatestStockPriceAsync(ticker, cancellationToken);
+
+        if (!optionCurrentPrice.IsSome)
+        {
+            return;
+        }
+
+        StockPriceResponse currentPrice = optionCurrentPrice.ValueOrThrow();
+
         (double mu, double sigma) = stockVolatilityProvider.GetParameters(currentPrice.Ticker);
 
-        double standardNormal = BoxMuller();
-        double percentageChange = (mu * dt) + (sigma * Math.Sqrt(dt) * standardNormal);
+        decimal newPrice = GeometricBrownianMotion.NextPrice(
+            currentPrice.Price,
+            dailyDrift: mu,
+            dailyVolatility: sigma,
+            stepInTradingDays: _options.UpdateIntervalInSeconds / GeometricBrownianMotion.TradingSecondsPerDay,
+            maxStepChange: _options.MaxPercentageChange,
+            standardNormal: GeometricBrownianMotion.SampleStandardNormal(Random.Shared));
 
-        // Occasionally inject a rare but significant price shock
-        if (Random.Shared.NextDouble() < 0.01) // ~1% chance per update
-        {
-            double shockMagnitude = (Random.Shared.NextDouble() - 0.5) * 0.3; // +- 30% max
-            percentageChange += shockMagnitude;
-        }
+        await stockService.UpdatePriceAsync(currentPrice.Ticker, newPrice, cancellationToken);
 
-        // Limit the maximum/minimum value of percentageChange to avoid excessive values
-        percentageChange = Math.Clamp(percentageChange, -0.90, 0.90);  // Limit price changes to -90% to +90%
+        await hubContext.Clients
+            .Group(currentPrice.Ticker)
+            .ReceiveStockPriceUpdate(new StockPriceUpdate(currentPrice.Ticker, newPrice), cancellationToken);
 
-        // Ensure no overflow happens with the price calculation
-        decimal priceFactor = (decimal)(1 + percentageChange);
-        if (priceFactor < 0)
-        {
-            priceFactor = 0; // Ensure price never goes negative
-        }
-
-        decimal newPrice = currentPrice.Price * priceFactor;
-        newPrice = Math.Max(newPrice, 0); // Prevent negative prices
-
-        // Ensure the new price is within a reasonable range to avoid OverflowException
-        newPrice = Math.Round(newPrice, 2);
-
-        return newPrice;
-    }
-
-    /// <summary>
-    /// Generates a standard normally distributed value using the Box-Muller transform.
-    /// </summary>
-    /// <param name="rand">Random number generator.</param>
-    /// <returns>Standard normal variable (mean 0, std dev 1).</returns>
-    private static double BoxMuller()
-    {
-        double u1 = 1.0 - Random.Shared.NextDouble(); // (0,1]
-        double u2 = 1.0 - Random.Shared.NextDouble();
-        return Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Cos(2.0 * Math.PI * u2);
+        logger.LogDebug("Updated {Ticker} price to {Price}", currentPrice.Ticker, newPrice);
     }
 }

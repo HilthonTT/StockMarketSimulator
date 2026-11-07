@@ -19,9 +19,12 @@ internal sealed class UrlShorteningService(
 {
     private const int MaxRetries = 3;
 
+    // Prefixed so short codes can never collide with other modules' cache keys.
+    private static string CacheKey(string shortCode) => $"shorturl:{shortCode}";
+
     public async Task<string?> GetOriginalUrlAsync(string shortCode, CancellationToken cancellationToken = default)
     {
-        string? originalUrl = await cacheService.GetAsync<string>(shortCode, cancellationToken);
+        string? originalUrl = await cacheService.GetAsync<string>(CacheKey(shortCode), cancellationToken);
         if (!string.IsNullOrWhiteSpace(originalUrl))
         {
             return originalUrl;
@@ -40,7 +43,10 @@ internal sealed class UrlShorteningService(
             sql,
             new { ShortCode = shortCode });
 
-        await cacheService.SetAsync(shortCode, originalUrl, cancellationToken: cancellationToken);
+        if (originalUrl is not null)
+        {
+            await cacheService.SetAsync(CacheKey(shortCode), originalUrl, cancellationToken: cancellationToken);
+        }
 
         return originalUrl;
     }
@@ -72,13 +78,13 @@ internal sealed class UrlShorteningService(
                         CreatedOnUtc = dateTimeProvider.UtcNow,
                     });
 
-                await cacheService.SetAsync(shortCode, originalUrl, cancellationToken: cancellationToken);
+                await cacheService.SetAsync(CacheKey(shortCode), originalUrl, cancellationToken: cancellationToken);
 
                 return result;
             }
             catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.UniqueViolation)
             {
-                if (attempt == MaxRetries)
+                if (attempt == MaxRetries - 1)
                 {
                     logger.LogError(ex, "Failed to generate unique short code after {MaxRetries} attempts", MaxRetries);
 
@@ -95,52 +101,33 @@ internal sealed class UrlShorteningService(
         throw new InvalidOperationException("Failed to generate unique short code");
     }
 
+    /// <summary>
+    /// Stores a link under a caller-chosen code (used for ticker links). The operation is idempotent:
+    /// if the code already exists (e.g. a concurrent request created it first) the existing row is kept.
+    /// </summary>
     public async Task<string> ShortenUrlAsync(string shortCode, string originalUrl, CancellationToken cancellationToken = default)
     {
         using IDbConnection connection = await dbConnectionFactory.GetOpenConnectionAsync(cancellationToken);
 
-        for (int attempt = 0; attempt < MaxRetries; attempt++)
-        {
-            try
+        const string sql =
+            """
+            INSERT INTO stocks.shortened_urls (id, short_code, original_url, created_on_utc)
+            VALUES (@Id, @ShortCode, @OriginalUrl, @CreatedOnUtc)
+            ON CONFLICT (short_code) DO NOTHING;
+            """;
+
+        await connection.ExecuteAsync(new CommandDefinition(
+            sql,
+            new
             {
-                const string sql =
-                    """
-                    INSERT INTO stocks.shortened_urls (id, short_code, original_url, created_on_utc)
-                    VALUES (@Id, @ShortCode, @OriginalUrl, @CreatedOnUtc)
-                    RETURNING short_code;
-                    """;
+                Id = Guid.CreateVersion7(),
+                ShortCode = shortCode,
+                OriginalUrl = originalUrl,
+                CreatedOnUtc = dateTimeProvider.UtcNow,
+            },
+            cancellationToken: cancellationToken));
 
-                string result = await connection.QuerySingleAsync<string>(
-                    sql,
-                    new
-                    {
-                        Id = Guid.CreateVersion7(),
-                        ShortCode = shortCode,
-                        OriginalUrl = originalUrl,
-                        CreatedOnUtc = dateTimeProvider.UtcNow,
-                    });
-
-                await cacheService.SetAsync(shortCode, originalUrl, cancellationToken: cancellationToken);
-
-                return result;
-            }
-            catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.UniqueViolation)
-            {
-                if (attempt == MaxRetries)
-                {
-                    logger.LogError(ex, "Failed to generate unique short code after {MaxRetries} attempts", MaxRetries);
-
-                    throw new InvalidOperationException("Failed to generate unique short code", ex);
-                }
-
-                logger.LogWarning(
-                    "Short code collision occured. Retrying... (Attempt {Attempt} of {MaxRetries})",
-                    attempt + 1,
-                    MaxRetries);
-            }
-        }
-
-        throw new InvalidOperationException("Failed to generate unique short code");
+        return shortCode;
     }
 
     public async Task<IEnumerable<ShortenedUrl>> GetAllUrlsAsync(CancellationToken cancellationToken = default)
