@@ -1,4 +1,5 @@
-﻿using Modules.Stocks.Application.Abstractions.Realtime;
+using Modules.Stocks.Application.Abstractions.Realtime;
+using Modules.Stocks.Domain.Services;
 
 namespace Modules.Stocks.Infrastructure.Realtime;
 
@@ -85,6 +86,12 @@ internal sealed class SimpleStockVolatilityProvider : IStockVolatilityProvider
     /// <returns>A tuple containing (Mu, Sigma) values.</returns>
     public (double Mu, double Sigma) GetParameters(string ticker)
     {
+        // Built-in listings carry their own profile.
+        if (MarketCatalog.TryGet(ticker, out ListedAsset asset))
+        {
+            return (asset.DailyDrift, asset.DailyVolatility);
+        }
+
         VolatilityProfile profile = _parameters.TryGetValue(ticker, out var value) ? value : _default;
 
         return (profile.Mu, profile.Sigma);

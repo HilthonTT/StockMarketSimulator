@@ -1,12 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Modules.Stocks.Api.Api;
 using Modules.Stocks.Api.Responses;
+using Modules.Stocks.Application.Abstractions.Realtime;
 using Modules.Stocks.Infrastructure.Database;
 using SharedKernel;
 
 namespace Modules.Stocks.Infrastructure.Api;
 
-internal sealed class StocksApi(StocksDbContext context) : IStocksApi
+internal sealed class StocksApi(StocksDbContext context, IMarketDataService marketDataService) : IStocksApi
 {
     private static readonly Func<StocksDbContext, string, Task<StockApiResponse?>> GetStockByTicker =
         EF.CompileAsyncQuery((StocksDbContext dbContext, string id) =>
@@ -26,4 +27,9 @@ internal sealed class StocksApi(StocksDbContext context) : IStocksApi
 
         return Option<StockApiResponse>.Some(stockApi);
     }
+
+    public Task<IReadOnlyDictionary<string, decimal>> GetPricesAsync(
+        IReadOnlyCollection<string> tickers,
+        CancellationToken cancellationToken = default) =>
+        marketDataService.GetPricesAsync(tickers, cancellationToken);
 }

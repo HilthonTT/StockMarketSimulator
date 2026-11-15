@@ -36,8 +36,8 @@ public static class GeometricBrownianMotion
 
         decimal nextPrice = currentPrice * (decimal)(1 + relativeChange);
 
-        // Keep a strictly positive, cent-rounded price.
-        return Math.Max(Math.Round(nextPrice, 2, MidpointRounding.AwayFromZero), 0.01m);
+        // Keep a strictly positive price: cents above $1, 4 decimals below (cheap crypto would otherwise freeze).
+        return PriceHistoryGenerator.ToPrice((double)nextPrice);
     }
 
     /// <summary>Draws a standard normal value using the Box-Muller transform.</summary>

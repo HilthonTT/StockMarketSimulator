@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -6,6 +6,7 @@ using Modules.Stocks.Application.Abstractions.Data;
 using Modules.Stocks.Application.Abstractions.Http;
 using Modules.Stocks.Contracts.Stocks;
 using Modules.Stocks.Domain.Entities;
+using Modules.Stocks.Domain.Services;
 using Quartz;
 using SharedKernel;
 
@@ -34,6 +35,9 @@ public sealed class UpdateLatestStockPriceJob(
 
         DateTime thresholdDate = dateTimeProvider.UtcNow.AddDays(-DaysInPast);
 
+        // The built-in universe is fully simulated; only symbols fetched from Alpha Vantage get refreshed.
+        string[] simulatedTickers = [.. MarketCatalog.Tickers];
+
         using IDbTransaction transaction = await dbContext.BeginTransactionAsync(cancellationToken);
 
         Dictionary<string, decimal> tickerToPrice = new(StringComparer.OrdinalIgnoreCase);
@@ -41,6 +45,7 @@ public sealed class UpdateLatestStockPriceJob(
         try
         {
             List<Stock> outdatedStocks = await dbContext.Stocks
+                .Where(s => !simulatedTickers.Contains(s.Ticker))
                 .Where(s =>
                     (s.ModifiedOnUtc.HasValue && s.ModifiedOnUtc < thresholdDate) ||
                     (!s.ModifiedOnUtc.HasValue && s.CreatedOnUtc < thresholdDate))

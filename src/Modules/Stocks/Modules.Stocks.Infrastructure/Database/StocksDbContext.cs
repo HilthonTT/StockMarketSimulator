@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using Infrastructure.Database.Configurations;
 using Infrastructure.Database.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +14,8 @@ public sealed class StocksDbContext(DbContextOptions<StocksDbContext> options)
     public DbSet<Stock> Stocks { get; set; }
 
     public DbSet<StockSearchResult> StockSearchResults { get; set; }
+
+    public DbSet<PriceBar> PriceBars { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

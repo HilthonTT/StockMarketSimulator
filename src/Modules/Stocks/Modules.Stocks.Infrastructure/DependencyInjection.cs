@@ -1,4 +1,4 @@
-﻿using EntityFramework.Exceptions.PostgreSQL;
+using EntityFramework.Exceptions.PostgreSQL;
 using FluentValidation;
 using Infrastructure;
 using Infrastructure.Database.Interceptors;
@@ -20,6 +20,7 @@ using Modules.Stocks.Domain.Repositories;
 using Modules.Stocks.Infrastructure.Api;
 using Modules.Stocks.Infrastructure.Database;
 using Modules.Stocks.Infrastructure.Http;
+using Modules.Stocks.Infrastructure.Market;
 using Modules.Stocks.Infrastructure.Realtime;
 using Modules.Stocks.Infrastructure.Realtime.Options;
 using Modules.Stocks.Infrastructure.Repositories;
@@ -117,7 +118,12 @@ public static class DependencyInjection
         services.AddSingleton<IStockVolatilityProvider, SimpleStockVolatilityProvider>();
 
         services.AddScoped<IStockService, StockService>();
+        services.AddScoped<IMarketDataService, MarketDataService>();
         services.AddSingleton<IActiveTickerManager, ActiveTickerManager>();
+        services.AddSingleton<IMarketNewsStore, MarketNewsStore>();
+
+        // Lists the built-in market universe (stocks and crypto) so the simulator works without an API key.
+        services.AddHostedService<MarketSeeder>();
 
         return services;
     }

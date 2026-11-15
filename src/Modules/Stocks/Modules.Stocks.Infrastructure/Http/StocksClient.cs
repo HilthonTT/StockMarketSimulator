@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using Application.Abstractions.Caching;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -30,7 +30,11 @@ internal sealed class StocksClient(
         {
             stockPriceResponse = await GetStockPriceAsync(ticker, cancellationToken);
 
-            await cacheService.SetAsync(cacheKey, stockPriceResponse, TimeSpan.FromMinutes(5), cancellationToken);
+            // Don't cache misses: a rate-limited or failed call would otherwise hide the ticker for minutes.
+            if (stockPriceResponse is not null)
+            {
+                await cacheService.SetAsync(cacheKey, stockPriceResponse, TimeSpan.FromMinutes(5), cancellationToken);
+            }
         }
 
         if (stockPriceResponse is null)
@@ -59,7 +63,10 @@ internal sealed class StocksClient(
         {
             alphaVantageSearchData = await SearchStocksAsync(searchTerm, cancellationToken);
 
-            await cacheService.SetAsync(cacheKey, alphaVantageSearchData, TimeSpan.FromMinutes(30), cancellationToken);
+            if (alphaVantageSearchData is not null)
+            {
+                await cacheService.SetAsync(cacheKey, alphaVantageSearchData, TimeSpan.FromMinutes(30), cancellationToken);
+            }
         }
 
         if (alphaVantageSearchData is null)
@@ -77,7 +84,11 @@ internal sealed class StocksClient(
     private async Task<StockPriceResponse?> GetStockPriceAsync(string ticker, CancellationToken cancellationToken = default)
     {
         string? apiKey = configuration["Stocks:ApiKey"];
-        Ensure.NotNullOrEmpty(apiKey, nameof(apiKey));
+        if (string.IsNullOrWhiteSpace(apiKey))
+        {
+            // No key: only the built-in market universe is available. Not an error.
+            return null;
+        }
 
         string queryString =
             $"?function=TIME_SERIES_INTRADAY&symbol={Uri.EscapeDataString(ticker)}&interval=15min&apikey={Uri.EscapeDataString(apiKey)}";
@@ -88,7 +99,8 @@ internal sealed class StocksClient(
 
         // Keys are "yyyy-MM-dd HH:mm:ss" timestamps, so the lexicographically largest key is the latest
         // bar; don't rely on JSON/dictionary ordering.
-        AlphaVantageTimeSeriesEntry? lastPrice = tickerData?.TimeSeries
+        // Rate-limit and error responses ("Note", "Information", "Error Message") have no time series.
+        AlphaVantageTimeSeriesEntry? lastPrice = tickerData?.TimeSeries?
             .OrderByDescending(entry => entry.Key, StringComparer.Ordinal)
             .Select(entry => entry.Value)
             .FirstOrDefault();
@@ -99,7 +111,9 @@ internal sealed class StocksClient(
         }
 
         // The latest traded price is the bar's close (the high overstated every price).
-        return new StockPriceResponse(ticker, decimal.Parse(lastPrice.Close, CultureInfo.InvariantCulture));
+        return decimal.TryParse(lastPrice.Close, NumberStyles.Number, CultureInfo.InvariantCulture, out decimal close)
+            ? new StockPriceResponse(ticker, close)
+            : null;
     }
 
     private async Task<AlphaVantageSearchData?> SearchStocksAsync(
@@ -107,7 +121,10 @@ internal sealed class StocksClient(
         CancellationToken cancellationToken = default)
     {
         string? apiKey = configuration["Stocks:ApiKey"];
-        Ensure.NotNullOrEmpty(apiKey, nameof(apiKey));
+        if (string.IsNullOrWhiteSpace(apiKey))
+        {
+            return null;
+        }
 
         string queryString =
             $"?function=SYMBOL_SEARCH&keywords={Uri.EscapeDataString(searchTerm)}&apikey={Uri.EscapeDataString(apiKey)}";

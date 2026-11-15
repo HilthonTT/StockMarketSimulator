@@ -1,4 +1,4 @@
-﻿using SharedKernel;
+using SharedKernel;
 
 namespace Modules.Stocks.Application.Core.Errors;
 
@@ -75,5 +75,27 @@ internal static class StocksValidationErrors
         public static readonly Error UserIdIsRequired = Error.Problem(
             "GetPurchasedStockTickers.UserIdIsRequired",
             "The user identifier is required.");
+    }
+
+    public static class GetPriceHistory
+    {
+        public static readonly Error TickerIsRequired = Error.Problem(
+            "GetPriceHistory.TickerIsRequired",
+            "The ticker SYMBOL is required.");
+
+        public static readonly Error TickerInvalidFormat = Error.Problem(
+            "GetPriceHistory.TickerInvalidFormat",
+            "The ticker must be at most 10 characters.");
+
+        public static readonly Error RangeInvalid = Error.Problem(
+            "GetPriceHistory.RangeInvalid",
+            "The range must be one of 1D, 1W, 1M or 3M.");
+    }
+
+    public static class GetMarketNews
+    {
+        public static readonly Error LimitOutOfRange = Error.Problem(
+            "GetMarketNews.LimitOutOfRange",
+            "The limit must be between 1 and 100.");
     }
 }

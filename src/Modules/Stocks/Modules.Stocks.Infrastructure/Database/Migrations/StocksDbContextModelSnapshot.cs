@@ -58,6 +58,39 @@ namespace Modules.Stocks.Infrastructure.Database.Migrations
                     b.ToTable("outbox_messages", "stocks");
                 });
 
+            modelBuilder.Entity("Modules.Stocks.Domain.Entities.PriceBar", b =>
+                {
+                    b.Property<string>("Ticker")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("ticker");
+
+                    b.Property<DateTime>("BucketStart")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("bucket_start");
+
+                    b.Property<decimal>("Close")
+                        .HasColumnType("numeric")
+                        .HasColumnName("close");
+
+                    b.Property<decimal>("High")
+                        .HasColumnType("numeric")
+                        .HasColumnName("high");
+
+                    b.Property<decimal>("Low")
+                        .HasColumnType("numeric")
+                        .HasColumnName("low");
+
+                    b.Property<decimal>("Open")
+                        .HasColumnType("numeric")
+                        .HasColumnName("open");
+
+                    b.HasKey("Ticker", "BucketStart")
+                        .HasName("pk_price_bars");
+
+                    b.ToTable("price_bars", "stocks");
+                });
+
             modelBuilder.Entity("Modules.Stocks.Domain.Entities.ShortenedUrl", b =>
                 {
                     b.Property<Guid>("Id")
@@ -101,17 +134,55 @@ namespace Modules.Stocks.Infrastructure.Database.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("AssetClass")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasDefaultValue("stock")
+                        .HasColumnName("asset_class");
+
                     b.Property<DateTime>("CreatedOnUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_on_utc");
+
+                    b.Property<decimal>("DayHigh")
+                        .HasColumnType("numeric")
+                        .HasColumnName("day_high");
+
+                    b.Property<decimal>("DayLow")
+                        .HasColumnType("numeric")
+                        .HasColumnName("day_low");
 
                     b.Property<DateTime?>("ModifiedOnUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("modified_on_utc");
 
+                    b.Property<string>("Name")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<decimal>("OpenPrice")
+                        .HasColumnType("numeric")
+                        .HasColumnName("open_price");
+
+                    b.Property<decimal>("PreviousClose")
+                        .HasColumnType("numeric")
+                        .HasColumnName("previous_close");
+
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric")
                         .HasColumnName("price");
+
+                    b.Property<string>("Sector")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("sector");
+
+                    b.Property<DateOnly>("SessionDate")
+                        .HasColumnType("date")
+                        .HasColumnName("session_date");
 
                     b.Property<string>("Ticker")
                         .IsRequired()

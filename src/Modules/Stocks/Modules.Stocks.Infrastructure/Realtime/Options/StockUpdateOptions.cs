@@ -1,4 +1,4 @@
-﻿namespace Modules.Stocks.Infrastructure.Realtime.Options;
+namespace Modules.Stocks.Infrastructure.Realtime.Options;
 
 public sealed class StockUpdateOptions
 {
@@ -8,5 +8,6 @@ public sealed class StockUpdateOptions
 
     public double MaxPercentageChange { get; set; } = 0.02; // 2%
 
-    public double Volatility { get; set; } = 0.01; // 1% daily volatility
+    /// <summary>Average number of simulated news events (price shocks) per minute across the market.</summary>
+    public double NewsEventsPerMinute { get; set; } = 0.25;
 }

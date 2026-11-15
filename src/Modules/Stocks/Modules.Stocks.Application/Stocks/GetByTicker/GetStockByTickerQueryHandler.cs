@@ -1,4 +1,4 @@
-﻿using Application.Abstractions.Messaging;
+using Application.Abstractions.Messaging;
 using Modules.Stocks.Application.Abstractions.Realtime;
 using Modules.Stocks.Contracts.Stocks;
 using Modules.Stocks.Domain.Errors;
@@ -7,19 +7,20 @@ using SharedKernel;
 namespace Modules.Stocks.Application.Stocks.GetByTicker;
 
 internal sealed class GetStockByTickerQueryHandler(IStockService stockService) 
-    : IQueryHandler<GetStockByTickerQuery, StockPriceResponse>
+    : IQueryHandler<GetStockByTickerQuery, StockQuoteResponse>
 {
-    public async Task<Result<StockPriceResponse>> Handle(GetStockByTickerQuery request, CancellationToken cancellationToken)
+    public async Task<Result<StockQuoteResponse>> Handle(GetStockByTickerQuery request, CancellationToken cancellationToken)
     {
-        Option<StockPriceResponse> optionStockPrice = await stockService.GetLatestStockPriceAsync(request.Ticker, cancellationToken);
+        Option<StockQuoteResponse> optionQuote = await stockService.GetQuoteAsync(
+            request.Ticker,
+            trackActivity: true,
+            cancellationToken);
 
-        if (!optionStockPrice.IsSome)
+        if (!optionQuote.IsSome)
         {
-            return Result.Failure<StockPriceResponse>(StockErrors.NotFound(request.Ticker));
+            return Result.Failure<StockQuoteResponse>(StockErrors.NotFound(request.Ticker));
         }
 
-        StockPriceResponse stockPrice = optionStockPrice.ValueOrThrow();
-
-        return stockPrice;
+        return optionQuote.ValueOrThrow();
     }
 }
