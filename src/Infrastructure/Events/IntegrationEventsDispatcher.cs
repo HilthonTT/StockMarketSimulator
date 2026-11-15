@@ -1,10 +1,22 @@
 ﻿using System.Collections.Concurrent;
 using Application.Abstractions.Events;
 using Application.Abstractions.Messaging;
+using EntityFramework.Exceptions.Common;
+using Infrastructure.Database;
+using Infrastructure.Outbox;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Infrastructure.Events;
 
+/// <summary>
+/// Dispatches an integration event to its in-process handlers, at most once per (event id, handler).
+/// </summary>
+/// <remarks>
+/// Delivery is at-least-once: a message is redelivered when any handler fails, and a publisher can publish
+/// the same event twice. Each successful handler is recorded in <c>general.outbox_message_consumers</c>
+/// (the table that also deduplicates domain-event handlers) under <c>integration:{HandlerName}</c>, so a
+/// redelivery only runs the handlers that haven't completed yet.
+/// </remarks>
 internal sealed class IntegrationEventsDispatcher(IServiceProvider serviceProvider) : IIntegrationEventsDispatcher
 {
     private static readonly ConcurrentDictionary<Type, Type> HandlerTypeDictionary = new();
@@ -29,10 +41,47 @@ internal sealed class IntegrationEventsDispatcher(IServiceProvider serviceProvid
             }
 
             HandlerWrapper? handlerWrapper = HandlerWrapper.Create(handler, integrationEventType);
-            if (handlerWrapper is not null)
+            if (handlerWrapper is null)
             {
-                await handlerWrapper.Handle(integrationEvent, cancellationToken);
+                continue;
             }
+
+            string consumerName = CreateConsumerName(handler.GetType());
+
+            await HandleOnceAsync(integrationEvent, handlerWrapper, consumerName, cancellationToken);
+        }
+    }
+
+    internal static string CreateConsumerName(Type handlerType) => $"integration:{handlerType.Name}";
+
+    private async Task HandleOnceAsync(
+        IIntegrationEvent integrationEvent,
+        HandlerWrapper handlerWrapper,
+        string consumerName,
+        CancellationToken cancellationToken)
+    {
+        // A fresh scope per record so a failed save can't leak tracked entities into the next handler.
+        using IServiceScope scope = serviceProvider.CreateScope();
+
+        IOutboxMessageConsumerRepository consumers =
+            scope.ServiceProvider.GetRequiredService<IOutboxMessageConsumerRepository>();
+
+        if (await consumers.ExistsAsync(integrationEvent.Id, consumerName, cancellationToken))
+        {
+            return;
+        }
+
+        await handlerWrapper.Handle(integrationEvent, cancellationToken);
+
+        consumers.Insert(new OutboxMessageConsumer { Id = integrationEvent.Id, Name = consumerName });
+
+        try
+        {
+            await scope.ServiceProvider.GetRequiredService<GeneralDbContext>().SaveChangesAsync(cancellationToken);
+        }
+        catch (UniqueConstraintException)
+        {
+            // Another instance handled and recorded the same delivery concurrently.
         }
     }
 

@@ -5,4 +5,8 @@
     <ProjectReference Include="..\Modules.Users.Application\Modules.Users.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Application.UnitTests" />
+  </ItemGroup>
+
 </Project>

@@ -4,8 +4,6 @@ using Contracts.Emails;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
-using Modules.Budgeting.Api.Api;
-using Modules.Users.BackgroundJobs.Users.EmailVerification;
 using Quartz;
 using SharedKernel;
 
@@ -15,7 +13,6 @@ public sealed class UserEmailVerifiedJob(
     ILogger<UserEmailVerifiedJob> logger,
     INotificationService notificationService,
     IDateTimeProvider dateTimeProvider,
-    IBudgetingApi budgetingApi,
     IValidator<UserEmailVerifiedJobData> validator) : IJob
 {
     public const string Name = nameof(UserEmailVerifiedJob);
@@ -51,10 +48,9 @@ public sealed class UserEmailVerifiedJob(
 
             var request = new WelcomeEmail(jobData.Email, jobData.Username);
 
-            Task sendWelcomeTask = notificationService.SendWelcomeAsync(request, cancellationToken);
-            Task addBudgetTask = budgetingApi.AddBudgetAsync(jobData.UserId, BudgetCurrencies.Default, cancellationToken);
-
-            await Task.WhenAll(sendWelcomeTask, addBudgetTask);
+            // The starting budget is provisioned by EmailVerifiedIntegrationEventHandler (retried, idempotent);
+            // this job only sends the welcome email.
+            await notificationService.SendWelcomeAsync(request, cancellationToken);
 
             logger.LogInformation("Successfully sent welcome email to {Email} for user {UserId}.", jobData.Email, jobData.UserId);
         }

@@ -1,4 +1,6 @@
 using System.Threading.RateLimiting;
+using Infrastructure.Authentication;
+using Web.Api.Endpoints;
 using RedisRateLimiting;
 using StackExchange.Redis;
 
@@ -13,6 +15,25 @@ internal static class GlobalLimiterFactory
     public const int TokenLimit = 100;          // Maximum tokens (burst capacity)
     public const int TokensPerPeriod = 50;      // Refill rate (tokens per period)
     public static readonly TimeSpan ReplenishmentPeriod = TimeSpan.FromSeconds(1);
+
+    /// <summary>
+    /// The rate-limit partition for a request: the authenticated user, else the client IP. Without this every
+    /// caller would share one bucket, so a single client could exhaust the limit for everyone.
+    /// </summary>
+    /// <remarks>
+    /// Anonymous requests that arrive through a proxy share the proxy's IP (forwarded headers aren't trusted).
+    /// </remarks>
+    public static string GetPartitionKey(HttpContext httpContext)
+    {
+        if (httpContext.User.TryGetUserId(out Guid userId))
+        {
+            return $"{RateLimiterPolicyNames.GlobalLimiter}:user:{userId}";
+        }
+
+        string ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        return $"{RateLimiterPolicyNames.GlobalLimiter}:ip:{ip}";
+    }
 
     public static RateLimiter Create(string partitionKey, IConnectionMultiplexer? connectionMultiplexer, ILogger logger)
     {

@@ -1,4 +1,5 @@
 ﻿using Application.Abstractions.Messaging;
+using Microsoft.EntityFrameworkCore;
 using Modules.Users.Application.Abstractions.Authentication;
 using Modules.Users.Application.Abstractions.Data;
 using Modules.Users.Contracts.Users;
@@ -38,7 +39,15 @@ internal sealed class LoginUserWithRefreshTokenCommandHandler(
 
         refreshToken.Refresh(tokenProvider.HashRefreshToken(newPlainRefreshToken));
 
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            // Another request rotated (or revoked) this token first: the presented token is no longer valid.
+            return Result.Failure<TokenResponse>(RefreshTokenErrors.Expired);
+        }
 
         return new TokenResponse(accessToken, newPlainRefreshToken);
     }

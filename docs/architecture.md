@@ -86,7 +86,7 @@ Middleware order in `Program.cs`:
 3. `UserContextEnrichementMiddleware` and `RequestContextLoggingMiddleware`. Both await the rest of the pipeline inside their log scope or activity.
 4. Status-code pages, the token-bucket rate limiter, response compression.
 
-The `GlobalLimiter` policy (100-token burst, 50 tokens/s) is a Redis token bucket shared by all instances. `GlobalLimiterFactory` builds an in-process token bucket of the same shape instead when Redis was unreachable at start-up, and `RedisFallbackRateLimiter` switches to it whenever a Redis call fails at runtime (logging at most one warning a minute), so rate-limited endpoints degrade to per-instance limits rather than failing.
+The `GlobalLimiter` policy (100-token burst, 50 tokens/s) is a Redis token bucket shared by all instances, partitioned per caller (user id, or client IP for anonymous requests). `GlobalLimiterFactory` builds an in-process token bucket of the same shape instead when Redis was unreachable at start-up, and `RedisFallbackRateLimiter` switches to it whenever a Redis call fails at runtime (logging at most one warning a minute), so rate-limited endpoints degrade to per-instance limits rather than failing.
 
 The API is versioned as `api/v{version}`. `Asp.Versioning.OpenApi` produces one OpenAPI document per version (`openapi/v1.json`), alongside Swagger UI, ReDoc and Scalar in Development. Feature flags gate each area (targeting groups come from the user's role claims and an optional `groups` claim, never from request headers), and permissions are enforced with `HasPermission(...)`, which uses a dynamic policy provider backed by `PermissionRequirement`. Write endpoints such as buy and sell use an `Idempotence-Key` header (`IdempotencyFilter`).
 

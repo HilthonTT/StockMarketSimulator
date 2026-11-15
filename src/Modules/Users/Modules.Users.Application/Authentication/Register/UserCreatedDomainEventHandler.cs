@@ -9,8 +9,9 @@ internal sealed class UserCreatedDomainEventHandler(IEventBus eventBus) : IDomai
 {
     public Task Handle(UserCreatedDomainEvent notification, CancellationToken cancellationToken)
     {
+        // Reuse the domain event's id: a retried publish then carries the same id and consumers dedupe it.
         var integrationEvent = new UserCreatedIntegrationEvent(
-            Guid.CreateVersion7(),
+            notification.Id,
             notification.UserId, 
             notification.VerificationLink);
 

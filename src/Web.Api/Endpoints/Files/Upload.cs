@@ -3,6 +3,7 @@ using Application.Abstractions.Storage;
 using Modules.Users.Domain.Enums;
 using Web.Api.Extensions;
 using Web.Api.Features;
+using Web.Api.Infrastructure;
 
 namespace Web.Api.Endpoints.Files;
 
@@ -16,9 +17,9 @@ internal sealed class Upload : IEndpoint
             IUserContext userContext,
             CancellationToken cancellationToken = default) =>
         {
-            if (!file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+            if (!await ImageUploads.IsValidAsync(file, cancellationToken))
             {
-                return Results.BadRequest("Only image files are allowed.");
+                return Results.BadRequest(ImageUploads.InvalidImageMessage);
             }
 
             using Stream stream = file.OpenReadStream();

@@ -87,7 +87,8 @@ RouteGroupBuilder versionedGroup = app
     .MapGroup("api/v{version:apiVersion}")
     .WithApiVersionSet(apiVersionSet);
 
-app.MapDefaultEndpoints();
+// Web.Api maps its own, more detailed /health endpoint below.
+app.MapDefaultEndpoints(mapHealth: false);
 
 app.MapEndpoints(versionedGroup);
 

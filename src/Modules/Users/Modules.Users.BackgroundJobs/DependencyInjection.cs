@@ -12,6 +12,8 @@ public static class DependencyInjection
 
         services.AddSingleton<IUserJobScheduler, UserJobScheduler>();
 
+        services.AddScoped<IUserBudgetProvisioner, UserBudgetProvisioner>();
+
         return services;
     }
 }

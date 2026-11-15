@@ -2,11 +2,22 @@
 using System.Text.Json;
 using Application.Abstractions.Caching;
 using Microsoft.Extensions.Caching.Distributed;
+using StackExchange.Redis;
 
 namespace Infrastructure.Caching;
 
-internal sealed class CacheService(IDistributedCache cache) : ICacheService
+internal sealed class CacheService(IDistributedCache cache, IConnectionMultiplexer connectionMultiplexer) : ICacheService
 {
+    // RedisCache stores entries as hashes; claims are plain strings, so they get their own prefix to
+    // never collide with (and cause WRONGTYPE errors on) a distributed-cache entry.
+    private const string ClaimPrefix = "claim:";
+
+    public Task<bool> TryClaimAsync(string key, TimeSpan expiration, CancellationToken cancellationToken = default) =>
+        connectionMultiplexer.GetDatabase().StringSetAsync(ClaimPrefix + key, "1", expiration, When.NotExists);
+
+    public Task ReleaseClaimAsync(string key, CancellationToken cancellationToken = default) =>
+        connectionMultiplexer.GetDatabase().KeyDeleteAsync(ClaimPrefix + key);
+
     public async Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default)
     {
         byte[]? bytes = await cache.GetAsync(key, cancellationToken);

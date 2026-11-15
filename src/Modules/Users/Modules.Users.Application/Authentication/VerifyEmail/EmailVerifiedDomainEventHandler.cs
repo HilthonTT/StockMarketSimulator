@@ -9,7 +9,8 @@ internal sealed class EmailVerifiedDomainEventHandler(IEventBus eventBus) : IDom
 {
     public Task Handle(UserEmailVerifiedDomainEvent notification, CancellationToken cancellationToken)
     {
-        var integrationEvent = new EmailVerifiedIntegrationEvent(Guid.CreateVersion7(), notification.UserId);
+        // Reuse the domain event's id: a retried publish then carries the same id and consumers dedupe it.
+        var integrationEvent = new EmailVerifiedIntegrationEvent(notification.Id, notification.UserId);
 
         return eventBus.PublishAsync(integrationEvent, cancellationToken);
     }

@@ -15,7 +15,9 @@ internal sealed class RefreshTokenConfiguration : IEntityTypeConfiguration<Refre
             .HasForeignKey(x => x.UserId);
 
         // SHA-256 as 64 lower-case hex characters.
-        builder.Property(x => x.TokenHash).HasMaxLength(64).IsRequired();
+        // Concurrency token: rotation updates "WHERE id = @id AND token_hash = @old", so two concurrent
+        // refreshes with the same token can't both succeed (the loser gets DbUpdateConcurrencyException).
+        builder.Property(x => x.TokenHash).HasMaxLength(64).IsRequired().IsConcurrencyToken();
 
         builder.HasIndex(x => x.TokenHash).IsUnique();
 

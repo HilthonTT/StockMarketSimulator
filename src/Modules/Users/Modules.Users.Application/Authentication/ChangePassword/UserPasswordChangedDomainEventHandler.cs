@@ -10,7 +10,8 @@ internal sealed class UserPasswordChangedDomainEventHandler(IEventBus eventBus)
 {
     public Task Handle(UserPasswordChangedDomainEvent notification, CancellationToken cancellationToken)
     {
-        var integrationEvent = new UserPasswordChangedIntegrationEvent(Guid.CreateVersion7(), notification.UserId);
+        // Reuse the domain event's id: a retried publish then carries the same id and consumers dedupe it.
+        var integrationEvent = new UserPasswordChangedIntegrationEvent(notification.Id, notification.UserId);
 
         return eventBus.PublishAsync(integrationEvent, cancellationToken);
     }

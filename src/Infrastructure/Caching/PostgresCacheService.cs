@@ -19,6 +19,7 @@ internal sealed class PostgresCacheService(
     ILogger<PostgresCacheService> logger) : ICacheService
 {
     private const string Table = $"{Schemas.General}.cache_items";
+    private const string ClaimPrefix = "claim:";
 
     public async Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default)
     {
@@ -107,6 +108,36 @@ internal sealed class PostgresCacheService(
                 new { Key = key, Value = jsonString, ExpiresOnUtc = expiresOnUtc },
                 cancellationToken: cancellationToken));
     }
+
+    public async Task<bool> TryClaimAsync(string key, TimeSpan expiration, CancellationToken cancellationToken = default)
+    {
+        using IDbConnection connection = await dbConnectionFactory.GetOpenConnectionAsync(cancellationToken);
+
+        DateTime utcNow = dateTimeProvider.UtcNow;
+
+        // Inserts the claim, or takes over one that has expired; an unexpired claim affects no rows.
+        const string sql =
+            $"""
+            INSERT INTO {Table} (key, value, expires_on_utc)
+            VALUES (@Key, 'true'::jsonb, @ExpiresOnUtc)
+            ON CONFLICT (key) DO UPDATE
+            SET value = excluded.value,
+                expires_on_utc = excluded.expires_on_utc
+            WHERE {Table}.expires_on_utc IS NOT NULL
+              AND {Table}.expires_on_utc <= @UtcNow;
+            """;
+
+        int affected = await connection.ExecuteAsync(
+            new CommandDefinition(
+                sql,
+                new { Key = ClaimPrefix + key, ExpiresOnUtc = utcNow.Add(expiration), UtcNow = utcNow },
+                cancellationToken: cancellationToken));
+
+        return affected == 1;
+    }
+
+    public Task ReleaseClaimAsync(string key, CancellationToken cancellationToken = default) =>
+        RemoveAsync(ClaimPrefix + key, cancellationToken);
 
     public async Task RemoveAsync(string key, CancellationToken cancellationToken = default)
     {

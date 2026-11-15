@@ -29,14 +29,21 @@ internal sealed class BlobService : IBlobService
         await blobClient.DeleteIfExistsAsync(cancellationToken: cancellationToken);
     }
 
-    public async Task<FileResponse> DownloadAsync(Guid fileId, CancellationToken cancellationToken = default)
+    public async Task<FileResponse?> DownloadAsync(Guid fileId, CancellationToken cancellationToken = default)
     {
         BlobClient blobClient = _containerClient.GetBlobClient(fileId.ToString());
 
-        Response<BlobDownloadResult> response = 
-            await blobClient.DownloadContentAsync(cancellationToken: cancellationToken);
+        try
+        {
+            Response<BlobDownloadResult> response =
+                await blobClient.DownloadContentAsync(cancellationToken: cancellationToken);
 
-        return new FileResponse(response.Value.Content.ToStream(), response.Value.Details.ContentType);
+            return new FileResponse(response.Value.Content.ToStream(), response.Value.Details.ContentType);
+        }
+        catch (RequestFailedException exception) when (exception.Status == 404)
+        {
+            return null;
+        }
     }
 
     public async Task<Guid?> GetOwnerAsync(Guid fileId, CancellationToken cancellationToken = default)

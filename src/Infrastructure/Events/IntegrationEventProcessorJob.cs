@@ -1,4 +1,5 @@
-﻿using Application.Abstractions.Events;
+﻿using System.Text;
+using Application.Abstractions.Events;
 using Infrastructure.Events.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,8 +19,10 @@ namespace Infrastructure.Events;
 /// <see cref="MaxMessagesPerRun"/> messages and disposes it.
 /// <list type="bullet">
 /// <item>Messages that cannot be deserialized are rejected without requeue (they would fail forever).</item>
-/// <item>Messages whose handler throws are rejected <em>with</em> requeue so they are retried on a later run;
-/// the run stops at the first failure to avoid spinning on the same message.</item>
+/// <item>Messages whose handler throws are re-published to the <em>tail</em> of the queue with an incremented
+/// <see cref="AttemptHeader"/> (a plain requeue would put them back at the head and block everything behind
+/// them); the run stops at the first failure so the retry waits for the next run. After
+/// <see cref="MaxAttempts"/> attempts the message is discarded and logged as an error.</item>
 /// </list>
 /// </remarks>
 [DisallowConcurrentExecution]
@@ -105,14 +108,81 @@ public sealed class IntegrationEventProcessorJob(
         }
         catch (Exception exception)
         {
-            logger.LogError(
-                exception,
-                "Failed to handle integration event {EventType} {EventId}; it will be retried",
-                integrationEvent.GetType().Name,
-                integrationEvent.Id);
+            int attempt = GetAttempt(result.BasicProperties.Headers);
 
-            await channel.BasicRejectAsync(result.DeliveryTag, requeue: true, CancellationToken.None);
+            if (ShouldDiscard(attempt))
+            {
+                logger.LogError(
+                    exception,
+                    "Discarding integration event {EventType} {EventId} after {Attempts} failed attempts. Body: {Body}",
+                    integrationEvent.GetType().Name,
+                    integrationEvent.Id,
+                    attempt,
+                    Encoding.UTF8.GetString(result.Body.Span));
+
+                await channel.BasicRejectAsync(result.DeliveryTag, requeue: false, CancellationToken.None);
+                return false;
+            }
+
+            logger.LogWarning(
+                exception,
+                "Failed to handle integration event {EventType} {EventId} (attempt {Attempt} of {MaxAttempts}); it will be retried",
+                integrationEvent.GetType().Name,
+                integrationEvent.Id,
+                attempt,
+                MaxAttempts);
+
+            // Re-publish to the tail with the attempt count, then ack the original. A plain requeue would put
+            // the message back at the head, so one failing event would block every event behind it.
+            var properties = new BasicProperties(result.BasicProperties)
+            {
+                Headers = new Dictionary<string, object?>(result.BasicProperties.Headers ?? new Dictionary<string, object?>())
+                {
+                    [AttemptHeader] = attempt + 1
+                }
+            };
+
+            await channel.BasicPublishAsync(
+                exchange: string.Empty,
+                routingKey: _options.QueueName,
+                mandatory: false,
+                basicProperties: properties,
+                body: result.Body,
+                cancellationToken: CancellationToken.None);
+
+            await channel.BasicAckAsync(result.DeliveryTag, multiple: false, CancellationToken.None);
+
+            // Stop this run so the retry waits for the next one instead of spinning.
             return false;
         }
+    }
+
+    /// <summary>Header carrying how many times delivery has been attempted (1 for the first delivery).</summary>
+    public const string AttemptHeader = "x-attempt";
+
+    /// <summary>How many times an event is handled before it is discarded with an error log.</summary>
+    public const int MaxAttempts = 5;
+
+    public static bool ShouldDiscard(int attempt) => attempt >= MaxAttempts;
+
+    /// <summary>Reads <see cref="AttemptHeader"/>; a message without it is on its first attempt.</summary>
+    public static int GetAttempt(IDictionary<string, object?>? headers)
+    {
+        if (headers is null || !headers.TryGetValue(AttemptHeader, out object? value) || value is null)
+        {
+            return 1;
+        }
+
+        int attempt = value switch
+        {
+            int i => i,
+            long l => (int)Math.Min(l, int.MaxValue),
+            short s => s,
+            byte[] bytes when int.TryParse(Encoding.UTF8.GetString(bytes), out int parsed) => parsed,
+            string text when int.TryParse(text, out int parsed) => parsed,
+            _ => 1
+        };
+
+        return Math.Max(attempt, 1);
     }
 }

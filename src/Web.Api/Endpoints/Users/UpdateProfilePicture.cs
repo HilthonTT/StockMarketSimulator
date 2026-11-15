@@ -18,9 +18,9 @@ internal sealed class UpdateProfilePicture : IEndpoint
             ISender sender,
             CancellationToken cancellationToken) =>
         {
-            if (!file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+            if (!await ImageUploads.IsValidAsync(file, cancellationToken))
             {
-                return Results.BadRequest("Only image files are allowed.");
+                return Results.BadRequest(ImageUploads.InvalidImageMessage);
             }
 
             await using Stream content = file.OpenReadStream();

@@ -8,6 +8,8 @@ public sealed record UserResponse
 
     public string Email { get; init; } = string.Empty;
 
+    public bool HasPublicProfile { get; init; }
+
     public Guid? ProfileImageId { get; init; }
 
     public Guid? BannerImageId { get; init; }

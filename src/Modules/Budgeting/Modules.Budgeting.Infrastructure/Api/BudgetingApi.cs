@@ -20,10 +20,12 @@ internal sealed class BudgetingApi(BudgetingDbContext context) : IBudgetingApi
 
     public Task<BudgetApiResponse?> GetBudgetByUserIdAsync(Guid userId, CancellationToken cancellationToken)
     {
+        // Filter before projecting: a predicate on the projected record can't be translated to SQL.
         return context.Budgets
             .AsNoTracking()
+            .Where(b => b.UserId == userId)
             .Select(b => new BudgetApiResponse(b.Id, b.UserId, b.Money.Amount, b.Money.Currency.Code))
-            .FirstOrDefaultAsync(b => b.UserId == userId, cancellationToken);
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <summary>

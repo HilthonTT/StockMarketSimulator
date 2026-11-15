@@ -111,14 +111,21 @@ public static class Extensions
         return builder;
     }
 
-    public static WebApplication MapDefaultEndpoints(this WebApplication app)
+    /// <param name="mapHealth">
+    /// <c>false</c> when the app maps its own <c>/health</c> endpoint; mapping both makes every
+    /// health request fail with an ambiguous-match 500.
+    /// </param>
+    public static WebApplication MapDefaultEndpoints(this WebApplication app, bool mapHealth = true)
     {
         // Adding health checks endpoints to applications in non-development environments has security implications.
         // See https://aka.ms/dotnet/aspire/healthchecks for details before enabling these endpoints in non-development environments.
         if (app.Environment.IsDevelopment())
         {
             // All health checks must pass for app to be considered ready to accept traffic after starting
-            app.MapHealthChecks("/health");
+            if (mapHealth)
+            {
+                app.MapHealthChecks("/health");
+            }
 
             // Only health checks tagged with the "live" tag must pass for app to be considered alive
             app.MapHealthChecks("/alive", new HealthCheckOptions

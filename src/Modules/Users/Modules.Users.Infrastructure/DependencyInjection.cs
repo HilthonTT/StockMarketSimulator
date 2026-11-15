@@ -97,6 +97,7 @@ public static class DependencyInjection
     private static IServiceCollection AddAuthenticationInternal(this IServiceCollection services)
     {
         services.AddOptionsWithFluentValidation<JwtOptions>(JwtOptions.SettingsKey);
+        services.AddOptionsWithFluentValidation<AppOptions>(AppOptions.SettingsKey);
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
 

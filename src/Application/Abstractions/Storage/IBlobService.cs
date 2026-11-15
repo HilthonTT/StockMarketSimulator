@@ -12,7 +12,8 @@ public interface IBlobService
     /// <summary>Returns the owner recorded at upload time, or <c>null</c> when the file is missing or has no owner.</summary>
     Task<Guid?> GetOwnerAsync(Guid fileId, CancellationToken cancellationToken = default);
 
-    Task<FileResponse> DownloadAsync(Guid fileId, CancellationToken cancellationToken = default);
+    /// <returns>The file, or <c>null</c> if it does not exist.</returns>
+    Task<FileResponse?> DownloadAsync(Guid fileId, CancellationToken cancellationToken = default);
 
     Task DeleteAsync(Guid fileId, CancellationToken cancellationToken = default);
 }

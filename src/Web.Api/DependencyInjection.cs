@@ -93,8 +93,9 @@ public static class DependencyInjection
             IConnectionMultiplexer? connectionMultiplexer = serviceProvider.GetService<IConnectionMultiplexer>();
             ILogger logger = serviceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Web.Api.RateLimiting");
 
-            options.AddPolicy(RateLimiterPolicyNames.GlobalLimiter, _ =>
-                RateLimitPartition.Get(RateLimiterPolicyNames.GlobalLimiter, key =>
+            // One bucket per caller (user id, else client IP), not one bucket shared by everyone.
+            options.AddPolicy(RateLimiterPolicyNames.GlobalLimiter, httpContext =>
+                RateLimitPartition.Get(GlobalLimiterFactory.GetPartitionKey(httpContext), key =>
                     GlobalLimiterFactory.Create(key, connectionMultiplexer, logger)));
 
             options.OnRejected = async (context, cancellationToken) =>
