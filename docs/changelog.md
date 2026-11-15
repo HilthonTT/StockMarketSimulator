@@ -1,5 +1,67 @@
 # Changelog
 
+## A real market: universe, orders, crypto, leaderboard
+
+### Upgrade checklist
+
+1. **Migrations** (automatic in Development):
+   - `StocksDbContext`, `Market_Universe_Session_Stats_And_Price_Bars`: adds name, sector, asset class and session statistics (`open_price`, `previous_close`, `day_high`, `day_low`, `session_date`) to `stocks.stocks`, plus the `stocks.price_bars` OHLC table. Existing rows start a session at their current price.
+   - `BudgetingDbContext`, `Add_Orders`: creates `budgeting.orders`.
+2. **New required setting:** `App:PublicApiUrl`, the public base URL of the API, used for email-verification links. Startup fails without it.
+3. On first start, `MarketSeeder` lists 40 assets and back-fills about 2,400 bars each.
+
+### Features
+
+- **Built-in market universe:** 30 stocks across sectors and 10 crypto assets (`ETH-USD`, `SOL-USD`, ...), seeded with 90 days of history. The simulator now works **without an Alpha Vantage key**; with a key, other symbols are still quoted and simulated.
+- **Live market model:**
+  - every asset is ticked every second in one batched update;
+  - a shared market factor (per-asset beta) makes the market move together;
+  - random **news events** move single assets (`ReceiveMarketNews`, `GET stocks/news`);
+  - daily sessions provide open, previous close, day high and low;
+  - the price-weighted **SIM 30** index.
+- **Quotes and history:** `GET stocks/{ticker}` returns the full quote (name, sector, asset class, day change). `GET stocks/{ticker}/history?range=1D|1W|1M|3M` returns OHLC history. `GET stocks/market` returns the index, every quote, and sparklines in one call.
+- **Limit and stop orders:**
+  - `POST orders`, `GET users/{id}/orders`, `DELETE orders/{id}`;
+  - `ProcessPendingOrdersJob` fills triggered orders every 2 s at the market price, or rejects them with a reason;
+  - market orders and order fills share one `TradeExecutor`.
+- **Leaderboard:** `GET leaderboard`, every account valued at live prices.
+- **Account reset:** `POST users/{id}/budget/reset` restores $5,000 and clears positions, history and open orders.
+- **Web client overhaul:**
+  - a new brand and logo, and a dark-first trading-terminal look;
+  - markets page with gainers and losers, sector filters, sparklines, and Stocks / Crypto / All-symbols tabs;
+  - 1D–3M charts with the previous-close line, a key-stats card, and a Market / Limit / Stop order ticket;
+  - Orders and Leaderboard pages, portfolio allocation donut, account value chart, news feed and toasts, and Reset account.
+- **Runs locally with zero configuration:**
+  - the API serves `http://localhost:5000` without an HTTPS redirect in Development;
+  - the client defaults to that URL and uses a development-only auth secret;
+  - `Users:AutoVerifyEmail` verifies new accounts in Development;
+  - emails are logged when no SMTP is configured.
+
+### Bugs fixed
+
+| Bug | Fix |
+| --- | --- |
+| Without `Stocks:ApiKey` nothing could be quoted or traded (`Ensure` threw on every new ticker). Alpha Vantage rate-limit responses crashed with a null time series, and failed lookups were cached for 5 minutes | Built-in universe; a missing key means "no external quote"; error responses are handled and misses aren't cached |
+| Without SMTP credentials registration couldn't complete, so no one could sign in locally | Emails are logged when SMTP isn't configured; optional auto-verify in Development |
+| The web client threw `MissingSecret` without a `.env`, and server calls failed on the self-signed dev certificate | Dev-only fallback secret, `trustHost` and an HTTP API URL in development |
+| `GET /health` always returned 500 (mapped by both ServiceDefaults and Web.Api) | Web.Api maps its own detailed endpoint only |
+| The YARP proxy asked Aspire for the API's `https` endpoint while the API ran its http-only launch profile | AppHost uses the `https` profile |
+| A verified user's budget was created by an in-memory Quartz job, so a restart or a transient error left the account permanently unable to trade | Budget creation runs in the (retried) integration-event handler and is idempotent |
+| `BudgetingApi.GetBudgetByUserIdAsync` filtered after projecting into a record, which EF can't translate | Filter before projecting |
+| The email-verification link used the request's `Host` header (host-header poisoning) | Built from `App:PublicApiUrl` |
+| Concurrent refresh-token rotations both succeeded and silently logged one client out | The token hash is a concurrency token |
+| Idempotency keys weren't claimed atomically or scoped to user and route: in-flight retries executed twice, and keys leaked across endpoints and users | Atomic claim (Redis `SET NX` or Postgres upsert); keys scoped by user, method and route; 409 while in flight |
+| One failing integration event blocked the RabbitMQ queue forever (requeued at the head) | Retried at the tail with an attempt counter; dropped with an error log after 5 attempts |
+| SVG uploads were served inline from the API origin (stored XSS) | PNG/JPEG/GIF/WebP only, with signature check; `nosniff`; anything else is served as a download |
+| `GET files/{id}` returned 500 for a missing file | 404 |
+| The global rate limiter was one bucket for every caller | Partitioned by user, falling back to IP |
+| Users-module integration events got new ids on every retry, so consumers couldn't deduplicate | The domain event id is reused; consumers record handled events |
+| Every page logged a React hydration error. The shell rendered data the server didn't have yet; `<div>` skeletons sat inside `<p>`; the localStorage watchlist rendered during SSR | Shell prefetches are awaited; span skeleton; client-only ticker tape |
+| `/orders` and `/leaderboard` failed server rendering (`UNAUTHORIZED`). Suspense queries weren't prefetched, and a constant imported from a `"use client"` module reached the server as a function | Server prefetch; constant moved to a plain module |
+| Crypto tickers like `DOGE-USD` were rejected by the client's 10-character ticker schema | 12 characters |
+| A table of sparklines fired one `/users/me` call per tRPC procedure, plus one history call per row | One user lookup per request; sparklines come with the market overview |
+
+
 ## Front end overhaul, CI/CD and repository layout
 
 ### Repository layout
