@@ -163,6 +163,92 @@ namespace Modules.Budgeting.Infrastructure.Database.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Modules.Budgeting.Domain.Entities.Order", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_on_utc");
+
+                    b.Property<DateTime?>("FilledOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("filled_on_utc");
+
+                    b.Property<decimal?>("FilledPrice")
+                        .HasColumnType("numeric")
+                        .HasColumnName("filled_price");
+
+                    b.Property<DateTime?>("ModifiedOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_on_utc");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("rejection_reason");
+
+                    b.Property<int>("Side")
+                        .HasColumnType("integer")
+                        .HasColumnName("side");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Ticker")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("ticker");
+
+                    b.Property<Guid?>("TransactionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("transaction_id");
+
+                    b.Property<decimal>("TriggerPrice")
+                        .HasColumnType("numeric")
+                        .HasColumnName("trigger_price");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer")
+                        .HasColumnName("type");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_orders");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_orders_status")
+                        .HasFilter("status = 1");
+
+                    b.HasIndex("UserId", "CreatedOnUtc")
+                        .HasDatabaseName("ix_orders_user_id_created_on_utc");
+
+                    b.ToTable("orders", "budgeting", t =>
+                        {
+                            t.HasCheckConstraint("CK_orders_quantity_Positive", "quantity > 0");
+
+                            t.HasCheckConstraint("CK_orders_trigger_price_Positive", "trigger_price > 0");
+                        });
+                });
+
             modelBuilder.Entity("Modules.Budgeting.Domain.Entities.Position", b =>
                 {
                     b.Property<Guid>("Id")

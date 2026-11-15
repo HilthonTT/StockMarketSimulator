@@ -1,5 +1,6 @@
-﻿using Infrastructure.Events;
+using Infrastructure.Events;
 using Microsoft.Extensions.Options;
+using Modules.Budgeting.BackgroundJobs.Orders;
 using Modules.Budgeting.Infrastructure.Outbox;
 using Modules.Stocks.BackgroundJobs.Stocks;
 using Modules.Stocks.Infrastructure.Outbox;
@@ -30,6 +31,9 @@ public static class BackgroundJobExtensions
             // Maintenance
             quartz.AddRecurringJob<RevokeExpiredRefreshTokenJob>(TimeSpan.FromSeconds(20));
             quartz.AddRecurringJob<UpdateLatestStockPriceJob>(TimeSpan.FromMinutes(1));
+
+            // Limit and stop orders: checked against the live prices every couple of seconds.
+            quartz.AddRecurringJob<ProcessPendingOrdersJob>(TimeSpan.FromSeconds(2));
 
             // Real-time price feed: the interval comes from validated options, resolved from the
             // real container instead of building a throw-away second service provider.

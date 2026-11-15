@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Modules.Budgeting.Domain.Entities;
 
 namespace Modules.Budgeting.Application.Abstractions.Data;
@@ -12,4 +12,6 @@ public interface IDbContext
     DbSet<AuditLog> AuditLogs { get; }
 
     DbSet<Position> Positions { get; }
+
+    DbSet<Order> Orders { get; }
 }

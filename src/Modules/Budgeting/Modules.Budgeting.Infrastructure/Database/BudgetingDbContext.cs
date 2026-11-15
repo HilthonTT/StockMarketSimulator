@@ -1,4 +1,4 @@
-﻿using Infrastructure.Database.Configurations;
+using Infrastructure.Database.Configurations;
 using Infrastructure.Database.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Modules.Budgeting.Application.Abstractions.Data;
@@ -16,6 +16,8 @@ public sealed class BudgetingDbContext(DbContextOptions<BudgetingDbContext> opti
     public DbSet<AuditLog> AuditLogs { get; set; }
 
     public DbSet<Position> Positions { get; set; }
+
+    public DbSet<Order> Orders { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

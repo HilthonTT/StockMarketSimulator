@@ -1,13 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Modules.Budgeting.Api.Api;
 using Modules.Budgeting.Api.Responses;
 using Modules.Budgeting.Domain.Entities;
 using Modules.Budgeting.Domain.ValueObjects;
 using Modules.Budgeting.Infrastructure.Database;
+using Modules.Stocks.Api.Api;
 
 namespace Modules.Budgeting.Infrastructure.Api;
 
-internal sealed class BudgetingApi(BudgetingDbContext context) : IBudgetingApi
+internal sealed class BudgetingApi(BudgetingDbContext context, IStocksApi stocksApi) : IBudgetingApi
 {
     public Task<int> AddBudgetAsync(Guid userId, string currencyCode, CancellationToken cancellationToken = default)
     {
@@ -67,4 +68,7 @@ internal sealed class BudgetingApi(BudgetingDbContext context) : IBudgetingApi
             .Select(t => new TransactionApiResponse(t.Id, t.Ticker, t.Type.Id, t.Money.Amount, t.Money.Currency.Code, t.Quantity))
             .ToListAsync(cancellationToken);
     }
+
+    public Task<List<AccountValueApiResponse>> GetAccountValuesAsync(CancellationToken cancellationToken = default) =>
+        AccountValuation.GetAllAsync(context, stocksApi, cancellationToken);
 }

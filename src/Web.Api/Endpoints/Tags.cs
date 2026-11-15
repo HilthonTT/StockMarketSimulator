@@ -1,4 +1,4 @@
-﻿namespace Web.Api.Endpoints;
+namespace Web.Api.Endpoints;
 
 internal static class Tags
 {
@@ -19,4 +19,8 @@ internal static class Tags
     internal const string Authentication = "Authentication";
 
     internal const string Outbox = "Outbox";
+
+    internal const string Orders = "Orders";
+
+    internal const string Leaderboard = "Leaderboard";
 }

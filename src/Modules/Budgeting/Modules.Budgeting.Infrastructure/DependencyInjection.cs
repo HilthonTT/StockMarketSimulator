@@ -1,4 +1,4 @@
-﻿using Infrastructure.Database.Interceptors;
+using Infrastructure.Database.Interceptors;
 using Infrastructure.Outbox;
 using Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -76,6 +76,7 @@ public static class DependencyInjection
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<IPositionRepository, PositionRepository>();
+        services.AddScoped<IOrderRepository, OrderRepository>();
 
         return services;
     }

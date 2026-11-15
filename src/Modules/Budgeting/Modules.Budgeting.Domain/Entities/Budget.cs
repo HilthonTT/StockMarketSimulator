@@ -1,4 +1,4 @@
-﻿using Modules.Budgeting.Domain.DomainEvents;
+using Modules.Budgeting.Domain.DomainEvents;
 using Modules.Budgeting.Domain.Errors;
 using Modules.Budgeting.Domain.ValueObjects;
 using SharedKernel;
@@ -7,7 +7,7 @@ namespace Modules.Budgeting.Domain.Entities;
 
 public sealed class Budget : Entity, IAuditable
 {
-    private const decimal InitialBudgetAmount = 5000m;
+    public const decimal InitialBudgetAmount = 5000m;
 
     private Budget(Guid id, Guid userId, Money money)
     {
@@ -67,6 +67,13 @@ public sealed class Budget : Entity, IAuditable
         Raise(new BudgetUpdatedDomainEvent(Guid.CreateVersion7(), Id, Money.Amount));
 
         return Result.Success();
+    }
+
+    /// <summary>Puts the account back to the starting cash (the caller clears positions and history).</summary>
+    public void Reset()
+    {
+        Money = new Money(InitialBudgetAmount, Money.Currency);
+        Raise(new BudgetUpdatedDomainEvent(Guid.CreateVersion7(), Id, Money.Amount));
     }
 
     public Result IncreaseMoney(Money moneyToIncrease)

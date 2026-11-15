@@ -1,14 +1,12 @@
-﻿using EntityFramework.Exceptions.Common;
+using EntityFramework.Exceptions.Common;
 using Microsoft.EntityFrameworkCore;
 using Application.Abstractions.Authentication;
 using Application.Abstractions.Caching;
 using Application.Abstractions.Messaging;
 using Modules.Budgeting.Application.Abstractions.Data;
+using Modules.Budgeting.Application.Trading;
 using Modules.Budgeting.Domain.Entities;
-using Modules.Budgeting.Domain.Enums;
 using Modules.Budgeting.Domain.Errors;
-using Modules.Budgeting.Domain.Repositories;
-using Modules.Budgeting.Domain.ValueObjects;
 using Modules.Stocks.Api.Api;
 using Modules.Stocks.Api.Responses;
 using SharedKernel;
@@ -16,9 +14,7 @@ using SharedKernel;
 namespace Modules.Budgeting.Application.Transactions.Buy;
 
 internal sealed class BuyTransactionCommandHandler(
-    IBudgetRepository budgetRepository,
-    ITransactionRepository transactionRepository,
-    IPositionRepository positionRepository,
+    TradeExecutor tradeExecutor,
     IStocksApi stocksApi,
     IUserContext userContext,
     IUnitOfWork unitOfWork,
@@ -31,14 +27,6 @@ internal sealed class BuyTransactionCommandHandler(
             return Result.Failure<Guid>(UserErrors.Unauthorized);
         }
 
-        Option<Budget> optionBudget = await budgetRepository.GetByUserIdAsync(request.UserId, cancellationToken);
-        if (!optionBudget.IsSome)
-        {
-            return Result.Failure<Guid>(BudgetErrors.NotFoundByUserId(request.UserId));
-        }
-
-        Budget budget = optionBudget.ValueOrThrow();
-
         // Tickers are upper-case everywhere (stocks, positions, transactions).
         string ticker = Position.NormalizeTicker(request.Ticker);
 
@@ -48,40 +36,17 @@ internal sealed class BuyTransactionCommandHandler(
             return Result.Failure<Guid>(StockErrors.NotFound(ticker));
         }
 
-        StockApiResponse stockInfo = optionStockInfo.ValueOrThrow();
+        Result<Transaction> result = await tradeExecutor.BuyAsync(
+            request.UserId,
+            ticker,
+            request.Quantity,
+            optionStockInfo.ValueOrThrow().Price,
+            cancellationToken);
 
-        var money = new Money(stockInfo.Price, Currency.Usd);
-
-        Result<Transaction> transactionResult =
-            Transaction.Create(budget, ticker, money, TransactionType.Expense, request.Quantity);
-
-        if (transactionResult.IsFailure)
+        if (result.IsFailure)
         {
-            return Result.Failure<Guid>(transactionResult.Error);
+            return Result.Failure<Guid>(result.Error);
         }
-
-        Transaction transaction = transactionResult.Value;
-
-        Option<Position> optionPosition = await positionRepository.GetAsync(request.UserId, ticker, cancellationToken);
-
-        Position position;
-        if (optionPosition.IsSome)
-        {
-            position = optionPosition.ValueOrThrow();
-        }
-        else
-        {
-            position = Position.Open(request.UserId, ticker);
-            positionRepository.Insert(position);
-        }
-
-        Result positionResult = position.Buy(request.Quantity, stockInfo.Price);
-        if (positionResult.IsFailure)
-        {
-            return Result.Failure<Guid>(positionResult.Error);
-        }
-
-        transactionRepository.Insert(transaction);
 
         try
         {
@@ -96,9 +61,9 @@ internal sealed class BuyTransactionCommandHandler(
 
         await TransactionCacheInvalidator.InvalidateAsync(
             cacheService,
-            new TransactionBoughtCacheInvalidateEvent(transaction.Id, transaction.UserId),
+            new TransactionBoughtCacheInvalidateEvent(result.Value.Id, result.Value.UserId),
             cancellationToken);
 
-        return transaction.Id;
+        return result.Value.Id;
     }
 }

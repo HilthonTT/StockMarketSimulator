@@ -1,4 +1,4 @@
-﻿using Modules.Budgeting.Api.Responses;
+using Modules.Budgeting.Api.Responses;
 
 namespace Modules.Budgeting.Api.Api;
 
@@ -16,4 +16,7 @@ public interface IBudgetingApi
 
     /// <summary>Gets the user's open positions (quantity &gt; 0), ordered by ticker.</summary>
     Task<List<PositionApiResponse>> GetOpenPositionsAsync(Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>Every account valued at current prices (unsorted).</summary>
+    Task<List<AccountValueApiResponse>> GetAccountValuesAsync(CancellationToken cancellationToken = default);
 }

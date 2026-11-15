@@ -1,4 +1,4 @@
-﻿using Application.Abstractions.Messaging;
+using Application.Abstractions.Messaging;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using SharedKernel;
@@ -24,6 +24,8 @@ public static class DependencyInjection
             .AddClasses(classes => classes.AssignableTo(typeof(IDomainEventHandler<>)), publicOnly: false)
             .AsImplementedInterfaces()
             .WithScopedLifetime());
+
+        services.AddScoped<Trading.TradeExecutor>();
 
         services.AddValidatorsFromAssembly(BudgetingApplicationAssembly.Instance, includeInternalTypes: true);
 

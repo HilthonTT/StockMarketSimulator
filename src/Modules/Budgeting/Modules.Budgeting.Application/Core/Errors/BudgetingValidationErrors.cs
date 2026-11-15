@@ -1,4 +1,4 @@
-﻿using SharedKernel;
+using SharedKernel;
 
 namespace Modules.Budgeting.Application.Core.Errors;
 
@@ -114,5 +114,36 @@ internal static class BudgetingValidationErrors
         public static readonly Error UserIdIsRequired = Error.Problem(
             "GetTransactionCount.UserIdIsRequired",
             "The user identifier is required.");
+    }
+
+    public static class PlaceOrder
+    {
+        public static readonly Error UserIdIsRequired = Error.Problem(
+            "PlaceOrder.UserIdIsRequired",
+            "The user identifier is required.");
+
+        public static readonly Error TickerIsRequired = Error.Problem(
+            "PlaceOrder.TickerIsRequired",
+            "The ticker is required.");
+
+        public static readonly Error TickerInvalidFormat = Error.Problem(
+            "PlaceOrder.TickerInvalidFormat",
+            "The ticker must be at most 10 characters.");
+
+        public static readonly Error SideInvalid = Error.Problem(
+            "PlaceOrder.SideInvalid",
+            "The side must be 'buy' or 'sell'.");
+
+        public static readonly Error TypeInvalid = Error.Problem(
+            "PlaceOrder.TypeInvalid",
+            "The order type must be 'limit' or 'stop'.");
+
+        public static readonly Error QuantityOutOfRange = Error.Problem(
+            "PlaceOrder.QuantityOutOfRange",
+            "The quantity must be between 1 and 1,000,000.");
+
+        public static readonly Error TriggerPriceMustBePositive = Error.Problem(
+            "PlaceOrder.TriggerPriceMustBePositive",
+            "The trigger price must be greater than zero.");
     }
 }
