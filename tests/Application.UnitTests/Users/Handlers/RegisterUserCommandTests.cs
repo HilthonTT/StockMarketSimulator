@@ -34,7 +34,8 @@ public sealed class RegisterUserCommandTests
             _userRepositoryMock,
             _emailVerificationTokenRepositoryMock,
             _unitOfWorkMock,
-            _dateTimeProviderMock);
+            _dateTimeProviderMock,
+            Microsoft.Extensions.Options.Options.Create(new Modules.Users.Application.Abstractions.Options.UsersOptions()));
     }
 
     [Fact]

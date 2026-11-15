@@ -3,21 +3,35 @@ using Contracts.Emails;
 using Infrastructure.Emails.Options;
 using MailKit.Net.Smtp;
 using MailKit.Security;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using MimeKit.Text;
 
 namespace Infrastructure.Emails;
 
-internal sealed class EmailService(IOptions<EmailOptions> options) : IEmailService
+internal sealed class EmailService(IOptions<EmailOptions> options, ILogger<EmailService> logger) : IEmailService
 {
     private readonly EmailOptions _options = options.Value;
 
     public async Task SendEmailAsync(
-        MailRequest mailRequest, 
-        bool isHtml = false, 
+        MailRequest mailRequest,
+        bool isHtml = false,
         CancellationToken cancellationToken = default)
     {
+        if (!_options.IsSmtpConfigured)
+        {
+            // Local development without SMTP credentials: log the email (including any verification link)
+            // instead of failing, so sign-up and the jobs that send mail still complete.
+            logger.LogInformation(
+                "SMTP is not configured (Email:SenderEmail / Email:SmtpPassword); email not sent. To: {To}, Subject: {Subject}, Body: {Body}",
+                mailRequest.EmailTo,
+                mailRequest.Subject,
+                mailRequest.Body);
+
+            return;
+        }
+
         using var email = new MimeMessage()
         {
             From =

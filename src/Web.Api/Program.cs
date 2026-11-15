@@ -103,7 +103,11 @@ if (app.Environment.IsDevelopment())
     app.UseCorsConfiguration(builder.Configuration);
 }
 
-app.UseHttpsRedirection();
+// Local development talks plain HTTP (http://localhost:5000) so no dev certificate is needed.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.MapHealthChecks("health", new HealthCheckOptions
 {

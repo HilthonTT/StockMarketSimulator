@@ -5,7 +5,7 @@ export const ACCESS_TOKEN = "access_token_key";
 export const REFRESH_TOKEN = "refresh_token_key";
 
 export const SERVER_URL =
-  process.env.NEXT_PUBLIC_SERVER_URL || "https://localhost:7043";
+  process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
 export const PAGE_SIZE = 25;
 

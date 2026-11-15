@@ -36,6 +36,7 @@ public sealed class IntegrationTestWebAppFactory : WebApplicationFactory<Program
         builder.UseSetting("Jwt:Audience", "investors");
         builder.UseSetting("Jwt:ExpirationInMinutes", "60");
         builder.UseSetting("App:PublicApiUrl", "http://localhost:5000");
+        builder.UseSetting("Users:AutoVerifyEmail", "false");
 
         builder.UseSetting("Stocks:ApiUrl", "https://www.alphavantage.co/query");
         builder.UseSetting("Stocks:ApiKey", "your-api-key-for-tests");

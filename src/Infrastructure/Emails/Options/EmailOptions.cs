@@ -13,4 +13,8 @@ internal sealed class EmailOptions
     public string SmtpServer { get; init; } = string.Empty;
 
     public int SmtpPort { get; init; }
+
+    /// <summary>Whether SMTP credentials are present. Without them emails are logged, not sent.</summary>
+    public bool IsSmtpConfigured =>
+        !string.IsNullOrWhiteSpace(SenderEmail) && !string.IsNullOrWhiteSpace(SmtpPassword);
 }

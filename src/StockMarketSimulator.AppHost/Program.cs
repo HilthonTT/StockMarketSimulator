@@ -1,4 +1,4 @@
-﻿using Aspire.Hosting.Azure;
+using Aspire.Hosting.Azure;
 using StockMarketSimulator.AppHost;
 
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
@@ -18,7 +18,8 @@ IResourceBuilder<AzureBlobStorageResource> storage = builder
     .RunAsEmulator(azurite => azurite.WithLifetime(ContainerLifetime.Persistent))
     .AddBlobs("stockmarketsimulator-blobs"); // <- The connection string
 
-IResourceBuilder<ProjectResource> webApi = builder.AddProject<Projects.Web_Api>("web-api")
+IResourceBuilder<ProjectResource> webApi = // The "https" profile exposes both https://localhost:7081 and http://localhost:5000 (used by the web client).
+builder.AddProject<Projects.Web_Api>("web-api", launchProfileName: "https")
     .WithSwaggerUI()
     .WithScalar()
     .WithRedoc()

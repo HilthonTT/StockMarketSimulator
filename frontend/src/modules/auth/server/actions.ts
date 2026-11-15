@@ -1,6 +1,7 @@
 "use server";
 
 import { AuthError } from "next-auth";
+import { unstable_rethrow } from "next/navigation";
 import { z } from "zod";
 
 import { fetchFromApi } from "@/lib/api";
@@ -34,15 +35,25 @@ export const login = async (
     await signIn("credentials", { email, password, redirectTo });
   } catch (error) {
     if (error instanceof AuthError) {
-      return {
-        error:
-          error.type === "CredentialsSignin"
-            ? "Invalid email or password."
-            : "We couldn't sign you in. Please try again.",
-      };
+      if (error.type === "CredentialsSignin") {
+        return { error: "Invalid email or password." };
+      }
+
+      // authorize() throws when the API can't be reached (fetchFromApi raises a TRPCError).
+      if (error.type === "CallbackRouteError") {
+        return {
+          error: "The trading server is unreachable right now. Make sure the API is running, then try again.",
+        };
+      }
+
+      return { error: "We couldn't sign you in. Please try again." };
     }
 
-    throw error;
+    // NEXT_REDIRECT (a successful sign-in) must propagate; anything else becomes a friendly message.
+    unstable_rethrow(error);
+
+    console.error("Login failed:", error);
+    return { error: "We couldn't reach the trading server. Please try again in a moment." };
   }
 };
 
