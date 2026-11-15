@@ -32,9 +32,17 @@ export const LoginFormSection = () => {
     setError(null);
     startTransition(async () => {
       // On success the action redirects; it only returns when sign-in failed.
-      const result = await login(values, callbackUrl);
-      if (result?.error) {
-        setError(result.error);
+      try {
+        const result = await login(values, callbackUrl);
+        if (result?.error) {
+          setError(result.error);
+        }
+      } catch (error) {
+        // A successful sign-in redirects (handled by Next); only real failures land here.
+        if (error instanceof Error && error.message.includes("NEXT_REDIRECT")) {
+          throw error;
+        }
+        setError("We couldn't reach the server. Check your connection and try again.");
       }
     });
   };

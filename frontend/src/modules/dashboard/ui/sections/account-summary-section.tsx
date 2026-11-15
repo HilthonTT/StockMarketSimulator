@@ -33,7 +33,7 @@ const AccountSummary = () => {
       <StatCard
         label="Account value"
         icon={LandmarkIcon}
-        value={formatCurrency(portfolio.equity)}
+        value={<span className="num">{formatCurrency(portfolio.equity)}</span>}
         footer={
           <span className="inline-flex flex-wrap items-center gap-1">
             <PriceChange change={portfolio.allTimePnl} ratio={portfolio.allTimePnlRatio} />
@@ -44,13 +44,13 @@ const AccountSummary = () => {
       <StatCard
         label="Buying power"
         icon={WalletIcon}
-        value={formatCurrency(portfolio.cash)}
+        value={<span className="num">{formatCurrency(portfolio.cash)}</span>}
         footer={`${formatPercent(portfolio.cashRatio, { signed: false })} of your account is cash`}
       />
       <StatCard
         label="Invested"
         icon={BriefcaseBusinessIcon}
-        value={formatCurrency(portfolio.investedValue)}
+        value={<span className="num">{formatCurrency(portfolio.investedValue)}</span>}
         footer={
           portfolio.holdings.length === 0
             ? "No open positions"
@@ -60,14 +60,14 @@ const AccountSummary = () => {
       <StatCard
         label="Unrealized P&L"
         icon={TrendingUpIcon}
-        value={<PriceChange change={portfolio.unrealizedPnl} showIcon={false} className="text-2xl font-bold" />}
+        value={<PriceChange change={portfolio.unrealizedPnl} showIcon={false} className="num text-2xl font-bold" />}
         footer={
           portfolio.holdings.length === 0
             ? `You started with ${formatCurrency(STARTING_CASH)}`
             : (
               <span className="inline-flex flex-wrap items-center gap-1">
-                <PriceChange change={portfolio.sessionPnl} />
-                <span>this session</span>
+                <PriceChange change={portfolio.dayPnl} />
+                <span>today</span>
               </span>
             )
         }

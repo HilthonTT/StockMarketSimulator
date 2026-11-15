@@ -6,7 +6,7 @@ const tickerSchema = z
       issue.input === undefined ? "Ticker is required" : "Ticker must be a string",
   })
   .min(1, { error: "Ticker cannot be empty" })
-  .max(10, { error: "Ticker must be 10 characters or fewer" });
+  .max(12, { error: "Ticker must be 12 characters or fewer" });
 
 // `z.coerce.number<number>()` keeps the *input* type as number so react-hook-form's resolver
 // types line up (Zod 4 types coerced inputs as `unknown` by default).

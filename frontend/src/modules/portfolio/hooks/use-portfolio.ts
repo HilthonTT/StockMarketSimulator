@@ -21,8 +21,8 @@ export type Holding = {
   marketValue: number;
   unrealizedPnl: number;
   unrealizedPnlRatio: number;
-  /** Change in value since the session's first price for this ticker. */
-  sessionPnl: number;
+  /** Change in value today (vs. the previous close). */
+  dayPnl: number;
   /** Share of the invested (non-cash) value. */
   allocation: number;
 };
@@ -54,13 +54,13 @@ export function usePortfolio() {
         marketValue,
         unrealizedPnl,
         unrealizedPnlRatio: ratio(unrealizedPnl, position.totalCost),
-        sessionPnl: quote ? (quote.price - quote.sessionOpen) * position.quantity : 0,
+        dayPnl: quote ? quote.change * position.quantity : 0,
       };
     });
 
     const investedValue = valued.reduce((sum, holding) => sum + holding.marketValue, 0);
     const costBasis = valued.reduce((sum, holding) => sum + holding.totalCost, 0);
-    const sessionPnl = valued.reduce((sum, holding) => sum + holding.sessionPnl, 0);
+    const dayPnl = valued.reduce((sum, holding) => sum + holding.dayPnl, 0);
     const cash = budget.amount;
     const equity = cash + investedValue;
     const unrealizedPnl = investedValue - costBasis;
@@ -79,7 +79,8 @@ export function usePortfolio() {
       equity,
       unrealizedPnl,
       unrealizedPnlRatio: ratio(unrealizedPnl, costBasis),
-      sessionPnl,
+      dayPnl,
+      dayPnlRatio: ratio(dayPnl, investedValue - dayPnl),
       allTimePnl,
       allTimePnlRatio: ratio(allTimePnl, STARTING_CASH),
       cashRatio: ratio(cash, equity),

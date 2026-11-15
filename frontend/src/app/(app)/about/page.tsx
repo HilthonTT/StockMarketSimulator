@@ -3,10 +3,12 @@ import Link from "next/link";
 import {
   ActivityIcon,
   BadgeDollarSignIcon,
-  MessageSquareIcon,
+  GlobeIcon,
   KeyboardIcon,
-  LineChartIcon,
+  MessageSquareIcon,
+  NewspaperIcon,
   ShoppingCartIcon,
+  TrophyIcon,
 } from "lucide-react";
 
 import { formatCurrency } from "@/lib/utils";
@@ -21,28 +23,38 @@ const SECTIONS = [
   {
     icon: BadgeDollarSignIcon,
     title: "Virtual cash",
-    body: `Every account starts with ${formatCurrency(STARTING_CASH)}. It's not real money, so experiment freely: the goal is to grow your account value.`,
+    body: `Every account starts with ${formatCurrency(STARTING_CASH)}. It's not real money, so experiment freely: the goal is to grow your account value. You can reset your account from your profile at any time.`,
+  },
+  {
+    icon: GlobeIcon,
+    title: "A market of stocks and crypto",
+    body: "The simulator ships with its own universe of well-known stocks across sectors, tracked by the price-weighted SIM 30 index, plus crypto pairs like ETH-USD that trade 24/7. You can also look up other symbols.",
   },
   {
     icon: ActivityIcon,
     title: "Live, simulated prices",
-    body: "Starting prices come from real market quotes. From there, each price moves about once a second using a Geometric Brownian Motion model, the same random-walk model behind options pricing.",
+    body: "Each price moves about once a second using a Geometric Brownian Motion model, the random-walk model behind options pricing, with a shared market factor so stocks tend to move together. Every asset has an open, a previous close and a day range.",
+  },
+  {
+    icon: NewspaperIcon,
+    title: "Market news",
+    body: "Now and then a headline hits a company or coin and its price jumps or drops. News appears on the dashboard, and you get a notification when it's about something you own or watch.",
   },
   {
     icon: ShoppingCartIcon,
-    title: "Market orders",
-    body: "Orders fill immediately at the current price, with no fees. You can't spend more cash than you have, and you can only sell shares you own (no short selling).",
+    title: "Market, limit and stop orders",
+    body: "Market orders fill right away at the live price. Limit orders wait for a better price (buy at or below, sell at or above your limit). Stop orders trigger on a move: a stop-loss sells when the price falls to your stop. Triggered orders fill at the market price, with no fees and whole units only.",
   },
   {
-    icon: LineChartIcon,
-    title: "Tracking performance",
-    body: "Your portfolio is valued at live prices. Unrealized P&L compares market value to what you paid (your average cost), and all-time return compares your account value to your starting cash.",
+    icon: TrophyIcon,
+    title: "Performance and the leaderboard",
+    body: "Your portfolio is valued at live prices: day change against the previous close, unrealized P&L against your average cost, and all-time return against your starting cash. The leaderboard ranks every trader by account value.",
   },
 ];
 
 const SHORTCUTS = [
-  { keys: "Ctrl / ⌘ + K", action: "Search stocks and pages" },
-  { keys: "/", action: "Search stocks and pages" },
+  { keys: "Ctrl / ⌘ + K", action: "Search assets and pages" },
+  { keys: "/", action: "Search assets and pages" },
   { keys: "Ctrl / ⌘ + B", action: "Collapse or expand the sidebar" },
 ];
 
@@ -51,14 +63,14 @@ const Page = () => {
     <>
       <PageHeader
         title="How the simulator works"
-        description="Practice trading with live, simulated prices and zero risk."
+        description="Paper-trade stocks and crypto with live, simulated prices and zero risk."
       />
 
       <div className="grid gap-4 md:grid-cols-2">
         {SECTIONS.map((section) => (
           <Card key={section.title}>
             <CardHeader className="flex flex-row items-start gap-3">
-              <div className="rounded-lg bg-muted p-2">
+              <div className="rounded-lg bg-primary/15 p-2 text-primary">
                 <section.icon className="size-5" aria-hidden="true" />
               </div>
               <div className="flex flex-col gap-1.5">

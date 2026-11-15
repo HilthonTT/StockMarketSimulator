@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { ArrowUpRightIcon } from "lucide-react";
 
+import { assetHref, displaySymbol } from "@/lib/assets";
+import { AssetIcon } from "@/components/asset-icon";
+
 import {
   Dialog,
   DialogContent,
@@ -22,11 +25,14 @@ export const TradeDialog = () => {
     <Dialog open={isOpen} onOpenChange={(open) => !open && close()}>
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Trade {ticker}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2.5 text-2xl">
+            <AssetIcon ticker={ticker} size="sm" />
+            Trade {displaySymbol(ticker)}
+          </DialogTitle>
           <DialogDescription className="flex items-center justify-between gap-2">
-            <span>Place a market order with your virtual cash.</span>
+            <span>Market, limit or stop order with your virtual cash.</span>
             <Link
-              href={`/stocks/${ticker}`}
+              href={assetHref(ticker)}
               onClick={close}
               className="inline-flex items-center gap-0.5 text-foreground underline-offset-4 hover:underline shrink-0"
             >

@@ -3,13 +3,15 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRightIcon, LoaderIcon, SearchIcon, StarIcon, TrendingUpIcon } from "lucide-react";
+import { ArrowRightIcon, LoaderIcon, SearchIcon, StarIcon } from "lucide-react";
 
 import { useWatchlist } from "@/modules/market/hooks/use-watchlist";
 
 import { useTRPC } from "@/trpc/client";
 import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
+import { assetHref } from "@/lib/assets";
+import { AssetIcon } from "@/components/asset-icon";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -25,7 +27,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { accountNav, tradingNav } from "../../nav";
 import { useCommandSearch } from "../../hooks/use-command-search";
 
-const TICKER_PATTERN = /^[A-Za-z][A-Za-z0-9.\-]{0,9}$/;
+const TICKER_PATTERN = /^[A-Za-z][A-Za-z0-9.\-]{0,11}$/;
 
 /** Search button for the top bar; also opens with Ctrl/⌘+K or "/". */
 export const CommandSearchTrigger = ({ className }: { className?: string }) => {
@@ -39,10 +41,10 @@ export const CommandSearchTrigger = ({ className }: { className?: string }) => {
         "h-9 justify-start gap-2 text-sm font-normal text-muted-foreground shadow-none sm:w-64 lg:w-80",
         className
       )}
-      aria-label="Search stocks"
+      aria-label="Search stocks and crypto"
     >
       <SearchIcon className="size-4" />
-      <span className="hidden sm:inline">Search stocks…</span>
+      <span className="hidden sm:inline">Search stocks & crypto…</span>
       <kbd className="pointer-events-none ml-auto hidden select-none items-center gap-0.5 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium sm:inline-flex">
         Ctrl K
       </kbd>
@@ -118,7 +120,7 @@ export const CommandSearch = () => {
       <DialogContent className="overflow-hidden p-0 sm:max-w-lg [&>button:last-child]:hidden">
         <DialogHeader className="sr-only">
           <DialogTitle>Search</DialogTitle>
-          <DialogDescription>Search for a stock by ticker or company name, or jump to a page.</DialogDescription>
+          <DialogDescription>Search for a stock or coin by ticker or name, or jump to a page.</DialogDescription>
         </DialogHeader>
         <Command
           shouldFilter={false}
@@ -127,7 +129,7 @@ export const CommandSearch = () => {
           <CommandInput
             value={search}
             onValueChange={setSearch}
-            placeholder="Ticker or company, e.g. AAPL or Microsoft"
+            placeholder="Ticker or name, e.g. AAPL, Microsoft or ETH-USD"
           />
           <CommandList className="max-h-[60vh]">
             <CommandEmpty>
@@ -142,7 +144,7 @@ export const CommandSearch = () => {
 
             {showDirectTicker && (
               <CommandGroup heading="Ticker">
-                <CommandItem value={`direct-${upperQuery}`} onSelect={() => go(`/stocks/${upperQuery}`)}>
+                <CommandItem value={`direct-${upperQuery}`} onSelect={() => go(assetHref(upperQuery))}>
                   <ArrowRightIcon />
                   Open <span className="font-semibold">{upperQuery}</span>
                 </CommandItem>
@@ -150,15 +152,15 @@ export const CommandSearch = () => {
             )}
 
             {stockResults.length > 0 && (
-              <CommandGroup heading="Stocks">
+              <CommandGroup heading="Assets">
                 {stockResults.map((stock) => (
                   <CommandItem
                     key={stock.ticker}
                     value={`stock-${stock.ticker}`}
-                    onSelect={() => go(`/stocks/${stock.ticker.toUpperCase()}`)}
+                    onSelect={() => go(assetHref(stock.ticker))}
                   >
-                    <TrendingUpIcon />
-                    <span className="w-16 shrink-0 font-semibold">{stock.ticker.toUpperCase()}</span>
+                    <AssetIcon ticker={stock.ticker} size="sm" />
+                    <span className="w-20 shrink-0 font-semibold">{stock.ticker.toUpperCase()}</span>
                     <span className="truncate text-muted-foreground">{stock.name}</span>
                     <span className="ml-auto shrink-0 text-xs text-muted-foreground">{stock.region}</span>
                   </CommandItem>
@@ -169,7 +171,7 @@ export const CommandSearch = () => {
             {!query && quickTickers.length > 0 && (
               <CommandGroup heading="Holdings & watchlist">
                 {quickTickers.map((ticker) => (
-                  <CommandItem key={ticker} value={`quick-${ticker}`} onSelect={() => go(`/stocks/${ticker}`)}>
+                  <CommandItem key={ticker} value={`quick-${ticker}`} onSelect={() => go(assetHref(ticker))}>
                     <StarIcon />
                     <span className="font-semibold">{ticker}</span>
                   </CommandItem>

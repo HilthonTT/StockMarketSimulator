@@ -16,7 +16,7 @@ const Page = async ({ searchParams }: PageProps) => {
   const filters = await loadTransactionFilters(searchParams);
 
   const queryClient = getQueryClient();
-  void queryClient.prefetchInfiniteQuery(
+  await queryClient.prefetchInfiniteQuery(
     trpc.transactions.getMany.infiniteQueryOptions(toTransactionQueryInput(filters), {
       getNextPageParam: (lastPage) => lastPage.cursor ?? undefined,
     })

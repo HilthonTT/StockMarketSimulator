@@ -7,6 +7,8 @@ import { ReceiptTextIcon } from "lucide-react";
 
 import { useTRPC } from "@/trpc/client";
 import { cn, formatCurrency, formatNumber, parseUtc } from "@/lib/utils";
+import { assetHref, displaySymbol } from "@/lib/assets";
+import { AssetIcon } from "@/components/asset-icon";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,7 +26,7 @@ import { isBuy, SideBadge } from "../components/side-badge";
 export const TransactionsView = () => {
   return (
     <>
-      <PageHeader title="History" description="Every order you've placed, newest first." />
+      <PageHeader title="History" description="Every trade you've made, newest first. Pending limit and stop orders are under Orders." />
       <TransactionFilters />
       <QueryBoundary
         fallback={<Skeleton className="h-[480px] w-full rounded-xl" />}
@@ -96,20 +98,21 @@ const TransactionsTable = () => {
                 <TableCell className="pl-4">
                   <div className="flex flex-col">
                     <span>{format(createdOn, "MMM d, yyyy")}</span>
-                    <span className="text-xs text-muted-foreground">{format(createdOn, "HH:mm:ss")}</span>
+                    <span className="num text-xs text-muted-foreground">{format(createdOn, "HH:mm:ss")}</span>
                   </div>
                 </TableCell>
                 <TableCell>
                   <SideBadge type={transaction.type} />
                 </TableCell>
                 <TableCell>
-                  <Link href={`/stocks/${ticker}`} className="font-semibold hover:underline">
-                    {ticker}
+                  <Link href={assetHref(ticker)} className="flex items-center gap-2 font-semibold hover:underline">
+                    <AssetIcon ticker={ticker} size="sm" />
+                    {displaySymbol(ticker)}
                   </Link>
                 </TableCell>
-                <TableCell className="text-right tabular-nums">{formatNumber(transaction.quantity)}</TableCell>
-                <TableCell className="text-right tabular-nums">{formatCurrency(transaction.amount)}</TableCell>
-                <TableCell className={cn("pr-4 text-right font-medium tabular-nums", !buy && "text-gain")}>
+                <TableCell className="num text-right">{formatNumber(transaction.quantity)}</TableCell>
+                <TableCell className="num text-right">{formatCurrency(transaction.amount)}</TableCell>
+                <TableCell className={cn("num pr-4 text-right font-medium", !buy && "text-gain")}>
                   {buy ? "-" : "+"}
                   {formatCurrency(transaction.amount * transaction.quantity)}
                 </TableCell>

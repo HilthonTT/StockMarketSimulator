@@ -9,11 +9,14 @@ import { usePortfolio } from "@/modules/portfolio/hooks/use-portfolio";
 import { useLiveQuote } from "@/modules/market/hooks/use-live-quote";
 import { LivePrice } from "@/modules/market/ui/components/live-price";
 import { PriceChange } from "@/modules/market/ui/components/price-change";
-import { PriceChart } from "@/modules/market/ui/components/price-chart";
+import { RangedPriceChart } from "@/modules/market/ui/components/price-chart";
 import { useTradeDialog } from "@/modules/transactions/hooks/use-trade-dialog";
+import { useMarket } from "@/modules/market/hooks/use-market";
 
 import { useTRPC } from "@/trpc/client";
-import { formatCurrency, ratio } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
+import { assetHref, displaySymbol } from "@/lib/assets";
+import { AssetIcon } from "@/components/asset-icon";
 import { STARTING_CASH } from "@/constants";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -60,7 +63,7 @@ const MarketWatch = () => {
           >
             {tickers.slice(0, 8).map((t) => (
               <ToggleGroupItem key={t} value={t} className="px-3 font-semibold">
-                {t}
+                {displaySymbol(t)}
               </ToggleGroupItem>
             ))}
           </ToggleGroup>
@@ -78,21 +81,22 @@ const WatchHeader = ({ ticker, averageCost }: { ticker: string; averageCost?: nu
   const { quote } = useLiveQuote(ticker);
   const openTrade = useTradeDialog((state) => state.open);
 
-  const sessionChange = quote ? quote.price - quote.sessionOpen : 0;
 
   return (
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div>
-        <Link href={`/stocks/${ticker}`} className="text-sm font-semibold text-muted-foreground hover:underline">
-          {ticker}
+        <Link href={assetHref(ticker)} className="flex items-center gap-2 text-sm font-semibold hover:underline">
+          <AssetIcon ticker={ticker} size="sm" />
+          {quote?.name ?? displaySymbol(ticker)}
+          <span className="num font-normal text-muted-foreground">{ticker}</span>
         </Link>
-        <div className="text-3xl font-bold">
+        <div className="num mt-1 text-3xl font-bold">
           <LivePrice quote={quote} skeletonClassName="h-9 w-32" />
         </div>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
           <span className="inline-flex items-center gap-1">
-            <PriceChange change={sessionChange} ratio={quote ? ratio(sessionChange, quote.sessionOpen) : 0} />
-            <span className="text-muted-foreground">this session</span>
+            <PriceChange change={quote?.change ?? 0} ratio={quote?.changePercent ?? 0} />
+            <span className="text-muted-foreground">today</span>
           </span>
           {averageCost !== undefined && (
             <span className="text-muted-foreground">Avg cost {formatCurrency(averageCost)}</span>
@@ -115,9 +119,12 @@ const WatchChart = ({ ticker, averageCost }: { ticker: string; averageCost?: num
   const { quote } = useLiveQuote(ticker);
 
   return (
-    <PriceChart
-      history={quote?.history}
-      baseline={averageCost ? { value: averageCost, label: "Your avg cost" } : undefined}
+    <RangedPriceChart
+      key={ticker}
+      ticker={ticker}
+      previousClose={quote?.previousClose}
+      references={averageCost ? [{ value: averageCost, label: "Avg cost" }] : []}
+      height={280}
     />
   );
 };
@@ -126,6 +133,13 @@ const WatchChart = ({ ticker, averageCost }: { ticker: string; averageCost?: num
 const GetStarted = () => {
   const trpc = useTRPC();
   const { data } = useSuspenseQuery(trpc.stocks.search.queryOptions({ pageSize: 6 }));
+  const { market } = useMarket();
+  const suggestions = market
+    ? [...market.stocks.slice(0, 4), ...market.crypto.slice(0, 2)].map((quote) => ({
+        ticker: quote.ticker,
+        name: quote.name ?? quote.ticker,
+      }))
+    : data.items.map((item) => ({ ticker: item.ticker.toUpperCase(), name: item.name }));
   const openTrade = useTradeDialog((state) => state.open);
 
   return (
@@ -133,18 +147,21 @@ const GetStarted = () => {
       <CardHeader>
         <CardTitle className="text-xl">Make your first trade</CardTitle>
         <CardDescription>
-          You have {formatCurrency(STARTING_CASH)} in virtual cash. Prices move every second, so buy low, sell high
-          and watch your account value change live.
+          You have {formatCurrency(STARTING_CASH)} in virtual cash. Stocks and crypto tick every second: buy low,
+          sell high, set limit and stop orders, and climb the leaderboard.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {data.items.length > 0 ? (
+        {suggestions.length > 0 ? (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {data.items.map((stock) => (
+            {suggestions.map((stock) => (
               <div key={stock.ticker} className="flex items-center justify-between gap-3 rounded-lg border p-3">
-                <Link href={`/stocks/${stock.ticker.toUpperCase()}`} className="min-w-0 hover:underline">
-                  <p className="font-semibold">{stock.ticker.toUpperCase()}</p>
-                  <p className="truncate text-xs text-muted-foreground">{stock.name}</p>
+                <Link href={assetHref(stock.ticker)} className="flex min-w-0 items-center gap-2.5 hover:underline">
+                  <AssetIcon ticker={stock.ticker} size="sm" />
+                  <span className="min-w-0">
+                    <span className="block font-semibold">{displaySymbol(stock.ticker)}</span>
+                    <span className="block truncate text-xs text-muted-foreground">{stock.name}</span>
+                  </span>
                 </Link>
                 <Button size="sm" variant="outline" onClick={() => openTrade(stock.ticker)}>
                   Buy

@@ -5,27 +5,40 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { useLiveQuotes } from "@/modules/market/hooks/use-live-quote";
+import { useMarket } from "@/modules/market/hooks/use-market";
 import { useWatchlist } from "@/modules/market/hooks/use-watchlist";
 import { PercentChange } from "@/modules/market/ui/components/price-change";
 
 import { useTRPC } from "@/trpc/client";
-import { formatCurrency, ratio } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
+import { assetHref, displaySymbol } from "@/lib/assets";
+import { useHydrated } from "@/hooks/use-hydrated";
 
-/** Scrolling strip of live prices for the user's holdings and watchlist. */
+/** Scrolling strip of live prices: your holdings and watchlist first, then the whole market. */
 export const TickerTape = () => {
   const trpc = useTRPC();
   const { data: positions } = useQuery(trpc.portfolio.getPositions.queryOptions());
   const watchlist = useWatchlist((state) => state.tickers);
+  const { market } = useMarket();
 
-  const tickers = useMemo(
+  const personal = useMemo(
     () => [...new Set([...(positions ?? []).map((position) => position.ticker), ...watchlist])],
     [positions, watchlist]
   );
 
-  const quotes = useLiveQuotes(tickers);
-  const items = tickers.map((ticker) => quotes[ticker]).filter((quote) => quote !== undefined);
+  const personalQuotes = useLiveQuotes(personal);
 
-  if (items.length === 0) {
+  const items = useMemo(() => {
+    const first = personal.map((ticker) => personalQuotes[ticker]).filter((quote) => quote !== undefined);
+    const seen = new Set(first.map((quote) => quote.ticker));
+
+    return [...first, ...(market?.quotes ?? []).filter((quote) => !seen.has(quote.ticker))];
+  }, [personal, personalQuotes, market]);
+
+  // Positions and the (localStorage) watchlist differ between server and client: render after hydration.
+  const hydrated = useHydrated();
+
+  if (!hydrated || items.length === 0) {
     return null;
   }
 
@@ -34,25 +47,25 @@ export const TickerTape = () => {
   const loop = shouldScroll ? [...items, ...items] : items;
 
   return (
-    <div className="relative overflow-hidden border-b bg-muted/40" aria-label="Live prices">
+    <div className="relative overflow-hidden border-b bg-card/60" aria-label="Live prices">
       <div
         className={
           shouldScroll
-            ? "flex w-max animate-marquee hover:[animation-play-state:paused]"
+            ? "flex w-max animate-marquee hover:[animation-play-state:paused] focus-within:[animation-play-state:paused]"
             : "flex flex-wrap"
         }
       >
         {loop.map((quote, index) => (
           <Link
             key={`${quote.ticker}-${index}`}
-            href={`/stocks/${quote.ticker}`}
-            className="flex items-center gap-2 px-4 py-1.5 text-xs hover:bg-muted"
+            href={assetHref(quote.ticker)}
+            className="flex items-center gap-2 border-r px-4 py-1.5 text-xs hover:bg-muted"
             aria-hidden={index >= items.length ? true : undefined}
             tabIndex={index >= items.length ? -1 : undefined}
           >
-            <span className="font-semibold">{quote.ticker}</span>
-            <span className="tabular-nums">{formatCurrency(quote.price)}</span>
-            <PercentChange ratio={ratio(quote.price - quote.sessionOpen, quote.sessionOpen)} />
+            <span className="font-semibold">{displaySymbol(quote.ticker)}</span>
+            <span className="num">{formatCurrency(quote.price)}</span>
+            <PercentChange ratio={quote.changePercent} className="num" />
           </Link>
         ))}
       </div>

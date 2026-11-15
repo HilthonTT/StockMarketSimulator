@@ -4,6 +4,8 @@ import { useContext, useEffect, useMemo } from "react";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { useShallow } from "zustand/react/shallow";
 
+import type { StockQuoteResponse } from "@/modules/stocks/types";
+
 import { useTRPC } from "@/trpc/client";
 
 import { StockFeedContext } from "../providers/stock-feed-provider";
@@ -41,7 +43,7 @@ export function useLiveQuote(rawTicker: string | undefined) {
 
   useEffect(() => {
     if (data) {
-      seed(data.ticker, data.price);
+      seed(data);
     }
   }, [data, seed]);
 
@@ -58,6 +60,28 @@ export function useLiveQuote(rawTicker: string | undefined) {
   };
 }
 
+// Module-level so useQueries can keep the combined array stable between renders.
+const combineQuotes = (results: { data?: StockQuoteResponse | null }[]) =>
+  results.flatMap((result) => (result.data ? [result.data] : []));
+
+/** Seeds the feed store from an already-loaded list of quotes (e.g. the market overview). */
+export function useSeedQuotes(quotes: StockQuoteResponse[] | undefined) {
+  const seed = useFeedStore((state) => state.seed);
+
+  useEffect(() => {
+    for (const quote of quotes ?? []) {
+      seed(quote);
+    }
+  }, [quotes, seed]);
+}
+
+/** Keeps live ticks flowing for tickers whose quotes were seeded elsewhere. */
+export const useLiveSubscriptions = (rawTickers: string[]) => {
+  const key = [...new Set(rawTickers.map(normalizeTicker))].sort().join(",");
+  const tickers = useMemo(() => (key ? key.split(",") : []), [key]);
+  useFeedSubscriptions(tickers);
+};
+
 /** Live quotes for several tickers at once, keyed by upper-case ticker. */
 export function useLiveQuotes(rawTickers: string[]) {
   const key = [...new Set(rawTickers.map(normalizeTicker))].sort().join(",");
@@ -66,26 +90,16 @@ export function useLiveQuotes(rawTickers: string[]) {
   const trpc = useTRPC();
   const seed = useFeedStore((state) => state.seed);
 
-  const results = useQueries({
+  const seeds = useQueries({
     queries: tickers.map((ticker) => trpc.stocks.getOne.queryOptions({ ticker })),
+    combine: combineQuotes,
   });
 
-  const seedKey = results
-    .map((result) => (result.data ? `${result.data.ticker}:${result.data.price}` : ""))
-    .join("|");
-
   useEffect(() => {
-    if (!seedKey) {
-      return;
+    for (const quote of seeds) {
+      seed(quote);
     }
-
-    for (const entry of seedKey.split("|")) {
-      const [ticker, price] = entry.split(":");
-      if (ticker && price) {
-        seed(ticker, Number(price));
-      }
-    }
-  }, [seedKey, seed]);
+  }, [seeds, seed]);
 
   useFeedSubscriptions(tickers);
 

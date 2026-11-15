@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 import {
@@ -18,6 +17,8 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
+
+import { Logo } from "@/components/logo";
 
 import { accountNav, isNavActive, tradingNav, type NavItem } from "../../nav";
 import { UserMenu } from "./user-menu";
@@ -58,16 +59,12 @@ const NavGroup = ({ label, items }: { label: string; items: NavItem[] }) => {
 export const AppSidebar = () => {
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader>
+      <SidebarHeader className="border-b border-sidebar-border">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/">
-                <Image src="/money.png" alt="" width={32} height={32} className="size-8 shrink-0 rounded-md" />
-                <div className="grid flex-1 text-left leading-tight">
-                  <span className="truncate font-semibold">Stock Market</span>
-                  <span className="truncate text-xs text-muted-foreground">Simulator</span>
-                </div>
+                <Logo subtitle="Paper trading terminal" />
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

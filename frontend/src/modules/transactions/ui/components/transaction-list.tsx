@@ -2,6 +2,8 @@ import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 
 import { cn, formatCurrency, formatNumber, parseUtc } from "@/lib/utils";
+import { assetHref, displaySymbol } from "@/lib/assets";
+import { AssetIcon } from "@/components/asset-icon";
 
 import type { TransactionResponse } from "../../types";
 import { isBuy, SideBadge } from "./side-badge";
@@ -20,17 +22,18 @@ export const TransactionList = ({ transactions, className }: TransactionListProp
 
         return (
           <li key={transaction.id} className="flex items-center gap-3 py-3">
-            <SideBadge type={transaction.type} />
+            <AssetIcon ticker={transaction.ticker} size="sm" />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm">
+              <p className="flex items-center gap-1.5 truncate text-sm">
+                <SideBadge type={transaction.type} />
                 {formatNumber(transaction.quantity)}{" "}
                 <Link
-                  href={`/stocks/${transaction.ticker.toUpperCase()}`}
+                  href={assetHref(transaction.ticker)}
                   className="font-semibold hover:underline"
                 >
-                  {transaction.ticker.toUpperCase()}
+                  {displaySymbol(transaction.ticker.toUpperCase())}
                 </Link>{" "}
-                <span className="text-muted-foreground">@ {formatCurrency(transaction.amount)}</span>
+                <span className="num text-muted-foreground">@ {formatCurrency(transaction.amount)}</span>
               </p>
               <p className="text-xs text-muted-foreground">
                 {formatDistanceToNow(parseUtc(transaction.createdOnUtc), { addSuffix: true })}
@@ -38,7 +41,7 @@ export const TransactionList = ({ transactions, className }: TransactionListProp
             </div>
             <span
               className={cn(
-                "text-sm font-medium tabular-nums",
+                "num text-sm font-medium",
                 isBuy(transaction.type) ? "text-foreground" : "text-gain"
               )}
             >

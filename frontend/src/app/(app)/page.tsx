@@ -10,7 +10,9 @@ export const metadata: Metadata = { title: "Dashboard" };
 const Page = async () => {
   const queryClient = getQueryClient();
 
-  void queryClient.prefetchQuery(
+  // First-run suggestions (suspends for new accounts).
+  await queryClient.prefetchQuery(trpc.stocks.search.queryOptions({ pageSize: 6 }));
+  await queryClient.prefetchQuery(
     trpc.transactions.getMany.queryOptions({ pageSize: RECENT_ACTIVITY_SIZE })
   );
 

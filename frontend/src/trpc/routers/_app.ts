@@ -1,5 +1,7 @@
 import { authRouter } from "@/modules/auth/server/procedures";
 import { budgetsRouter } from "@/modules/budgets/server/procedures";
+import { leaderboardRouter } from "@/modules/leaderboard/server/procedures";
+import { ordersRouter } from "@/modules/orders/server/procedures";
 import { portfolioRouter } from "@/modules/portfolio/server/procedures";
 import { shortenRouter } from "@/modules/shorten/server/procedures";
 import { stocksRouter } from "@/modules/stocks/server/procedures";
@@ -16,6 +18,8 @@ export const appRouter = createTRPCRouter({
   users: usersRouter,
   shorten: shortenRouter,
   portfolio: portfolioRouter,
+  orders: ordersRouter,
+  leaderboard: leaderboardRouter,
 });
 
 // export type definition of API

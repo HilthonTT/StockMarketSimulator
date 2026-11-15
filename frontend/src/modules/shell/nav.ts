@@ -1,9 +1,11 @@
 import {
   BriefcaseBusinessIcon,
+  ClipboardListIcon,
   GlobeIcon,
   InfoIcon,
   LayoutDashboardIcon,
   ReceiptTextIcon,
+  TrophyIcon,
   UserIcon,
   type LucideIcon,
 } from "lucide-react";
@@ -17,9 +19,11 @@ export type NavItem = {
 
 export const tradingNav: NavItem[] = [
   { title: "Dashboard", href: "/", icon: LayoutDashboardIcon, description: "Account overview" },
-  { title: "Markets", href: "/markets", icon: GlobeIcon, description: "Find stocks to trade" },
+  { title: "Markets", href: "/markets", icon: GlobeIcon, description: "Stocks and crypto to trade" },
   { title: "Portfolio", href: "/portfolio", icon: BriefcaseBusinessIcon, description: "Your holdings and returns" },
-  { title: "History", href: "/transactions", icon: ReceiptTextIcon, description: "Every order you've placed" },
+  { title: "Orders", href: "/orders", icon: ClipboardListIcon, description: "Open limit and stop orders" },
+  { title: "History", href: "/transactions", icon: ReceiptTextIcon, description: "Every trade you've made" },
+  { title: "Leaderboard", href: "/leaderboard", icon: TrophyIcon, description: "Top traders by account value" },
 ];
 
 export const accountNav: NavItem[] = [

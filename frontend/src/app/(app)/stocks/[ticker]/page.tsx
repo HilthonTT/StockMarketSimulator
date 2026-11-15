@@ -9,7 +9,7 @@ interface PageProps {
   params: Promise<{ ticker: string }>;
 }
 
-const normalize = (ticker: string) => decodeURIComponent(ticker).trim().toUpperCase().slice(0, 10);
+const normalize = (ticker: string) => decodeURIComponent(ticker).trim().toUpperCase().slice(0, 12);
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { ticker } = await params;
@@ -21,8 +21,8 @@ const Page = async ({ params }: PageProps) => {
   const ticker = normalize((await params).ticker);
 
   const queryClient = getQueryClient();
-  void queryClient.prefetchQuery(trpc.stocks.getOne.queryOptions({ ticker }));
-  void queryClient.prefetchQuery(
+  await queryClient.prefetchQuery(trpc.stocks.getOne.queryOptions({ ticker }));
+  await queryClient.prefetchQuery(
     trpc.transactions.getMany.queryOptions({ searchTerm: ticker, pageSize: STOCK_TRADES_PAGE_SIZE })
   );
 

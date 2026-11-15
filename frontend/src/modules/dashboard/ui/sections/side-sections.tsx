@@ -11,6 +11,8 @@ import { TransactionList } from "@/modules/transactions/ui/components/transactio
 
 import { useTRPC } from "@/trpc/client";
 import { formatNumber } from "@/lib/utils";
+import { assetHref, displaySymbol } from "@/lib/assets";
+import { AssetIcon } from "@/components/asset-icon";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -81,18 +83,21 @@ const HoldingsPreview = () => {
       {holdings.slice(0, 5).map((holding) => (
         <li key={holding.ticker}>
           <Link
-            href={`/stocks/${holding.ticker}`}
+            href={assetHref(holding.ticker)}
             className="-mx-2 flex items-center justify-between gap-3 rounded-md px-2 py-3 hover:bg-muted/60"
           >
-            <div>
-              <p className="font-semibold">{holding.ticker}</p>
-              <p className="text-xs text-muted-foreground">{formatNumber(holding.quantity)} shares</p>
+            <div className="flex min-w-0 items-center gap-2.5">
+              <AssetIcon ticker={holding.ticker} assetClass={holding.quote?.assetClass} size="sm" />
+              <div className="min-w-0">
+                <p className="font-semibold">{displaySymbol(holding.ticker)}</p>
+                <p className="num text-xs text-muted-foreground">{formatNumber(holding.quantity)} units</p>
+              </div>
             </div>
             <div className="text-right text-sm">
               <p className="font-medium">
-                <LivePrice quote={holding.quote} />
+                <LivePrice quote={holding.quote} className="num" />
               </p>
-              <PercentChange ratio={holding.unrealizedPnlRatio} className="text-xs" />
+              <PercentChange ratio={holding.quote?.changePercent ?? 0} className="num text-xs" />
             </div>
           </Link>
         </li>

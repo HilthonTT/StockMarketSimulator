@@ -35,6 +35,25 @@ export const createTRPCRouter = t.router;
 export const createCallerFactory = t.createCallerFactory;
 export const baseProcedure = t.procedure;
 
+// One context is created per HTTP request, so a batch of queries (e.g. a table of sparklines)
+// shares a single `/users/me` lookup instead of calling the API once per procedure.
+const currentUserByContext = new WeakMap<Context, Promise<UserResponse | null>>();
+
+function getCurrentUser(ctx: Context) {
+  let user = currentUserByContext.get(ctx);
+
+  if (!user) {
+    user = fetchFromApi<UserResponse>({
+      method: "GET",
+      path: "/api/v1/users/me",
+      accessToken: ctx.accessToken,
+    });
+    currentUserByContext.set(ctx, user);
+  }
+
+  return user;
+}
+
 export const protectedProcedure = t.procedure.use(async function isAuthed(
   opts
 ) {
@@ -44,11 +63,7 @@ export const protectedProcedure = t.procedure.use(async function isAuthed(
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
-  const user = await fetchFromApi<UserResponse>({
-    method: "GET",
-    path: "/api/v1/users/me",
-    accessToken: ctx.accessToken,
-  });
+  const user = await getCurrentUser(ctx);
 
   if (!user) {
     throw new TRPCError({ code: "UNAUTHORIZED" });

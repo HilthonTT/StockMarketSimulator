@@ -9,8 +9,10 @@ import {
 } from "@microsoft/signalr";
 import { createContext, useCallback, useEffect, useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 
-import type { StockPriceResponse } from "@/modules/stocks/types";
+import type { MarketNewsItem, StockPriceUpdate } from "@/modules/stocks/types";
+
 
 import { useTRPC } from "@/trpc/client";
 import { SERVER_URL } from "@/constants";
@@ -19,8 +21,10 @@ import {
   SIGNALR_HUB_PATH,
   SIGNALR_JOIN_GROUP,
   SIGNALR_LEAVE_GROUP,
+  SIGNALR_MARKET_NEWS_EVENT,
   SIGNALR_STOCK_UPDATE_EVENT,
 } from "../constants";
+import { useWatchlist } from "../hooks/use-watchlist";
 import { normalizeTicker, useFeedStore } from "../store";
 
 interface StockFeedContextValue {
@@ -46,6 +50,16 @@ export const StockFeedProvider = ({ children }: { children: React.ReactNode }) =
 
   const setStatus = useFeedStore((state) => state.setStatus);
   const push = useFeedStore((state) => state.push);
+  const addNews = useFeedStore((state) => state.addNews);
+
+  // Read inside the SignalR handler without re-creating the connection when they change.
+  const { data: positions } = useQuery(trpc.portfolio.getPositions.queryOptions(undefined, { enabled: !!jwt }));
+  const followedRef = useRef(new Set<string>());
+  const watchlist = useWatchlist((state) => state.tickers);
+
+  useEffect(() => {
+    followedRef.current = new Set([...(positions ?? []).map((position) => position.ticker), ...watchlist]);
+  }, [positions, watchlist]);
 
   useEffect(() => {
     if (!jwt) {
@@ -69,8 +83,18 @@ export const StockFeedProvider = ({ children }: { children: React.ReactNode }) =
       }
     };
 
-    connection.on(SIGNALR_STOCK_UPDATE_EVENT, (update: StockPriceResponse) => {
-      push(update.ticker, update.price);
+    connection.on(SIGNALR_STOCK_UPDATE_EVENT, (update: StockPriceUpdate) => {
+      push(update);
+    });
+    connection.on(SIGNALR_MARKET_NEWS_EVENT, (item: MarketNewsItem) => {
+      const news = { ...item, ticker: normalizeTicker(item.ticker) };
+      addNews([news]);
+
+      // Only interrupt for assets the user actually holds or watches.
+      if (followedRef.current.has(news.ticker)) {
+        const description = `${news.ticker} ${news.impactPercent >= 0 ? "+" : ""}${(news.impactPercent * 100).toFixed(1)}%`;
+        (news.sentiment === "positive" ? toast.success : toast.warning)(news.headline, { description });
+      }
     });
     connection.onreconnecting(() => setStatus("reconnecting"));
     connection.onreconnected(() => {
@@ -109,7 +133,7 @@ export const StockFeedProvider = ({ children }: { children: React.ReactNode }) =
       setStatus("idle");
       void connection.stop();
     };
-  }, [jwt, push, setStatus]);
+  }, [jwt, push, addNews, setStatus]);
 
   const subscribe = useCallback((rawTicker: string) => {
     const ticker = normalizeTicker(rawTicker);

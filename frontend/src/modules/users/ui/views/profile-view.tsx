@@ -12,6 +12,7 @@ import { QueryBoundary } from "@/components/query-boundary";
 import { ProfileHeader } from "../components/profile-header";
 import { ProfileForm } from "../components/profile-form";
 import { ChangePasswordForm } from "../components/change-password-form";
+import { ResetAccountCard } from "../components/reset-account-card";
 
 export const ProfileView = () => (
   <QueryBoundary
@@ -58,6 +59,8 @@ const Profile = () => {
           </CardContent>
         </Card>
       </div>
+
+      <ResetAccountCard />
     </>
   );
 };

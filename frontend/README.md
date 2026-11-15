@@ -5,12 +5,13 @@ Next.js 16 (App Router) client for the simulator. It talks to the .NET API throu
 ## Run it
 
 ```bash
-cp .env.example .env   # then set AUTH_SECRET (bunx auth secret)
 bun install
 bun run dev            # http://localhost:3000
 ```
 
-The API must be running (see [docs/getting-started.md](../docs/getting-started.md)).
+No `.env` is needed in development. The client calls the API at `http://localhost:5000` and uses a development-only auth secret. The API must be running (see [docs/getting-started.md](../docs/getting-started.md)).
+
+Production (including `bun run build && bun start` on your machine) requires `AUTH_SECRET` (`bunx auth secret`), and `AUTH_TRUST_HOST=true` behind a proxy. Override the API URL with `NEXT_PUBLIC_SERVER_URL`.
 
 | Script | What it does |
 | --- | --- |
@@ -23,13 +24,15 @@ The API must be running (see [docs/getting-started.md](../docs/getting-started.m
 
 | Route | Purpose |
 | --- | --- |
-| `/` | Dashboard: account value, buying power, live chart of a holding, top holdings, recent activity |
-| `/markets` | Search companies by ticker or name, add to watchlist, open a trade |
-| `/stocks/[ticker]` | Live price chart, your position, order ticket, your trades in that stock |
-| `/portfolio` | Holdings at live prices, total return, allocation |
-| `/transactions` | Order history with ticker and date-range filters |
-| `/profile` | Username, password, avatar and banner |
-| `/about` | How the simulation works, keyboard shortcuts |
+| `/` | Dashboard: account value and chart, SIM 30 index, gainers/losers, news feed, holdings, recent activity |
+| `/markets` | Index, top movers, the stock and crypto universe (sector filter, sparklines, day range), and search for any other symbol |
+| `/stocks/[ticker]` | 1D–3M chart, key stats, your position, Market / Limit / Stop order ticket, open orders, your trades |
+| `/portfolio` | Holdings at live prices, allocation donut, account value chart, day and total P&L |
+| `/orders` | Open, filled and rejected limit/stop orders, with cancel |
+| `/leaderboard` | Every trader ranked by account value |
+| `/transactions` | Trade history with ticker and date-range filters |
+| `/profile` | Username, password, avatar, banner, and Reset account |
+| `/about` | How the simulation works |
 | `/login`, `/register` | Authentication |
 
 `Ctrl/⌘ + K` (or `/`) opens stock search from anywhere.

@@ -1,7 +1,6 @@
 import type { Quote } from "../../store";
 
 import { cn, formatCurrency } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface LivePriceProps {
   quote: Quote | undefined;
@@ -12,7 +11,13 @@ interface LivePriceProps {
 /** Current price that briefly flashes green/red on every tick. */
 export const LivePrice = ({ quote, className, skeletonClassName }: LivePriceProps) => {
   if (!quote) {
-    return <Skeleton className={cn("h-5 w-16 inline-block align-middle", skeletonClassName)} />;
+    // A span, not the <div> Skeleton: prices are often rendered inside <p>, where a div is invalid HTML.
+    return (
+      <span
+        data-slot="skeleton"
+        className={cn("bg-accent animate-pulse rounded-md h-5 w-16 inline-block align-middle", skeletonClassName)}
+      />
+    );
   }
 
   const direction =

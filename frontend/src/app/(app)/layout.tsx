@@ -22,10 +22,14 @@ const Layout = async ({ children }: LayoutProps) => {
 
   // Data every signed-in page shows in the shell (cash, user menu, ticker tape, feed).
   const queryClient = getQueryClient();
-  void queryClient.prefetchQuery(trpc.auth.getJwt.queryOptions());
-  void queryClient.prefetchQuery(trpc.budgets.getOne.queryOptions());
-  void queryClient.prefetchQuery(trpc.users.getCurrent.queryOptions());
-  void queryClient.prefetchQuery(trpc.portfolio.getPositions.queryOptions());
+  // Awaited (in parallel): these are read with useQuery, so the server render must already have
+  // them, or the server HTML (loading state) and the hydrated client (data) differ.
+  await Promise.all([
+    queryClient.prefetchQuery(trpc.auth.getJwt.queryOptions()),
+    queryClient.prefetchQuery(trpc.budgets.getOne.queryOptions()),
+    queryClient.prefetchQuery(trpc.users.getCurrent.queryOptions()),
+    queryClient.prefetchQuery(trpc.portfolio.getPositions.queryOptions()),
+  ]);
 
   return (
     <HydrateClient>

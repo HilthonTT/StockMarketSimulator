@@ -6,6 +6,8 @@ import { SessionLayout } from "@/modules/auth/ui/layouts/session-layout";
 import { StockFeedProvider } from "@/modules/market/providers/stock-feed-provider";
 import { useWatchlist } from "@/modules/market/hooks/use-watchlist";
 import { TradeDialog } from "@/modules/transactions/ui/components/trade-dialog";
+import { useOrderFillNotifications } from "@/modules/orders/hooks/use-orders";
+import { useNewsSeed } from "@/modules/market/hooks/use-news";
 
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
@@ -39,9 +41,17 @@ export const AppShell = ({ children, defaultSidebarOpen = true }: AppShellProps)
           </SidebarInset>
         </SidebarProvider>
 
+        <OrderWatcher />
         <TradeDialog />
         <CommandSearch />
       </StockFeedProvider>
     </SessionLayout>
   );
+};
+
+/** App-wide background work: order fill/reject toasts and the initial news load. */
+const OrderWatcher = () => {
+  useOrderFillNotifications();
+  useNewsSeed();
+  return null;
 };
