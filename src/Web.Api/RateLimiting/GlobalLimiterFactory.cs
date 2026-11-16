@@ -21,7 +21,7 @@ internal static class GlobalLimiterFactory
     /// caller would share one bucket, so a single client could exhaust the limit for everyone.
     /// </summary>
     /// <remarks>
-    /// Anonymous requests that arrive through a proxy share the proxy's IP (forwarded headers aren't trusted).
+    /// Behind a trusted proxy (see ForwardedHeaders in DependencyInjection) the IP is the forwarded client IP.
     /// </remarks>
     public static string GetPartitionKey(HttpContext httpContext)
     {

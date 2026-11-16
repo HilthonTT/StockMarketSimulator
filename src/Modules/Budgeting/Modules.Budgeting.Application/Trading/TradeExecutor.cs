@@ -83,10 +83,18 @@ internal sealed class TradeExecutor(
             return Result.Failure<Transaction>(TransactionErrors.InsufficientStock);
         }
 
-        Result positionResult = optionPosition.ValueOrThrow().Sell(quantity);
-        if (positionResult.IsFailure)
+        Position position = optionPosition.ValueOrThrow();
+
+        // Check everything that can fail before mutating anything: callers such as the order fill save the
+        // unit of work even when the trade fails (to record the rejection), so a half-applied trade would persist.
+        if (quantity <= 0)
         {
-            return Result.Failure<Transaction>(positionResult.Error);
+            return Result.Failure<Transaction>(TransactionErrors.NegativeQuantityNotAllowed);
+        }
+
+        if (position.Quantity < quantity)
+        {
+            return Result.Failure<Transaction>(TransactionErrors.InsufficientStock);
         }
 
         Result<Transaction> transactionResult = Transaction.Create(
@@ -95,6 +103,13 @@ internal sealed class TradeExecutor(
         if (transactionResult.IsFailure)
         {
             return transactionResult;
+        }
+
+        Result positionResult = position.Sell(quantity);
+        if (positionResult.IsFailure)
+        {
+            // Unreachable after the checks above; fail loudly rather than persist cash without the share removal.
+            throw new DomainException(positionResult.Error);
         }
 
         transactionRepository.Insert(transactionResult.Value);

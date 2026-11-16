@@ -78,6 +78,9 @@ WebApplication app = builder.Build();
 // Must be first so exceptions thrown by every later middleware are turned into ProblemDetails.
 app.UseExceptionHandler();
 
+// Before anything that reads the client IP (rate limiting, request logging): only trusted proxies are honoured.
+app.UseForwardedHeaders();
+
 ApiVersionSet apiVersionSet = app.NewApiVersionSet()
     .HasApiVersion(new ApiVersion(ApiVersion))
     .ReportApiVersions()
@@ -94,7 +97,7 @@ app.MapEndpoints(versionedGroup);
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi().WithDocumentPerVersion();
+    app.MapOpenApi();
 
     app.UseSwaggerWithUi();
 

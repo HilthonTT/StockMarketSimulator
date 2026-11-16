@@ -24,13 +24,19 @@ builder.Services.AddHealthChecks();
 
 builder.Services.AddCors(options =>
 {
+    // Credentialed CORS must name its origins: allowing every origin with credentials would let any website
+    // make authenticated calls on a visitor's behalf.
+    string[] allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() is { Length: > 0 } origins
+        ? origins
+        : [builder.Configuration["Cors:AllowedOrigin"] ?? "http://localhost:3000"];
+
     options.AddDefaultPolicy(policy =>
     {
         policy
+            .WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowCredentials()
-            .SetIsOriginAllowed(_ => true);
+            .AllowCredentials();
     });
 });
 

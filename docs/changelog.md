@@ -1,5 +1,22 @@
 # Changelog
 
+## .NET 11 upgrade and backend hardening
+
+### Upgrade checklist
+
+1. Install the **.NET 11 SDK** (`global.json` pins `11.0.100`, `rollForward: latestFeature`). Container images use `dotnet/sdk:11.0` and `dotnet/aspnet:11.0`.
+2. No migrations.
+3. **YARP proxy CORS** now allows only the configured origins: `Cors:AllowedOrigins` (array) or `Cors:AllowedOrigin`, defaulting to `http://localhost:3000`. Before, any origin was allowed with credentials.
+4. **Optional:** a proxy that isn't on loopback must be listed under `ForwardedHeaders:KnownProxies` (IPs) or `ForwardedHeaders:KnownNetworks` (CIDR) in Web.Api for per-client rate limiting.
+
+### Changes
+
+- All projects target `net11.0`. ASP.NET Core, `Microsoft.Extensions.*`, Swashbuckle (11.0.1) and Aspire (13.6.5) are bumped. EF Core stays on 10.0.15 until Npgsql ships EF Core 11 (see [Build and dependencies](build-and-dependencies.md)).
+- `Asp.Versioning.OpenApi` was replaced by the built-in `AddOpenApi("v1")`; `/openapi/v1.json` (ReDoc, Scalar) and the Swagger UI are unchanged. New `OpenApiDocumentTests` cover both documents.
+- **Forwarded headers:** Web.Api honours `X-Forwarded-For`/`-Proto` from trusted proxies, so anonymous callers behind YARP get their own rate-limit bucket instead of sharing the proxy's.
+- **Budgeting integration events** reuse the domain event id, as the Users module does, so a redelivered domain event is deduplicated by consumers instead of sending a second confirmation email.
+- **`TradeExecutor.SellAsync`** validates holdings before mutating anything and removes the shares only after the cash credit succeeds. An order fill saves the unit of work even when a trade fails (to record the rejection), so a half-applied sell could otherwise have been persisted.
+
 ## A real market: universe, orders, crypto, leaderboard
 
 ### Upgrade checklist

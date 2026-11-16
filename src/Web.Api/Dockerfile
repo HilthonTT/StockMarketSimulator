@@ -1,14 +1,14 @@
 # See https://aka.ms/customizecontainer to learn how to customize your debug container.
 
 # Runtime base image (also used by Visual Studio fast mode)
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:11.0 AS base
 USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
 
 # Build stage
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:11.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 # Shared build settings and central package versions must be present before restore.

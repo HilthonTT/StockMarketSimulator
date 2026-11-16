@@ -10,7 +10,7 @@ internal sealed class TransactionBoughtDomainEventHandler(IEventBus eventBus)
 {
     public Task Handle(TransactionBoughtDomainEvent notification, CancellationToken cancellationToken)
     {
-        var integrationEvent = new TransactionBoughtIntegrationEvent(Guid.CreateVersion7(), notification.TransactionId);
+        var integrationEvent = new TransactionBoughtIntegrationEvent(notification.Id, notification.TransactionId);
 
         return eventBus.PublishAsync(integrationEvent, cancellationToken);
     }

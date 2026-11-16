@@ -2,8 +2,8 @@
 
 ## Target framework and solution
 
-- Every project targets **.NET 10** (`net10.0`), set once in [`Directory.Build.props`](../Directory.Build.props) together with `Nullable`, `ImplicitUsings` and `LangVersion`. Project files no longer repeat these.
-- [`global.json`](../global.json) pins the SDK band (`10.0.100`, `rollForward: latestFeature`).
+- Every project targets **.NET 11** (`net11.0`), set once in [`Directory.Build.props`](../Directory.Build.props) together with `Nullable`, `ImplicitUsings` and `LangVersion`. Project files no longer repeat these.
+- [`global.json`](../global.json) pins the SDK band (`11.0.100`, `rollForward: latestFeature`).
 - The solution file is **[`StockMarketSimulator.slnx`](../StockMarketSimulator.slnx)**, the XML solution format. The old `.sln` was removed. The Visual Studio 17.13+/2026, Rider and `dotnet` CLI tooling all support `.slnx`.
 
 ```bash
@@ -17,7 +17,9 @@ All NuGet versions live in [`Directory.Packages.props`](../Directory.Packages.pr
 
 - To bump a package, edit `Directory.Packages.props` only.
 - `CentralPackageTransitivePinningEnabled` is on, so a pin also applies when the package arrives transitively. `Microsoft.EntityFrameworkCore.Relational` is pinned for this reason; before, it caused MSB3277 version-conflict warnings.
-- Framework-bound packages (ASP.NET Core, EF Core, Npgsql, `Microsoft.Extensions.*`) stay on the **10.x** line to match the target framework.
+- ASP.NET Core and `Microsoft.Extensions.*` packages are on the **11.x** line to match the target framework.
+- **EF Core stays on 10.x** (10.0.15, plus `dotnet-ef` in `dotnet-tools.json`). The Npgsql provider for EF Core 11 is still a release candidate, and `EFCore.NamingConventions` / `EntityFrameworkCore.Exceptions` have no 11.x build yet. EF Core 10 runs on the .NET 11 runtime. Move EF Core, Npgsql and those two packages together once all of them ship 11.0.
+- **`Asp.Versioning.OpenApi` was removed.** It has no .NET 11 build and pins Microsoft.OpenApi 2.x, which conflicts with ASP.NET Core 11 (3.x). The API has one version, so Web.Api calls the built-in `AddOpenApi("v1")`. The versioned ApiExplorer still substitutes `v1` into the routes (covered by `OpenApiDocumentTests`). `AV0029`/`AV0030` are suppressed in `Web.Api.csproj` for this reason.
 
 Notable major upgrades and the code changes they required:
 
@@ -26,6 +28,8 @@ Notable major upgrades and the code changes they required:
 | Quartz | 3.14 | 4.7 | `IJob.Execute` returns `ValueTask` and takes a `CancellationToken`. Typed `ScheduleJob<T>` registration. `SetJobData` became `UsingJobData`. Typed `JobDataMap` getters replaced (see `JobDataMapExtensions`) |
 | Aspire | 9.3 | 13.6 | AppHost uses `Sdk="Aspire.AppHost.Sdk/13.6.4"`. `Aspire.Hosting.AppHost` is implicit. `ExecuteCommandResult.ErrorMessage` became `Message` |
 | Swashbuckle / Microsoft.OpenApi | 8 / 1.x | 10 / 2.x | Namespace `Microsoft.OpenApi`. Security requirements use `OpenApiSecuritySchemeReference`. `WithOpenApi()` removed from endpoints, since .NET 10 generates the metadata |
+| .NET / ASP.NET Core | 10 | 11 | Explicit `(decimal)double` casts now keep the exact binary value (`0.12` -> `0.1199999999999999955591079015`). Production paths round right after the cast; one test built its expected value that way and now uses strings |
+| Swashbuckle / Microsoft.OpenApi | 10 / 2.x | 11 / 3.x | No code changes |
 | Testcontainers | 4.4 | 4.16 | Builders take the image in the constructor (images pinned in the test factories) |
 | Scrutor, FluentValidation, Polly, RabbitMQ.Client, MailKit, Sentry, OpenTelemetry, Asp.Versioning, xUnit runner, Test SDK, ... | | latest stable | No code changes |
 
@@ -46,7 +50,7 @@ dotnet ef --version
 
 ## Docker images
 
-`src/Web.Api/Dockerfile` and `src/Yarp.Proxy/Dockerfile` build on `mcr.microsoft.com/dotnet/sdk:10.0` and run on `mcr.microsoft.com/dotnet/aspnet:10.0`. Restore needs `global.json`, `Directory.Build.props` and `Directory.Packages.props`, so the build copies them first. The previous Web.Api Dockerfile restored with only its own `.csproj`, which can't work without the referenced projects.
+`src/Web.Api/Dockerfile` and `src/Yarp.Proxy/Dockerfile` build on `mcr.microsoft.com/dotnet/sdk:11.0` and run on `mcr.microsoft.com/dotnet/aspnet:11.0`. Restore needs `global.json`, `Directory.Build.props` and `Directory.Packages.props`, so the build copies them first. The previous Web.Api Dockerfile restored with only its own `.csproj`, which can't work without the referenced projects.
 
 ## Web UI
 

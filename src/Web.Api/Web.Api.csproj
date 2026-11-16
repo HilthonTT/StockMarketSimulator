@@ -5,12 +5,16 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..</DockerfileContext>
     <DockerComposeProjectPath>..\..\docker-compose.dcproj</DockerComposeProjectPath>
+    <!--
+      AV0029/AV0030 recommend Asp.Versioning.OpenApi, which has no .NET 11 build yet (it pins Microsoft.OpenApi 2.x,
+      ASP.NET Core 11 needs 3.x). The API has a single version, so the built-in AddOpenApi("v1") is enough.
+    -->
+    <NoWarn>$(NoWarn);AV0029;AV0030</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Asp.Versioning.Http" />
     <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" />
-    <PackageReference Include="Asp.Versioning.OpenApi" />
     <PackageReference Include="AspNetCore.HealthChecks.UI.Client" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">

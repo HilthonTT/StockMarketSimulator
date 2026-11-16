@@ -6,7 +6,7 @@
 
 <p align="center">
   Paper-trade stocks and crypto with $5,000 of virtual cash in a live, simulated market.<br/>
-  .NET 10 modular monolith · Next.js 16 · SignalR · PostgreSQL
+  .NET 11 modular monolith · Next.js 16 · SignalR · PostgreSQL
 </p>
 
 <p align="center">
@@ -32,7 +32,7 @@
 
 ## Run it locally
 
-You need the [.NET 10 SDK](https://dotnet.microsoft.com/download), [Docker](https://www.docker.com/) (running) and [Bun](https://bun.sh/).
+You need the [.NET 11 SDK](https://dotnet.microsoft.com/download), [Docker](https://www.docker.com/) (running) and [Bun](https://bun.sh/).
 
 ```bash
 # 1. Backend: PostgreSQL, Redis, RabbitMQ and Azurite containers, plus the API on http://localhost:5000
@@ -75,7 +75,7 @@ flowchart LR
 
 Modules talk only through small `*.Api` contracts and integration events, and architecture tests enforce that.
 
-**Stack:** .NET 10, ASP.NET Core minimal APIs, EF Core 10 + Dapper, Quartz.NET, SignalR, .NET Aspire 13 · Next.js 16, React 19, tRPC, TanStack Query, Tailwind CSS 4, shadcn/ui, Recharts · xUnit, NetArchTest, Testcontainers.
+**Stack:** .NET 11, ASP.NET Core minimal APIs, EF Core 10 + Dapper, Quartz.NET, SignalR, .NET Aspire 13 · Next.js 16, React 19, tRPC, TanStack Query, Tailwind CSS 4, shadcn/ui, Recharts · xUnit, NetArchTest, Testcontainers.
 
 ## Tests
 

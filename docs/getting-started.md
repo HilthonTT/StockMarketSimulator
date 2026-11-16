@@ -4,7 +4,7 @@
 
 | Tool | Version | Notes |
 | --- | --- | --- |
-| .NET SDK | 10.0.100 or later | Pinned in [`global.json`](../global.json) (`rollForward: latestFeature`) |
+| .NET SDK | 11.0.100 or later | Pinned in [`global.json`](../global.json) (`rollForward: latestFeature`) |
 | Docker | Recent Docker Desktop / Engine | Aspire runs PostgreSQL, Redis, RabbitMQ and Azurite as containers. The integration and functional tests use Testcontainers |
 | Bun | 1.x | Package manager for the Next.js front end (`frontend/bun.lock`) |
 | Node.js | 24.x | Runtime for the front end |

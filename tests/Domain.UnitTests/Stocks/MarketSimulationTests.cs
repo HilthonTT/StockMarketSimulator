@@ -1,3 +1,4 @@
+using System.Globalization;
 using Modules.Stocks.Domain.Services;
 
 namespace Domain.UnitTests.Stocks;
@@ -56,14 +57,16 @@ public sealed class MarketSimulationTests
         Assert.All(candles.Zip(candles.Skip(1)), pair => Assert.Equal(TimeSpan.FromMinutes(5), pair.Second.Start - pair.First.Start));
     }
 
+    // Expected values are strings: since .NET 11 an explicit (decimal)double cast keeps the exact binary value
+    // (0.12 -> 0.11999999999999999555...), so a double literal can't express the exact expected decimal.
     [Theory]
-    [InlineData(0.12, 0.1200)]
-    [InlineData(0.123456, 0.1235)]
-    [InlineData(12.345, 12.35)]
-    [InlineData(0.00001, 0.0001)]
-    public void ToPrice_Should_KeepSubDollarPrecision(double value, double expected)
+    [InlineData(0.12, "0.12")]
+    [InlineData(0.123456, "0.1235")]
+    [InlineData(12.345000000000001, "12.35")]
+    [InlineData(0.00001, "0.0001")]
+    public void ToPrice_Should_KeepSubDollarPrecision(double value, string expected)
     {
-        Assert.Equal((decimal)expected, PriceHistoryGenerator.ToPrice(value));
+        Assert.Equal(decimal.Parse(expected, CultureInfo.InvariantCulture), PriceHistoryGenerator.ToPrice(value));
     }
 
     [Fact]

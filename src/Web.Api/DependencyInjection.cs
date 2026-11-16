@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.RateLimiting;
 using Infrastructure;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.HttpOverrides;
+using System.Net;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.FeatureManagement;
 using SharedKernel;
@@ -22,6 +24,7 @@ public static class DependencyInjection
     {
         services.AddSwaggerServices();
         services.AddCors();
+        services.AddForwardedHeaders(configuration);
         services.AddExceptionHandling();
         services.AddMiddlewares();
         services.ConfigureRateLimiter();
@@ -48,6 +51,32 @@ public static class DependencyInjection
     {
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Trusts <c>X-Forwarded-For</c>/<c>X-Forwarded-Proto</c> from known proxies only, so per-IP rate limiting
+    /// sees the real client behind YARP or a load balancer. Loopback proxies are trusted by default; add others
+    /// under <c>ForwardedHeaders:KnownProxies</c> (IPs) or <c>ForwardedHeaders:KnownNetworks</c> (CIDR ranges).
+    /// Headers from any other peer are ignored, so clients can't spoof their IP.
+    /// </summary>
+    private static IServiceCollection AddForwardedHeaders(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+            foreach (string proxy in configuration.GetSection("ForwardedHeaders:KnownProxies").Get<string[]>() ?? [])
+            {
+                options.KnownProxies.Add(IPAddress.Parse(proxy));
+            }
+
+            foreach (string network in configuration.GetSection("ForwardedHeaders:KnownNetworks").Get<string[]>() ?? [])
+            {
+                options.KnownIPNetworks.Add(System.Net.IPNetwork.Parse(network));
+            }
+        });
 
         return services;
     }

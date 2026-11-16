@@ -48,9 +48,11 @@ public static class ServiceCollectionExtensions
         {
             options.GroupNameFormat = "'v'V";
             options.SubstituteApiVersionInUrl = true;
-        })
-        // Registers Microsoft.AspNetCore.OpenApi with one document per API version (openapi/v1.json, ...).
-        .AddOpenApi();
+        });
+
+        // Microsoft.AspNetCore.OpenApi document (openapi/v1.json) consumed by ReDoc and Scalar. The versioned
+        // ApiExplorer above names the group "v1" and substitutes the version into the route templates.
+        services.AddOpenApi("v1");
 
         services.ConfigureOptions<ConfigureSwaggerGenOptions>();
 
