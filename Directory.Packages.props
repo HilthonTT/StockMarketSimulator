@@ -22,7 +22,7 @@
     <PackageVersion Include="EFCore.NamingConventions" Version="10.0.1" />
     <PackageVersion Include="EntityFrameworkCore.Exceptions.PostgreSQL" Version="10.0.2" />
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.2.0" />
-    <PackageVersion Include="MailKit" Version="4.18.2" />
+    <PackageVersion Include="MailKit" Version="5.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="11.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="11.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="11.0.0" />
@@ -46,17 +46,17 @@
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.21.0" />
     <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.21.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.21.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.20.2-beta.1" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.21.0-beta.1" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.21.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.21.0" />
     <PackageVersion Include="Polly" Version="8.9.1" />
     <PackageVersion Include="Quartz.Extensions.Hosting" Version="4.7.3" />
     <PackageVersion Include="RabbitMQ.Client" Version="7.2.2" />
     <PackageVersion Include="RedisRateLimiting.AspNetCore" Version="1.2.1" />
-    <PackageVersion Include="Scalar.AspNetCore" Version="3.0.0" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="3.0.1" />
     <PackageVersion Include="Scrutor" Version="7.0.0" />
-    <PackageVersion Include="Sentry.AspNetCore" Version="6.13.0" />
-    <PackageVersion Include="Sentry.OpenTelemetry.Exporter" Version="6.13.0" />
+    <PackageVersion Include="Sentry.AspNetCore" Version="7.0.1" />
+    <PackageVersion Include="Sentry.OpenTelemetry.Exporter" Version="7.0.1" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="11.0.1" />
     <PackageVersion Include="Swashbuckle.AspNetCore.ReDoc" Version="11.0.1" />
     <PackageVersion Include="Testcontainers.Azurite" Version="4.17.0" />
@@ -64,7 +64,7 @@
     <PackageVersion Include="Testcontainers.RabbitMq" Version="4.17.0" />
     <PackageVersion Include="Testcontainers.Redis" Version="4.17.0" />
     <PackageVersion Include="xunit" Version="2.9.3" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.1" />
     <PackageVersion Include="Yarp.ReverseProxy" Version="2.3.0" />
   </ItemGroup>
 </Project>
